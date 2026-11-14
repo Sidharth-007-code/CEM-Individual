@@ -171,3 +171,4 @@ describe("10-Minute Inactivity Session Engine & Cross-Tab Synchronization", () =
     expect(state.isTimedOut).toBe(true);
   });
 });
+
