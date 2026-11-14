@@ -46,22 +46,39 @@ if (-not (Test-Path "node_modules")) {
     npm install
 }
 
-# 4. Launch Firebase Emulators (Auth on 9099, Firestore on 8080, UI on 4000) in a dedicated window
-Write-Host "[START] Launching Firebase Emulator Suite in background window..." -ForegroundColor Cyan
-$emulatorCommand = "`$Host.UI.RawUI.WindowTitle = 'Firebase Emulator Suite (Auth: 9099 | Firestore: 8080 | UI: 4000)'; "
-if ($foundJdk) {
-    $emulatorCommand += "`$env:JAVA_HOME = '$foundJdk'; `$env:PATH = '$foundJdk\bin;' + `$env:PATH; "
+# 4. Check whether to run against local emulators or live Google Cloud
+$isEmulator = $true
+if (Test-Path ".env.local") {
+    $envLines = Get-Content ".env.local"
+    foreach ($line in $envLines) {
+        if ($line -match '^\s*NEXT_PUBLIC_USE_FIREBASE_EMULATOR\s*=\s*["'']?false["'']?') {
+            $isEmulator = $false
+            break
+        }
+    }
 }
-$emulatorCommand += "npx firebase-tools emulators:start --only auth,firestore"
 
-Start-Process powershell -ArgumentList "-NoExit", "-Command", $emulatorCommand
+if ($isEmulator) {
+    Write-Host "[MODE] Running against LOCAL FIREBASE EMULATOR" -ForegroundColor Cyan
+    Write-Host "[START] Launching Firebase Emulator Suite in background window..." -ForegroundColor Cyan
+    $emulatorCommand = "`$Host.UI.RawUI.WindowTitle = 'Firebase Emulator Suite (Auth: 9099 | Firestore: 8080 | UI: 4000)'; "
+    if ($foundJdk) {
+        $emulatorCommand += "`$env:JAVA_HOME = '$foundJdk'; `$env:PATH = '$foundJdk\bin;' + `$env:PATH; "
+    }
+    $emulatorCommand += "npx firebase-tools emulators:start --only auth,firestore"
 
-# 5. Wait briefly for emulator ports to become ready
-Write-Host "[WAIT] Waiting 5 seconds for emulators to initialize..." -ForegroundColor Yellow
-Start-Sleep -Seconds 5
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", $emulatorCommand
 
-# 6. Seed initial test accounts and realistic campus listings
-Write-Host "[SEED] Populating demo accounts, listings, orders, and reports..." -ForegroundColor Cyan
+    # Wait briefly for emulator ports to become ready
+    Write-Host "[WAIT] Waiting 5 seconds for emulators to initialize..." -ForegroundColor Yellow
+    Start-Sleep -Seconds 5
+} else {
+    Write-Host "[MODE] Running against LIVE GOOGLE CLOUD FIRESTORE (campus-marketplace-46e4d)" -ForegroundColor Green
+    Write-Host "[INFO] Skipping local emulator startup since live cloud is configured." -ForegroundColor Green
+}
+
+# 5. Seed test accounts and realistic campus listings if needed
+Write-Host "[SEED] Populating / verifying demo accounts and campus listings..." -ForegroundColor Cyan
 npm run seed
 
 # 7. Launch browser at http://localhost:3000
