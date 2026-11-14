@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import { collection, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Heart, Trash2, ExternalLink, ShoppingBag } from "lucide-react";
+import { Heart, Trash2, ExternalLink, ShoppingBag, ArrowRight } from "lucide-react";
 
 interface WishlistItem {
   id: string;
@@ -56,87 +56,104 @@ export default function WishlistPage() {
 
   return (
     <RouteGuard requireAuth={true}>
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="border-b border-ink-200 pb-3">
-          <div className="flex items-center space-x-2">
-            <Heart className="w-6 h-6 text-saffron-500 fill-saffron-500" />
-            <h1 className="font-serif text-3xl font-black text-ink-950 tracking-tight">
-              Saved Wishlist
-            </h1>
+      <div className="max-w-5xl mx-auto space-y-6">
+        
+        {/* Header Banner - Neo-Brutalist Layout */}
+        <div className="bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-grid-pattern">
+          <div>
+            <div className="flex items-center space-x-2.5">
+              <div className="w-10 h-10 rounded-xl bg-brutal-pink border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center">
+                <Heart className="w-5 h-5 text-black fill-black" />
+              </div>
+              <div>
+                <h1 className="font-sans text-2xl sm:text-3xl font-black text-black tracking-tight">
+                  Saved Campus Wishlist
+                </h1>
+                <p className="text-xs font-mono font-bold text-ink-600 mt-0.5">
+                  MSRUAS Bookmarked Study Materials &amp; Gear
+                </p>
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-ink-600 mt-1">
-            Keep track of textbooks, calculators, and equipment you intend to purchase.
-          </p>
+
+          <span className="px-3.5 py-1.5 bg-brutal-yellow text-black text-xs font-mono font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000]">
+            {items.length} Saved Items
+          </span>
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-xs text-ink-500 font-serif">
-            Loading saved items...
+          <div className="py-16 text-center space-y-3">
+            <div className="w-10 h-10 border-4 border-black border-t-brutal-yellow rounded-full animate-spin mx-auto shadow-[2px_2px_0px_#000]" />
+            <p className="text-xs font-mono font-bold text-ink-600">Loading saved items...</p>
           </div>
         ) : items.length === 0 ? (
-          <div className="bg-paper-100 border border-ink-200 rounded-notice p-12 text-center space-y-3">
-            <Heart className="w-8 h-8 text-ink-300 mx-auto" />
-            <h3 className="font-serif text-base font-bold text-ink-950">
+          <div className="bg-white border-2 border-black rounded-3xl p-12 text-center space-y-4 shadow-brutal">
+            <div className="w-14 h-14 bg-brutal-pink border-2 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[3px_3px_0px_#000]">
+              <Heart className="w-7 h-7 text-black stroke-[2.5]" />
+            </div>
+            <h3 className="font-sans text-xl font-black text-black">
               Your Wishlist is Empty
             </h3>
-            <p className="text-xs text-ink-600 max-w-sm mx-auto">
+            <p className="text-xs font-semibold text-ink-600 max-w-sm mx-auto">
               Save interesting listings from the notice board by clicking the heart bookmark icon.
             </p>
             <Link
               href="/browse"
-              className="inline-block px-4 py-2 bg-ink-950 text-paper-50 text-xs font-serif font-bold rounded-notice shadow-sm"
+              className="inline-flex items-center space-x-2 px-6 py-2.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-xs rounded-xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] transition-all"
             >
-              Browse Notice Board
+              <span>Browse Notice Board</span>
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {items.map((item) => (
               <div
                 key={item.id}
-                className="bg-paper-100 border border-ink-200 rounded-notice overflow-hidden shadow-card p-3 flex flex-col justify-between space-y-3"
+                className="bg-white border-2 border-black rounded-2xl overflow-hidden shadow-brutal p-4 flex flex-col justify-between space-y-3 hover:shadow-brutal-lg hover:-translate-y-0.5 transition-all group"
               >
-                <div className="aspect-[4/3] bg-paper-200 rounded overflow-hidden">
+                <div className="aspect-[4/3] bg-paper-100 rounded-xl border-2 border-black overflow-hidden relative">
                   {item.thumbnail ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={item.thumbnail}
                       alt={item.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs text-ink-400">
+                    <div className="w-full h-full flex items-center justify-center text-xs font-mono font-bold text-black">
                       No Photo
                     </div>
                   )}
+                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-brutal-yellow text-black border border-black rounded-md text-[9px] font-mono font-black shadow-[1px_1px_0px_#000]">
+                    {item.category}
+                  </span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-mono text-ink-500 block uppercase">
-                    {item.category}
-                  </span>
-                  <h3 className="font-serif font-bold text-sm text-ink-950 line-clamp-1">
+                  <h3 className="font-sans font-black text-sm text-black line-clamp-1">
                     {item.title}
                   </h3>
-                  <div className="font-serif text-base font-black text-ink-950 mt-1">
+                  <div className="font-sans text-lg font-black text-black mt-1">
                     ₹{item.price?.toLocaleString("en-IN")}
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 pt-2 border-t border-ink-200">
+                <div className="flex items-center space-x-2 pt-2 border-t border-black/10">
                   <Link
                     href={`/listings/${item.listingId}`}
-                    className="flex-1 py-1.5 bg-ink-950 text-paper-50 text-xs font-serif font-bold rounded text-center hover:bg-ink-900 transition flex items-center justify-center space-x-1"
+                    className="flex-1 py-2 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] text-center transition flex items-center justify-center space-x-1.5 active:translate-x-[1px] active:translate-y-[1px]"
                   >
-                    <span>View</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <span>View Details</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
+
                   <button
                     onClick={() => removeItem(item.listingId)}
-                    className="p-1.5 text-ink-500 hover:text-admin-600 rounded hover:bg-paper-200 transition"
+                    className="p-2 bg-brutal-pink hover:bg-brutal-pink-dark text-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] transition active:translate-x-[1px] active:translate-y-[1px]"
                     title="Remove item"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 stroke-[2.5]" />
                   </button>
                 </div>
               </div>
@@ -147,4 +164,3 @@ export default function WishlistPage() {
     </RouteGuard>
   );
 }
-

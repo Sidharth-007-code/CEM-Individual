@@ -24,7 +24,7 @@ export default function PrivacyPolicyPage() {
           Campus Marketplace Privacy Policy
         </h1>
         <p className="text-xs text-ink-600">
-          Last revised: Academic Term CSC203B &bull; Applies to all @msruas.ac.in registered students.
+          Last revised: Academic Term &bull; Applies to all @msruas.ac.in registered students.
         </p>
       </div>
 
@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
             1. Institutional Scope &amp; Purpose
           </h2>
           <p>
-            Campus Marketplace is an individual academic software engineering assignment created for course <strong>CSC203B (Software Development Fundamentals)</strong> at <strong>M.S. Ramaiah University of Applied Sciences (MSRUAS)</strong>. The platform is designed solely to facilitate safe, peer-to-peer textbook, calculator, and study material exchanges among enrolled students without commercial intermediary fees or third-party advertising.
+            Campus Marketplace is the student exchange platform at <strong>M.S. Ramaiah University of Applied Sciences (MSRUAS)</strong>. The platform is designed solely to facilitate safe, peer-to-peer textbook, calculator, and study material exchanges among enrolled students without commercial intermediary fees or third-party advertising.
           </p>
         </section>
 
@@ -84,7 +84,7 @@ export default function PrivacyPolicyPage() {
 
         <section className="space-y-2">
           <h2 className="font-serif text-lg font-bold text-ink-950">
-            4. Inactivity Auto-Logout &amp; Account Protection
+            4. Inactivity Timeout &amp; Account Protection
           </h2>
           <p>
             To prevent unauthorized access when students leave university laboratory or library workstations unattended, the application implements an <strong>automatic 10-minute inactivity logout</strong>. If no mouse, touch, or keyboard activity is registered within 10 minutes, the session is cleared and redirected to the login screen.
@@ -105,7 +105,7 @@ export default function PrivacyPolicyPage() {
             6. Moderation, Reporting &amp; Inquiries
           </h2>
           <p>
-            Students can report inappropriate listings using the &quot;Report Listing&quot; button. Listings receiving 3 reports are automatically hidden from public search pending administrative review. For privacy inquiries or account deletion, contact the Dean of Student Affairs or course instructors for CSC203B.
+            Students can report inappropriate listings using the &quot;Report Listing&quot; button. Listings receiving 3 reports are automatically hidden from public search pending administrative review. For privacy inquiries or account deletion, contact the Dean of Student Affairs or campus marketplace administrators.
           </p>
         </section>
       </div>

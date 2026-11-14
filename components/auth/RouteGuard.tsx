@@ -56,7 +56,7 @@ export function RouteGuard({
           You cannot access marketplace listings or transactions.
         </p>
         <p className="text-xs text-ink-600">
-          Contact: Student Affairs / Dean&apos;s Office (CSC203B Administration).
+          Contact: Student Affairs / Dean&apos;s Office (Campus Administration).
         </p>
       </div>
     );

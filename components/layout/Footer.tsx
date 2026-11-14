@@ -39,9 +39,7 @@ export function Footer() {
             <span>&bull;</span>
             <span>M.S. Ramaiah University of Applied Sciences</span>
             <span>&bull;</span>
-            <span>CSC203B Project</span>
-            <span>&bull;</span>
-            <span className="text-admin-700 bg-paper-100 px-2 py-0.5 rounded border border-black/10">10-Min Session Auto-Logout Enabled</span>
+            <span className="text-black font-semibold">Student-to-Student Verified Portal</span>
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-1.5">
             <Link href="/browse" className="text-black hover:underline">Notice Board</Link>

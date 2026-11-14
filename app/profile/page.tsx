@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -33,6 +33,7 @@ import {
   Heart,
   Tag,
   ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 
 export default function ProfilePage() {
@@ -61,9 +62,12 @@ export default function ProfilePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  // Populate from current user profile
+  // Prevent background listener updates from erasing user's active typing
+  const isLoadedRef = useRef(false);
+
+  // Populate from current user profile once loaded
   useEffect(() => {
-    if (profile) {
+    if (profile && !isLoadedRef.current) {
       setName(profile.name || "");
       setPhone(profile.phone || "");
       setCourse(profile.course || POPULAR_DEPARTMENTS[0]);
@@ -73,8 +77,19 @@ export default function ProfilePage() {
       setPersonalEmail(profile.personalEmail || "");
       setPhotoURL(profile.photoURL || "");
       setAvatarId(profile.avatarId || "");
+      isLoadedRef.current = true;
     }
   }, [profile]);
+
+  // Auto-dismiss notification after 4 seconds
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   // Load activity metrics
   useEffect(() => {
@@ -134,49 +149,69 @@ export default function ProfilePage() {
     setPhotoURL(""); // Clear custom photo when preset selected
   };
 
-  // Form submission
+  // Form submission with auto-sanitizing validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     if (!name.trim()) {
-      setNotification({ type: "error", message: "Please provide your student display name." });
+      setNotification({ type: "error", message: "Please enter your student display name." });
       return;
     }
 
-    const phoneDigits = phone.replace(/\D/g, "");
-    if (phoneDigits.length > 0 && phoneDigits.length < 10) {
-      setNotification({ type: "error", message: "Please provide a valid 10-digit mobile number for call handovers." });
-      return;
+    // Cleanse phone number: extract digits
+    let sanitizedPhone = phone.trim();
+    const rawDigits = sanitizedPhone.replace(/\D/g, "");
+    if (rawDigits.length > 0) {
+      if (rawDigits.length === 10) {
+        sanitizedPhone = `+91 ${rawDigits}`;
+      } else if (rawDigits.length === 12 && rawDigits.startsWith("91")) {
+        sanitizedPhone = `+91 ${rawDigits.slice(2)}`;
+      } else if (rawDigits.length < 10) {
+        setNotification({
+          type: "error",
+          message: "Please enter a valid 10-digit mobile number for call handovers.",
+        });
+        return;
+      }
     }
 
     setSaving(true);
     setNotification(null);
 
-    const result = await syncUserProfile(user.uid, {
-      name,
-      phone,
-      course,
-      year,
-      campus,
-      bio,
-      personalEmail,
-      photoURL,
-      avatarId,
-    });
-
-    setSaving(false);
-
-    if (result.success) {
-      await refreshProfile();
-      setNotification({
-        type: "success",
-        message: `Profile updated successfully! Synchronized across ${result.updatedListingsCount} active campus listing(s).`,
+    try {
+      const result = await syncUserProfile(user.uid, {
+        name: name.trim(),
+        phone: sanitizedPhone,
+        course,
+        year,
+        campus,
+        bio: bio.trim(),
+        personalEmail: personalEmail.trim(),
+        photoURL,
+        avatarId,
       });
-    } else {
+
+      setSaving(false);
+
+      if (result.success) {
+        setPhone(sanitizedPhone);
+        await refreshProfile();
+        setNotification({
+          type: "success",
+          message: `Profile updated successfully! Synchronized across ${result.updatedListingsCount} active campus listing(s).`,
+        });
+      } else {
+        setNotification({
+          type: "error",
+          message: result.error || "Failed to save profile changes.",
+        });
+      }
+    } catch (err: any) {
+      setSaving(false);
       setNotification({
         type: "error",
-        message: result.error || "Failed to save profile changes.",
+        message: err.message || "An unexpected error occurred while saving profile.",
       });
     }
   };
@@ -192,49 +227,49 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="inline-flex items-center space-x-1.5 text-xs font-serif font-bold text-ink-700 hover:text-saffron-600 transition"
+            className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white border-2 border-black shadow-[2px_2px_0px_#000] text-xs font-mono font-black text-black hover:bg-paper-100 transition active:translate-x-[1px] active:translate-y-[1px]"
           >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Back to Dashboard</span>
+            <ChevronLeft className="w-4 h-4 stroke-[3]" />
+            <span>Dashboard</span>
           </Link>
-          <span className="text-xs font-mono text-ink-500">
-            Student Identity &bull; MSRUAS
+          <span className="text-xs font-mono font-bold text-ink-700 bg-paper-100 border border-black/20 px-3 py-1 rounded-xl">
+            Student Identity &bull; MSRUAS Verified
           </span>
         </div>
 
-        {/* Feedback Alert */}
+        {/* Feedback Alert Toast */}
         {notification && (
           <div
-            className={`p-4 rounded-notice border flex items-center justify-between text-xs animate-in fade-in duration-200 ${
+            className={`p-4 rounded-2xl border-2 border-black shadow-brutal flex items-center justify-between text-xs animate-in fade-in duration-200 ${
               notification.type === "success"
-                ? "bg-verifier-50 border-verifier-500 text-verifier-900"
-                : "bg-admin-50 border-admin-500 text-admin-900"
+                ? "bg-brutal-green text-black"
+                : "bg-brutal-pink text-black"
             }`}
           >
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 font-bold font-sans">
               {notification.type === "success" ? (
-                <ShieldCheck className="w-4 h-4 text-verifier-600 shrink-0" />
+                <ShieldCheck className="w-5 h-5 text-black shrink-0 stroke-[2.5]" />
               ) : (
-                <AlertCircle className="w-4 h-4 text-admin-600 shrink-0" />
+                <AlertCircle className="w-5 h-5 text-black shrink-0 stroke-[2.5]" />
               )}
               <span>{notification.message}</span>
             </div>
             <button
               onClick={() => setNotification(null)}
-              className="text-xs font-bold underline ml-2 opacity-80 hover:opacity-100"
+              className="text-xs font-black underline ml-2 opacity-80 hover:opacity-100"
             >
               Dismiss
             </button>
           </div>
         )}
 
-        {/* Header Hero Banner */}
-        <div className="bg-paper-100 border border-ink-200 rounded-notice p-6 sm:p-8 shadow-card relative overflow-hidden">
+        {/* Header Hero Banner - Matching Shreyas Adiga Neo-Brutalist Visual */}
+        <div className="bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal relative overflow-hidden bg-grid-pattern">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             
-            {/* Avatar Display */}
+            {/* Avatar Display with Yellow Ring & Online Badge */}
             <div className="relative group shrink-0">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-paper-50 shadow-md overflow-hidden bg-paper-300 flex items-center justify-center">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-black shadow-[3px_3px_0px_#000] overflow-hidden bg-brutal-yellow flex items-center justify-center">
                 {photoURL ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -243,21 +278,35 @@ export default function ProfilePage() {
                     className="w-full h-full object-cover"
                   />
                 ) : activePreset ? (
-                  <div className={`w-full h-full flex items-center justify-center text-4xl sm:text-5xl border ${activePreset.bg}`}>
+                  <div className="w-full h-full flex items-center justify-center text-4xl sm:text-5xl">
                     {activePreset.emoji}
                   </div>
                 ) : (
-                  <span className="font-serif text-4xl sm:text-5xl font-black text-ink-900">
-                    {name ? name.charAt(0).toUpperCase() : <User className="w-12 h-12 text-ink-400" />}
-                  </span>
+                  // Illustrated student avatar
+                  <svg viewBox="0 0 80 80" className="w-20 h-20 translate-y-1">
+                    <ellipse cx="40" cy="45" rx="22" ry="24" fill="#FFD0A8" stroke="#000000" strokeWidth="2.5" />
+                    <path
+                      d="M 20 40 Q 22 20 40 18 Q 58 20 60 40 Q 55 25 40 25 Q 25 25 20 40 Z"
+                      fill="#18181B"
+                      stroke="#000000"
+                      strokeWidth="2"
+                    />
+                    <circle cx="33" cy="42" r="2.5" fill="#000000" />
+                    <circle cx="47" cy="42" r="2.5" fill="#000000" />
+                    <path d="M 36 52 Q 40 56 44 52" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M 22 68 Q 40 60 58 68 L 62 80 L 18 80 Z" fill="#18181B" stroke="#000000" strokeWidth="2.5" />
+                  </svg>
                 )}
               </div>
+
+              {/* Online Green Badge */}
+              <div className="w-4 h-4 rounded-full bg-brutal-green border-2 border-black absolute top-1 right-1 shadow-[1px_1px_0px_#000]" />
 
               {/* Upload Overlay Button */}
               <label
                 htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 p-2 bg-saffron-500 hover:bg-saffron-600 text-white rounded-full shadow-md cursor-pointer transition transform active:scale-95"
-                title="Upload custom student photo"
+                className="absolute bottom-0 right-0 p-2 bg-brutal-yellow hover:bg-brutal-yellow-light text-black border-2 border-black rounded-full shadow-[2px_2px_0px_#000] cursor-pointer transition transform active:scale-95"
+                title="Upload real student photo"
               >
                 <Camera className="w-4 h-4" />
                 <input
@@ -274,36 +323,36 @@ export default function ProfilePage() {
             {/* Profile Overview */}
             <div className="flex-1 text-center sm:text-left space-y-2">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h1 className="font-serif text-2xl sm:text-3xl font-black text-ink-950 tracking-tight">
+                <h1 className="font-sans text-2xl sm:text-3xl font-black text-black tracking-tight">
                   {name || "Student Profile"}
                 </h1>
-                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-verifier-100 text-verifier-800 rounded-full border border-verifier-600/30">
+                <span className="px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider bg-brutal-green text-black rounded-full border border-black shadow-[1px_1px_0px_#000]">
                   {profile?.role || "Student"} &bull; Active
                 </span>
               </div>
 
-              <p className="text-xs text-ink-600 font-mono">
-                {profile?.email} &bull; MSRUAS Enrolled
+              <p className="text-xs text-ink-700 font-mono font-bold">
+                {profile?.email} &bull; MSRUAS Verified
               </p>
 
               {bio && (
-                <p className="text-xs text-ink-700 italic max-w-xl">
+                <p className="text-xs text-ink-800 font-semibold italic max-w-xl">
                   &ldquo;{bio}&rdquo;
                 </p>
               )}
 
-              <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-ink-600">
-                <span className="flex items-center space-x-1">
-                  <GraduationCap className="w-3.5 h-3.5 text-saffron-600" />
-                  <span>{course || "Course Unassigned"}</span>
+              <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs font-semibold text-black">
+                <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-paper-100 border border-black/30 rounded-xl">
+                  <GraduationCap className="w-3.5 h-3.5 text-black" />
+                  <span>{course || "Engineering"}</span>
                 </span>
-                <span className="flex items-center space-x-1">
-                  <MapPin className="w-3.5 h-3.5 text-ink-500" />
-                  <span>{campus || "Main Campus"}</span>
+                <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-paper-100 border border-black/30 rounded-xl">
+                  <MapPin className="w-3.5 h-3.5 text-black" />
+                  <span>{campus || "Gnanagangothri Campus"}</span>
                 </span>
                 {phone && (
-                  <span className="flex items-center space-x-1 font-mono">
-                    <Phone className="w-3.5 h-3.5 text-verifier-600" />
+                  <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-brutal-purple-light border border-black rounded-xl font-mono font-bold text-brutal-purple-dark shadow-[1.5px_1.5px_0px_#000]">
+                    <Phone className="w-3.5 h-3.5 text-brutal-purple-dark" />
                     <span>{phone}</span>
                   </span>
                 )}
@@ -311,23 +360,23 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Quick Stats Grid */}
-          <div className="mt-6 pt-6 border-t border-ink-200 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-paper-50 p-3 rounded-notice border border-ink-200 text-center">
-              <span className="block font-serif text-xl font-black text-ink-950">{listingsCount}</span>
-              <span className="text-[11px] text-ink-500 font-medium">Items Listed</span>
+          {/* Quick Stats Grid Bento */}
+          <div className="mt-6 pt-6 border-t-2 border-black/10 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white p-3.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000] text-center">
+              <span className="block font-sans text-2xl font-black text-black">{listingsCount}</span>
+              <span className="text-[11px] font-mono font-bold text-ink-600 uppercase">Items Listed</span>
             </div>
-            <div className="bg-paper-50 p-3 rounded-notice border border-ink-200 text-center">
-              <span className="block font-serif text-xl font-black text-verifier-700">{soldCount}</span>
-              <span className="text-[11px] text-ink-500 font-medium">Items Sold</span>
+            <div className="bg-brutal-green p-3.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000] text-center">
+              <span className="block font-sans text-2xl font-black text-black">{soldCount}</span>
+              <span className="text-[11px] font-mono font-bold text-ink-900 uppercase">Items Sold</span>
             </div>
-            <div className="bg-paper-50 p-3 rounded-notice border border-ink-200 text-center">
-              <span className="block font-serif text-xl font-black text-ink-950">{ordersCount}</span>
-              <span className="text-[11px] text-ink-500 font-medium">Orders Made</span>
+            <div className="bg-brutal-purple-light p-3.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000] text-center">
+              <span className="block font-sans text-2xl font-black text-black">{ordersCount}</span>
+              <span className="text-[11px] font-mono font-bold text-brutal-purple-dark uppercase">Orders Made</span>
             </div>
-            <div className="bg-paper-50 p-3 rounded-notice border border-ink-200 text-center">
-              <span className="block font-serif text-xl font-black text-saffron-600">{wishlistCount}</span>
-              <span className="text-[11px] text-ink-500 font-medium">Saved Items</span>
+            <div className="bg-brutal-yellow p-3.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000] text-center">
+              <span className="block font-sans text-2xl font-black text-black">{wishlistCount}</span>
+              <span className="text-[11px] font-mono font-bold text-ink-900 uppercase">Saved Items</span>
             </div>
           </div>
         </div>
@@ -336,21 +385,21 @@ export default function ProfilePage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Avatar Preset & Customization */}
-          <div className="bg-paper-100 border border-ink-200 rounded-notice p-6 shadow-card space-y-4">
-            <div className="flex items-center justify-between border-b border-ink-200 pb-3">
+          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
+            <div className="flex items-center justify-between border-b-2 border-black/10 pb-3">
               <div>
-                <h2 className="font-serif text-base font-bold text-ink-950">
-                  Campus Identity & Avatar
+                <h2 className="font-sans text-base font-black text-black">
+                  Campus Identity &amp; Avatar
                 </h2>
-                <p className="text-xs text-ink-600">
-                  Select a campus avatar emoji or upload your real student photo.
+                <p className="text-xs text-ink-600 font-medium">
+                  Select a campus emoji preset or upload your photo for peer trust.
                 </p>
               </div>
               {photoURL && (
                 <button
                   type="button"
                   onClick={() => setPhotoURL("")}
-                  className="text-xs font-serif font-bold text-admin-600 hover:text-admin-700 underline"
+                  className="text-xs font-mono font-bold text-admin-700 hover:text-admin-800 underline"
                 >
                   Remove Custom Photo
                 </button>
@@ -366,19 +415,19 @@ export default function ProfilePage() {
                     key={preset.id}
                     type="button"
                     onClick={() => handleSelectPreset(preset.id)}
-                    className={`p-3 rounded-notice border flex flex-col items-center justify-center transition ${
+                    className={`p-3 rounded-2xl border-2 border-black flex flex-col items-center justify-center transition-all ${
                       isSelected
-                        ? "border-saffron-500 bg-saffron-50 shadow-sm ring-2 ring-saffron-400"
-                        : "border-ink-200 bg-paper-50 hover:bg-paper-200"
+                        ? "bg-brutal-yellow shadow-[3px_3px_0px_#000] -translate-y-1"
+                        : "bg-paper-50 hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
                     }`}
                   >
                     <span className="text-2xl mb-1">{preset.emoji}</span>
-                    <span className="text-[9px] font-mono text-ink-700 text-center truncate w-full">
+                    <span className="text-[9px] font-mono font-bold text-black text-center truncate w-full">
                       {preset.label}
                     </span>
                     {isSelected && (
-                      <span className="mt-1 w-3.5 h-3.5 bg-saffron-500 text-white rounded-full flex items-center justify-center text-[9px]">
-                        <Check className="w-2.5 h-2.5" />
+                      <span className="mt-1 w-4 h-4 bg-black text-white rounded-full flex items-center justify-center text-[9px]">
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
                       </span>
                     )}
                   </button>
@@ -388,20 +437,20 @@ export default function ProfilePage() {
           </div>
 
           {/* Academic & Personal Information */}
-          <div className="bg-paper-100 border border-ink-200 rounded-notice p-6 shadow-card space-y-4">
-            <div className="border-b border-ink-200 pb-3">
-              <h2 className="font-serif text-base font-bold text-ink-950">
-                Academic & Student Information
+          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
+            <div className="border-b-2 border-black/10 pb-3">
+              <h2 className="font-sans text-base font-black text-black">
+                Academic &amp; Student Information
               </h2>
-              <p className="text-xs text-ink-600">
-                Verified university details displayed to buyers and on official handover invoices.
+              <p className="text-xs text-ink-600 font-medium">
+                Verified university details displayed to peers and on official handover invoices.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
                   Full Name / Display Name *
                 </label>
                 <input
@@ -409,20 +458,20 @@ export default function ProfilePage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs font-medium text-ink-950 focus:outline-none focus:border-saffron-500"
+                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-semibold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
                   placeholder="e.g. Aarav Sharma"
                 />
               </div>
 
               {/* Department / Course */}
               <div>
-                <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
-                  Faculty & Department *
+                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                  Faculty &amp; Department *
                 </label>
                 <select
                   value={course}
                   onChange={(e) => setCourse(e.target.value)}
-                  className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs font-medium text-ink-950 focus:outline-none focus:border-saffron-500"
+                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
                 >
                   {POPULAR_DEPARTMENTS.map((dept) => (
                     <option key={dept} value={dept}>
@@ -434,13 +483,13 @@ export default function ProfilePage() {
 
               {/* Year of Study */}
               <div>
-                <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
                   Academic Year *
                 </label>
                 <select
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
-                  className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs font-medium text-ink-950 focus:outline-none focus:border-saffron-500"
+                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
                 >
                   {STUDY_YEARS.map((y) => (
                     <option key={y} value={y}>
@@ -452,13 +501,13 @@ export default function ProfilePage() {
 
               {/* Campus / Hostel Location */}
               <div>
-                <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
                   Campus / Hostel Residence *
                 </label>
                 <select
                   value={campus}
                   onChange={(e) => setCampus(e.target.value)}
-                  className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs font-medium text-ink-950 focus:outline-none focus:border-saffron-500"
+                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
                 >
                   {CAMPUS_LOCATIONS.map((loc) => (
                     <option key={loc} value={loc}>
@@ -470,46 +519,38 @@ export default function ProfilePage() {
 
               {/* Contact Phone (for Call links) */}
               <div>
-                <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
                   Contact Mobile Number (for Call Links) *
                 </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-mono text-ink-500">
-                    +91
-                  </span>
-                  <input
-                    type="tel"
-                    value={phone.replace(/^\+91\s*/, "")}
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                      setPhone(digits ? `+91 ${digits}` : "");
-                    }}
-                    className="w-full pl-12 pr-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs font-mono text-ink-950 focus:outline-none focus:border-saffron-500"
-                    placeholder="9876543210"
-                  />
-                </div>
-                <span className="text-[10px] text-ink-500 mt-0.5 block">
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
+                  placeholder="+91 9876543210"
+                />
+                <span className="text-[10px] text-ink-600 font-mono mt-1 block">
                   Enables instant peer calls from the &quot;Call Seller&quot; button on your listings.
                 </span>
               </div>
 
               {/* Personal Email */}
               <div>
-                <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
                   Personal Alternate Email (Optional)
                 </label>
                 <input
                   type="email"
                   value={personalEmail}
                   onChange={(e) => setPersonalEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs font-medium text-ink-950 focus:outline-none focus:border-saffron-500"
+                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-semibold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
                   placeholder="personal.email@gmail.com"
                 />
               </div>
 
               {/* Bio */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
                   Student Bio / Seller Introduction
                 </label>
                 <textarea
@@ -517,87 +558,39 @@ export default function ProfilePage() {
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   maxLength={160}
-                  className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs font-medium text-ink-950 focus:outline-none focus:border-saffron-500"
+                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-medium text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
                   placeholder="e.g. 4th year CSE student. Selling previous semester engineering textbooks, lab coats, and electronics in mint condition."
                 />
-                <span className="text-[10px] text-ink-400 text-right block">
+                <span className="text-[10px] text-ink-600 font-mono text-right block mt-1">
                   {bio.length}/160 characters
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Live Peer Preview Box */}
-          <div className="bg-paper-100 border border-ink-200 rounded-notice p-6 shadow-card space-y-3">
-            <h3 className="font-serif text-xs font-bold text-ink-600 uppercase tracking-wider flex items-center space-x-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-saffron-500" />
-              <span>Live Peer Preview (How students see you on listings & chats)</span>
-            </h3>
-
-            <div className="p-4 bg-paper-50 border border-ink-200 rounded-notice flex items-center justify-between gap-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-11 h-11 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center overflow-hidden shrink-0">
-                  {photoURL ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photoURL} alt="Preview" className="w-full h-full object-cover" />
-                  ) : activePreset ? (
-                    <span className="text-xl">{activePreset.emoji}</span>
-                  ) : (
-                    <span className="font-serif font-bold text-base text-ink-900">
-                      {name ? name.charAt(0).toUpperCase() : "S"}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-serif font-bold text-xs text-ink-950">
-                      {name || "Verified Student"}
-                    </span>
-                    <span className="px-1.5 py-0.2 bg-verifier-100 text-verifier-800 text-[9px] font-mono rounded border border-verifier-600/30">
-                      Verified
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-ink-600 block">
-                    {course || "B.Tech CSE"} &bull; {year || "4th Year"}
-                  </span>
-                  <span className="text-[10px] text-ink-400 font-mono block">
-                    {campus || "Gnanagangothri Campus"}
-                  </span>
-                </div>
-              </div>
-
-              {phone && (
-                <div className="px-3 py-1.5 bg-paper-200 border border-ink-300 rounded text-xs font-serif font-bold text-ink-800 flex items-center space-x-1 shrink-0">
-                  <Phone className="w-3.5 h-3.5 text-verifier-600" />
-                  <span>Call Link Ready</span>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Action Button Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-ink-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
             <Link
               href="/dashboard"
-              className="text-xs font-serif font-bold text-ink-600 hover:text-ink-900"
+              className="text-xs font-mono font-bold text-ink-700 hover:text-black underline underline-offset-4"
             >
-              Cancel & Return to Dashboard
+              Cancel &amp; Return to Dashboard
             </Link>
 
             <button
               type="submit"
               disabled={saving}
-              className="w-full sm:w-auto px-6 py-2.5 bg-saffron-500 hover:bg-saffron-600 text-white font-serif font-bold text-xs rounded-notice shadow-sm transition flex items-center justify-center space-x-2 disabled:opacity-50"
+              className="w-full sm:w-auto px-8 py-3 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-sm rounded-2xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
             >
               {saving ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-black" />
                   <span>Synchronizing Across Campus...</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Save & Synchronize Profile</span>
+                  <span>Save &amp; Synchronize Profile</span>
                 </>
               )}
             </button>

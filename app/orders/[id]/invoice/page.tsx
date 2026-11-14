@@ -100,7 +100,7 @@ export default function OrderInvoicePage() {
                   CAMPUS<span className="text-saffron-600 font-sans font-light">MARKET</span>
                 </span>
                 <span className="text-[10px] font-mono px-1.5 py-0.5 bg-paper-200 text-ink-800 rounded border border-ink-300">
-                  CSC203B
+                  RUAS Verified
                 </span>
               </div>
               <p className="text-xs text-ink-600 mt-1">

@@ -63,7 +63,7 @@ export default function SecurityPolicyPage() {
         <div className="bg-paper-100 border border-ink-200 rounded-notice p-5 space-y-2.5 shadow-card">
           <div className="flex items-center space-x-2 text-ink-950 font-serif font-bold text-sm">
             <ShieldAlert className="w-4 h-4 text-admin-600" />
-            <span>10-Minute Session Auto-Logout</span>
+            <span>Campus Terminal Session Protection</span>
           </div>
           <p className="text-xs text-ink-700 leading-relaxed">
             For security on shared university library and computer lab terminals, sessions automatically terminate after 10 minutes of user inactivity, clearing cached credentials and redirecting to login.

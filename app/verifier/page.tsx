@@ -6,7 +6,6 @@ import { RouteGuard } from "@/components/auth/RouteGuard";
 import { collection, query, where, onSnapshot, doc, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Listing } from "@/types/listing";
-import { MockBadge } from "@/components/ui/MockBadge";
 import { validateListingAI } from "@/lib/ai";
 import {
   ShieldCheck,
@@ -18,6 +17,8 @@ import {
   MessageSquare,
   Clock,
   Sparkles,
+  ChevronRight,
+  ArrowRight,
 } from "lucide-react";
 
 export default function VerifierQueuePage() {
@@ -93,7 +94,6 @@ export default function VerifierQueuePage() {
 
       setFeedbackMsg(`Listing successfully marked as ${decision}.`);
       setActionNote("");
-      // Select next pending item if available
       const remaining = pendingListings.filter((l) => l.id !== listingId);
       setSelectedListing(remaining[0] || null);
     } catch (err: any) {
@@ -107,57 +107,60 @@ export default function VerifierQueuePage() {
     <RouteGuard allowedRoles={["verifier", "admin"]}>
       <div className="space-y-6">
         
-        {/* Header Banner */}
-        <div className="bg-verifier-50 border border-verifier-600/30 rounded-notice p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        {/* Header Banner - Neo-Brutalist Layout */}
+        <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-grid-pattern">
           <div>
-            <div className="flex items-center space-x-2">
-              <span className="w-8 h-8 rounded-full bg-verifier-600 text-white flex items-center justify-center font-bold text-sm">
-                <ShieldCheck className="w-5 h-5" />
+            <div className="flex items-center space-x-2.5">
+              <span className="w-10 h-10 rounded-xl bg-brutal-green text-black border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center font-bold text-sm">
+                <ShieldCheck className="w-6 h-6 stroke-[2.5]" />
               </span>
-              <h1 className="font-serif text-2xl font-black text-verifier-900 tracking-tight">
-                Campus Verification Queue
-              </h1>
-              <MockBadge label="Human Review Gate" />
+              <div>
+                <h1 className="font-sans text-2xl sm:text-3xl font-black text-black tracking-tight">
+                  Campus Verification Queue
+                </h1>
+                <p className="text-xs font-mono font-bold text-ink-600 mt-0.5">
+                  MSRUAS Human Quality &amp; Safety Review Gate
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-verifier-700 mt-1">
-              Course CSC203B verification portal. Mandates human quality confirmation before any item is displayed on the student notice board.
-            </p>
           </div>
 
           <div className="flex items-center space-x-3">
-            <span className="px-3 py-1 bg-verifier-100 text-verifier-800 text-xs font-mono font-bold rounded-full border border-verifier-600/40">
-              {pendingListings.length} Pending Review
+            <span className="px-3.5 py-1.5 bg-brutal-yellow text-black text-xs font-mono font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000]">
+              {pendingListings.length} Pending Moderation
             </span>
           </div>
         </div>
 
         {feedbackMsg && (
-          <div className="p-3 bg-verifier-100 text-verifier-900 text-xs font-medium rounded-notice border border-verifier-600/30">
+          <div className="p-3.5 bg-brutal-green border-2 border-black rounded-2xl text-black font-bold text-xs shadow-[2px_2px_0px_#000]">
             {feedbackMsg}
           </div>
         )}
 
         {pendingListings.length === 0 ? (
-          <div className="bg-paper-100 border border-ink-200 rounded-notice p-12 text-center space-y-3">
-            <CheckCircle className="w-10 h-10 mx-auto text-verifier-600" />
-            <h3 className="font-serif text-lg font-bold text-ink-950">
-              All Listings Clear
+          <div className="bg-white border-2 border-black rounded-3xl p-12 text-center space-y-3 shadow-brutal">
+            <div className="w-14 h-14 bg-brutal-green border-2 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[3px_3px_0px_#000]">
+              <CheckCircle className="w-7 h-7 text-black stroke-[2.5]" />
+            </div>
+            <h3 className="font-sans text-xl font-black text-black">
+              All Campus Listings Clear
             </h3>
-            <p className="text-xs text-ink-600 max-w-sm mx-auto">
-              There are no pending submissions awaiting verifier moderation. All active items have been reviewed.
+            <p className="text-xs font-semibold text-ink-600 max-w-sm mx-auto">
+              There are no pending submissions awaiting moderation. All student notice board items are up to date!
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Left Queue List (5 Cols) */}
-            <div className="lg:col-span-5 bg-paper-100 border border-ink-200 rounded-notice overflow-hidden shadow-card flex flex-col">
-              <div className="p-3 border-b border-ink-200 bg-paper-200/50 flex justify-between items-center text-xs font-serif font-bold text-ink-800">
+            <div className="lg:col-span-5 bg-white border-2 border-black rounded-3xl overflow-hidden shadow-brutal flex flex-col">
+              <div className="p-4 border-b-2 border-black/10 bg-paper-100 flex justify-between items-center text-xs font-mono font-black text-black">
                 <span>Items Awaiting Decision</span>
-                <span className="font-mono text-ink-500">{pendingListings.length} total</span>
+                <span>{pendingListings.length} total</span>
               </div>
 
-              <div className="divide-y divide-ink-200 overflow-y-auto max-h-[600px]">
+              <div className="divide-y-2 divide-black/10 overflow-y-auto max-h-[640px]">
                 {pendingListings.map((listing) => {
                   const isSelected = selectedListing?.id === listing.id;
                   return (
@@ -167,8 +170,10 @@ export default function VerifierQueuePage() {
                         setSelectedListing(listing);
                         setActionNote("");
                       }}
-                      className={`w-full p-4 text-left flex items-start space-x-3 transition ${
-                        isSelected ? "bg-verifier-50 border-l-4 border-verifier-600" : "hover:bg-paper-50"
+                      className={`w-full p-4 text-left flex items-start space-x-3.5 transition ${
+                        isSelected
+                          ? "bg-brutal-yellow/30 border-l-4 border-black"
+                          : "hover:bg-paper-50"
                       }`}
                     >
                       {listing.thumbnail ? (
@@ -176,24 +181,24 @@ export default function VerifierQueuePage() {
                         <img
                           src={listing.thumbnail}
                           alt=""
-                          className="w-14 h-14 rounded object-cover border border-ink-200 flex-shrink-0"
+                          className="w-16 h-16 rounded-xl object-cover border-2 border-black shadow-[2px_2px_0px_#000] flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-14 h-14 rounded bg-paper-300 flex items-center justify-center text-ink-500 flex-shrink-0 text-xs">
+                        <div className="w-16 h-16 rounded-xl bg-paper-200 border-2 border-black flex items-center justify-center text-black flex-shrink-0 text-xs font-mono font-bold">
                           No Pic
                         </div>
                       )}
 
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-serif font-bold text-xs text-ink-950 truncate">
+                        <h4 className="font-sans font-black text-xs text-black truncate">
                           {listing.title}
                         </h4>
-                        <div className="flex items-center space-x-2 text-[11px] text-ink-600 mt-0.5">
-                          <span className="font-mono font-bold text-saffron-700">₹{listing.price}</span>
+                        <div className="flex items-center space-x-2 text-[11px] font-mono font-bold text-ink-700 mt-1">
+                          <span className="text-black font-black">₹{listing.price}</span>
                           <span>&bull;</span>
                           <span className="truncate">{listing.category}</span>
                         </div>
-                        <p className="text-[10px] text-ink-500 mt-1">
+                        <p className="text-[10px] font-mono text-ink-500 mt-1">
                           Seller: {listing.sellerName || "Student"}
                         </p>
                       </div>
@@ -206,42 +211,42 @@ export default function VerifierQueuePage() {
             {/* Right Inspection & Decision Panel (7 Cols) */}
             <div className="lg:col-span-7 space-y-4">
               {selectedListing ? (
-                <div className="bg-paper-100 border border-ink-200 rounded-notice p-6 shadow-card space-y-5">
+                <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-5">
                   
                   {/* Top Bar */}
-                  <div className="flex justify-between items-start border-b border-ink-200 pb-4">
+                  <div className="flex justify-between items-start border-b-2 border-black/10 pb-4">
                     <div>
-                      <span className="px-2 py-0.5 text-[10px] font-mono uppercase bg-paper-200 text-ink-700 rounded border border-ink-300">
+                      <span className="px-2.5 py-1 text-[10px] font-mono font-black uppercase bg-brutal-purple-light text-brutal-purple-dark rounded-lg border border-black shadow-[1px_1px_0px_#000]">
                         {selectedListing.category} &bull; {selectedListing.condition}
                       </span>
-                      <h2 className="font-serif text-xl font-black text-ink-950 mt-1">
+                      <h2 className="font-sans text-xl font-black text-black mt-2">
                         {selectedListing.title}
                       </h2>
-                      <p className="text-xs text-ink-600 mt-0.5">
-                        Seller: <strong>{selectedListing.sellerName}</strong> &bull; Contact: {selectedListing.sellerPhone || "None provided"}
+                      <p className="text-xs font-mono text-ink-600 mt-0.5">
+                        Seller: <strong className="text-black">{selectedListing.sellerName}</strong> &bull; Contact: {selectedListing.sellerPhone || "None provided"}
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <div className="font-serif text-2xl font-black text-saffron-600">
+                      <div className="font-sans text-3xl font-black text-black">
                         ₹{selectedListing.price}
                       </div>
-                      <span className="text-[10px] text-ink-500 font-mono">Asking Price</span>
+                      <span className="text-[10px] text-ink-600 font-mono font-bold">Asking Price</span>
                     </div>
                   </div>
 
-                  {/* Image Preview Carousel */}
+                  {/* Primary Thumbnail Preview */}
                   {selectedListing.thumbnail && (
                     <div>
-                      <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-2">
-                        Uploaded Proof Photographs
+                      <label className="block text-xs font-mono font-black text-black uppercase tracking-wider mb-2">
+                        Uploaded Proof Photograph
                       </label>
-                      <div className="flex space-x-3 overflow-x-auto pb-2">
+                      <div className="w-48 h-48 rounded-2xl overflow-hidden border-2 border-black shadow-brutal">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={selectedListing.thumbnail}
                           alt="Primary"
-                          className="w-48 h-48 object-cover rounded-notice border border-ink-300 flex-shrink-0"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                     </div>
@@ -249,10 +254,10 @@ export default function VerifierQueuePage() {
 
                   {/* Description */}
                   <div>
-                    <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-mono font-black text-black uppercase tracking-wider mb-1">
                       Student Description
                     </label>
-                    <p className="text-xs text-ink-800 bg-paper-50 p-3 rounded border border-ink-200 leading-relaxed whitespace-pre-wrap">
+                    <p className="text-xs font-semibold text-black bg-paper-50 p-3.5 rounded-xl border-2 border-black leading-relaxed whitespace-pre-wrap">
                       {selectedListing.description}
                     </p>
                   </div>
@@ -271,103 +276,92 @@ export default function VerifierQueuePage() {
                       });
 
                     return (
-                      <div className="bg-paper-200/70 border border-ink-300 rounded p-4 text-xs space-y-3 shadow-inner">
-                        <div className="flex items-center justify-between border-b border-ink-300 pb-2">
-                          <span className="font-serif font-bold text-ink-950 flex items-center space-x-1.5">
-                            <Sparkles className="w-3.5 h-3.5 text-saffron-600" />
+                      <div className="bg-paper-50 border-2 border-black rounded-2xl p-4 text-xs space-y-3 shadow-[2px_2px_0px_#000]">
+                        <div className="flex items-center justify-between border-b border-black/15 pb-2">
+                          <span className="font-sans font-black text-black flex items-center space-x-1.5">
+                            <Sparkles className="w-4 h-4 text-brutal-purple" />
                             <span>AI Quality &amp; Risk Assessment</span>
                           </span>
-                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold border ${
+                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-black border border-black ${
                             aiEval.overallPassed
-                              ? "bg-verifier-100 text-verifier-800 border-verifier-400"
-                              : "bg-admin-100 text-admin-800 border-admin-400"
+                              ? "bg-brutal-green text-black"
+                              : "bg-brutal-pink text-black"
                           }`}>
-                            AI Advice: {aiEval.verifierAdvice.recommendedAction} ({aiEval.verifierAdvice.confidenceScore}% confidence)
+                            AI Advice: {aiEval.verifierAdvice.recommendedAction} ({aiEval.verifierAdvice.confidenceScore}% conf)
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <div className="p-2 bg-paper-50 rounded border border-ink-200">
-                            <span className="text-[10px] text-ink-500 font-mono block">Safety &amp; Compliance</span>
-                            <span className={`font-bold text-xs ${aiEval.safetyCheck.status === "CLEARED" ? "text-verifier-700" : "text-admin-600"}`}>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                          <div className="p-2.5 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000]">
+                            <span className="text-[10px] text-ink-600 font-mono block">Safety &amp; Compliance</span>
+                            <span className={`font-black text-xs ${aiEval.safetyCheck.status === "CLEARED" ? "text-verifier-800" : "text-admin-800"}`}>
                               {aiEval.safetyCheck.status === "CLEARED" ? "Cleared (Safe) ✅" : "Flagged ⚠️"}
                             </span>
                           </div>
-                          <div className="p-2 bg-paper-50 rounded border border-ink-200">
-                            <span className="text-[10px] text-ink-500 font-mono block">Fair Market Range</span>
-                            <span className="font-bold text-xs text-ink-900">
+                          <div className="p-2.5 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000]">
+                            <span className="text-[10px] text-ink-600 font-mono block">Fair Market Range</span>
+                            <span className="font-black text-xs text-black">
                               ₹{aiEval.priceEval.estimatedMin} - ₹{aiEval.priceEval.estimatedMax}
                             </span>
                           </div>
-                          <div className="p-2 bg-paper-50 rounded border border-ink-200">
-                            <span className="text-[10px] text-ink-500 font-mono block">Quality Grade</span>
-                            <span className="font-bold text-xs text-ink-900">
+                          <div className="p-2.5 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000]">
+                            <span className="text-[10px] text-ink-600 font-mono block">Quality Grade</span>
+                            <span className="font-black text-xs text-black">
                               Grade {aiEval.qualityCheck.grade} ({aiEval.qualityCheck.qualityScore}/100)
                             </span>
                           </div>
                         </div>
 
                         {aiEval.verifierAdvice.summaryBulletPoints.length > 0 && (
-                          <ul className="list-disc list-inside text-ink-700 text-[11px] space-y-1">
+                          <ul className="list-disc list-inside text-ink-700 text-[11px] space-y-1 font-medium">
                             {aiEval.verifierAdvice.summaryBulletPoints.map((pt, i) => (
                               <li key={i}>{pt}</li>
                             ))}
                           </ul>
                         )}
-
-                        <div className="flex justify-end pt-1">
-                          <button
-                            type="button"
-                            onClick={() => setActionNote(`AI Verified: ${aiEval.priceEval.ratingLabel}. Approved for notice board.`)}
-                            className="text-[11px] font-serif font-bold text-saffron-700 hover:text-saffron-900 underline flex items-center space-x-1"
-                          >
-                            <Sparkles className="w-3 h-3" />
-                            <span>Pre-fill remark from AI Summary</span>
-                          </button>
-                        </div>
                       </div>
                     );
                   })()}
 
                   {/* Decision Controls */}
-                  <div className="border-t border-ink-200 pt-4 space-y-3">
-                    <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider">
-                      Verifier Remark / Feedback Note (Visible to Student)
+                  <div className="border-t-2 border-black/10 pt-4 space-y-3">
+                    <label className="block text-xs font-mono font-black text-black uppercase tracking-wider">
+                      Verifier Remark / Feedback Note (Sent to Student)
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Verified genuine edition. Fair pricing for condition."
+                      placeholder="e.g. Verified genuine edition. Fair pricing for syllabus condition."
                       value={actionNote}
                       onChange={(e) => setActionNote(e.target.value)}
-                      className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs text-ink-900 focus:outline-none focus:border-verifier-600"
+                      className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-medium text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000]"
                     />
 
                     <div className="grid grid-cols-3 gap-3 pt-2">
                       <button
                         onClick={() => handleDecision(selectedListing.id, "available")}
                         disabled={processingId === selectedListing.id}
-                        className="py-2.5 bg-verifier-600 hover:bg-verifier-700 text-white text-xs font-serif font-bold rounded-notice shadow-sm transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                        className="py-3 bg-brutal-green hover:bg-brutal-green-dark text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
                       >
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Approve Listing</span>
+                        <CheckCircle className="w-4 h-4 stroke-[2.5]" />
+                        <span>Approve</span>
                       </button>
 
                       <button
                         onClick={() => handleDecision(selectedListing.id, "needs_changes")}
                         disabled={processingId === selectedListing.id}
-                        className="py-2.5 bg-saffron-500 hover:bg-saffron-600 text-white text-xs font-serif font-bold rounded-notice shadow-sm transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                        className="py-3 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
                       >
-                        <HelpCircle className="w-4 h-4" />
-                        <span>Request Changes</span>
+                        <HelpCircle className="w-4 h-4 stroke-[2.5]" />
+                        <span>Needs Changes</span>
                       </button>
 
                       <button
                         onClick={() => handleDecision(selectedListing.id, "rejected")}
                         disabled={processingId === selectedListing.id}
-                        className="py-2.5 bg-admin-600 hover:bg-admin-700 text-white text-xs font-serif font-bold rounded-notice shadow-sm transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                        className="py-3 bg-brutal-pink hover:bg-brutal-pink-dark text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
                       >
-                        <XCircle className="w-4 h-4" />
-                        <span>Reject Listing</span>
+                        <XCircle className="w-4 h-4 stroke-[2.5]" />
+                        <span>Reject</span>
                       </button>
                     </div>
                   </div>
@@ -380,4 +374,3 @@ export default function VerifierQueuePage() {
     </RouteGuard>
   );
 }
-

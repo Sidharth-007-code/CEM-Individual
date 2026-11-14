@@ -212,7 +212,7 @@ function LoginForm() {
             Quick Demo Accounts (1-Click Fill)
           </span>
           <span className="text-[10px] font-mono font-bold text-ink-600 bg-paper-100 px-2 py-0.5 rounded border border-black/20">
-            CSC203B
+            RUAS Net
           </span>
         </div>
 
