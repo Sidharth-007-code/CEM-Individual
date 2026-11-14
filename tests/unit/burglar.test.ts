@@ -88,7 +88,8 @@ describe("Burglar Persona - Security Threat Model & Penetration Defense", () => 
       const listing = {
         title: "Mid-Term Exam Solved Answer Keys & Question Paper Leak",
         description: "Exact leaked question paper and answers for 3rd semester exam.",
-        category: "Textbooks & Notes",
+        category: "Textbooks & Notes" as const,
+        condition: "fair" as const,
         price: 500,
         imageCount: 3,
       };
@@ -103,7 +104,8 @@ describe("Burglar Persona - Security Threat Model & Penetration Defense", () => 
       const listing = {
         title: "Pocket Survival Knife Tactical Folding Blade",
         description: "Sharp steel blade for self-defense in hostel.",
-        category: "Hostel & Room Essentials",
+        category: "Hostel & Room Essentials" as const,
+        condition: "new" as const,
         price: 800,
         imageCount: 3,
       };
@@ -118,7 +120,8 @@ describe("Burglar Persona - Security Threat Model & Penetration Defense", () => 
       const listing = {
         title: "Disposable Vape Pod 5000 Puffs Nicotine",
         description: "Blueberry flavor vape pod, brand new sealed box.",
-        category: "Hostel & Room Essentials",
+        category: "Hostel & Room Essentials" as const,
+        condition: "new" as const,
         price: 1200,
         imageCount: 3,
       };

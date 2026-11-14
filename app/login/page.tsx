@@ -29,10 +29,17 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail.endsWith(`@msruas.ac.in`) && !trimmedEmail.endsWith(`.msruas.ac.in`)) {
+      setError("Please use your official university email ending in @msruas.ac.in");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await signIn(email.trim(), password);
+      await signIn(trimmedEmail, password);
       router.push(redirectUrl);
     } catch (err: any) {
       const code = err.code;

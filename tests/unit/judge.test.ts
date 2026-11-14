@@ -79,8 +79,8 @@ describe("The Judge Persona - Comprehensive Project Rubric & Compliance Evaluati
       const cleanItem = {
         title: "Casio fx-991EX Scientific Calculator",
         description: "Used calculator in great shape for engineering exams.",
-        category: "Electronics & Calculators",
-        condition: "like_new",
+        category: "Electronics & Calculators" as const,
+        condition: "like_new" as const,
         price: 850,
         imageCount: 3,
       };
@@ -89,8 +89,8 @@ describe("The Judge Persona - Comprehensive Project Rubric & Compliance Evaluati
       const prohibitedItem = {
         title: "Leaked Final Examination Question Paper with Solutions",
         description: "Internal university exam leaked questions for 4th sem.",
-        category: "Textbooks & Notes",
-        condition: "new",
+        category: "Textbooks & Notes" as const,
+        condition: "new" as const,
         price: 1000,
         imageCount: 3,
       };
@@ -117,8 +117,8 @@ describe("The Judge Persona - Comprehensive Project Rubric & Compliance Evaluati
       const roughDraft = {
         title: "drafter",
         notes: "omega mini drafter for graphics lab works good",
-        category: "Miscellaneous",
-        condition: "good",
+        category: "Miscellaneous" as const,
+        condition: "good" as const,
         price: 0,
       };
 

@@ -115,8 +115,8 @@ describe("The Neat Freak Persona - Data Hygiene & Brand Purity", () => {
       const draft = {
         title: "Drafter",
         notes: "mechanical drawing board scale clamp",
-        category: "Miscellaneous",
-        condition: "good",
+        category: "Miscellaneous" as const,
+        condition: "good" as const,
         price: 300,
       };
 

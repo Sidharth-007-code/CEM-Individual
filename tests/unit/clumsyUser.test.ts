@@ -156,8 +156,8 @@ describe("Clumsy User Persona - Resilience & Graceful Error Tolerance", () => {
       const clumsyDraft = {
         title: "calc",
         notes: "casio 991ex clswiz good for sem 1 works fine solar display intact",
-        category: "Stationery & Drafting", // Clumsy user picked wrong category
-        condition: "good",
+        category: "Stationery & Drafting" as const, // Clumsy user picked wrong category
+        condition: "good" as const,
         price: 0, // Clumsy user forgot price
       };
 
