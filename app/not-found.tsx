@@ -61,14 +61,23 @@ export default function NotFound() {
           </svg>
         </div>
 
-        {/* Go Home CTA Button */}
-        <Link
-          href="/"
-          className="px-6 py-2.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-xs sm:text-sm rounded-xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center space-x-2"
-        >
-          <span>Go Home</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        {/* Action Buttons Row */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 w-full pt-1">
+          <Link
+            href="/"
+            className="flex-1 py-2.5 px-4 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-xs sm:text-sm rounded-xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center space-x-1.5"
+          >
+            <span>Go Home</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+
+          <Link
+            href="/browse"
+            className="py-2.5 px-4 bg-white hover:bg-paper-100 text-black font-sans font-black text-xs sm:text-sm rounded-xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center space-x-1.5"
+          >
+            <span>Notice Board</span>
+          </Link>
+        </div>
       </div>
     </div>
   );
