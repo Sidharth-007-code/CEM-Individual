@@ -8,6 +8,7 @@ import { CATEGORIES, ListingCategory, ListingCondition } from "@/types/listing";
 import { CATEGORY_PRICE_RANGES, MIN_LISTING_IMAGES } from "@/lib/constants";
 import { compressMultipleImages, CompressedImageResult } from "@/lib/images";
 import { runAutomatedListingCheck } from "@/lib/listingCheck";
+import { enhanceListingAI, validateListingAI } from "@/lib/ai";
 import { MockBadge } from "@/components/ui/MockBadge";
 import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -20,6 +21,7 @@ import {
   ShieldAlert,
   ArrowRight,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 
 export default function NewListingPage() {
@@ -35,8 +37,9 @@ export default function NewListingPage() {
   const [compressing, setCompressing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPolishingAI, setIsPolishingAI] = useState(false);
 
-  // Live automated check advice
+  // Live AI validation & automated check
   const numericPrice = Number(price) || 0;
   const checkResult = runAutomatedListingCheck({
     title,
@@ -47,6 +50,37 @@ export default function NewListingPage() {
     imageCount: images.length,
     imageSizesKb: images.map((img) => img.sizeKb),
   });
+
+  const handleAIPolish = () => {
+    if (!title.trim() && !description.trim()) {
+      setError("Please enter a rough title or brief notes first to use AI Polish.");
+      return;
+    }
+    setIsPolishingAI(true);
+    setError(null);
+    try {
+      const enhanced = enhanceListingAI({
+        title,
+        notes: description,
+        category,
+        condition,
+        price: numericPrice,
+      });
+
+      setTitle(enhanced.polishedTitle);
+      setDescription(enhanced.polishedDescription);
+      if (!price || numericPrice <= 0) {
+        setPrice(enhanced.suggestedPrice);
+      }
+      if (enhanced.suggestedCategory && enhanced.suggestedCategory !== category) {
+        setCategory(enhanced.suggestedCategory);
+      }
+    } catch (err: any) {
+      setError("AI generation notice: " + (err.message || "Failed to polish draft."));
+    } finally {
+      setIsPolishingAI(false);
+    }
+  };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -104,6 +138,8 @@ export default function NewListingPage() {
         price: numericPrice,
         status: "pending", // Enters verifier queue
         checkResult,
+        aiValidation: checkResult.aiResult,
+        aiTags: checkResult.aiResult?.suggestedTags || [],
         reportCount: 0,
         thumbnail,
         createdAt: serverTimestamp(),
@@ -292,45 +328,105 @@ export default function NewListingPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
-                Description &amp; Handover Notes
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider">
+                  Description &amp; Handover Notes
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAIPolish}
+                  disabled={isPolishingAI}
+                  className="px-2.5 py-1 text-xs font-serif font-bold bg-saffron-50 hover:bg-saffron-100 text-saffron-800 border border-saffron-300 rounded transition flex items-center space-x-1 shadow-sm"
+                  title="Auto-format and polish description using AI"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-saffron-600" />
+                  <span>{isPolishingAI ? "Polishing..." : "✨ AI Polish & Auto-Fill"}</span>
+                </button>
+              </div>
               <textarea
                 required
-                rows={4}
-                placeholder="Mention semester used, edition, included accessories, reasons for selling, and preferred pickup spot..."
+                rows={5}
+                placeholder="Mention semester used, edition, included accessories, reasons for selling, and preferred pickup spot... (or type rough notes and click ✨ AI Polish above!)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs text-ink-900 focus:outline-none focus:border-saffron-500"
+                className="w-full px-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs text-ink-900 focus:outline-none focus:border-saffron-500 font-sans"
               />
             </div>
           </div>
 
-          {/* Automated Advisory Linter Feedback (Mocked) */}
-          <div className="bg-paper-200/70 border border-ink-300 rounded-notice p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-serif font-bold text-ink-950 flex items-center space-x-1.5">
-                <ShieldAlert className="w-4 h-4 text-saffron-600" />
-                <span>Automated Quality Advisory (Pre-Verification Check)</span>
+          {/* AI Product Validation & Advisory Meter */}
+          <div className="bg-paper-100 border border-ink-300 rounded-notice p-5 space-y-4 shadow-card">
+            <div className="flex items-center justify-between border-b border-ink-200 pb-3">
+              <span className="text-xs font-serif font-bold text-ink-950 flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-saffron-600" />
+                <span>AI Product Validation &amp; Quality Assessment</span>
               </span>
-              {checkResult.passed ? (
-                <span className="text-[11px] font-mono font-bold text-verifier-700 bg-verifier-100 px-2 py-0.5 rounded border border-verifier-600/30">
-                  Ready for Verifier
-                </span>
-              ) : (
-                <span className="text-[11px] font-mono font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
-                  Advisory Notices Found
+              {checkResult.aiResult && (
+                <span className={`text-[11px] font-mono font-bold px-2.5 py-0.5 rounded border ${
+                  checkResult.aiResult.overallPassed
+                    ? "bg-verifier-100 text-verifier-800 border-verifier-400"
+                    : "bg-amber-100 text-amber-800 border-amber-300"
+                }`}>
+                  Grade {checkResult.aiResult.qualityCheck.grade} ({checkResult.aiResult.overallScore}/100)
                 </span>
               )}
             </div>
 
-            {checkResult.reasons.length === 0 ? (
-              <p className="text-xs text-verifier-800 flex items-center space-x-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-verifier-600" />
-                <span>All fair-trade standards, image criteria, and category bounds satisfied.</span>
-              </p>
-            ) : (
-              <ul className="text-xs text-ink-700 space-y-1 list-disc list-inside">
+            {/* AI Metrics Grid */}
+            {checkResult.aiResult && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Price Benchmark */}
+                <div className="p-3 bg-paper-50 border border-ink-200 rounded text-xs space-y-1">
+                  <span className="font-serif font-bold text-ink-600 block text-[11px]">Fair Price Benchmark</span>
+                  <span className="font-bold text-ink-950 block">
+                    {checkResult.aiResult.priceEval.ratingLabel}
+                  </span>
+                  <span className="text-[10px] text-ink-500 font-mono block">
+                    Estimated: ₹{checkResult.aiResult.priceEval.estimatedMin} - ₹{checkResult.aiResult.priceEval.estimatedMax}
+                  </span>
+                </div>
+
+                {/* Safety Status */}
+                <div className="p-3 bg-paper-50 border border-ink-200 rounded text-xs space-y-1">
+                  <span className="font-serif font-bold text-ink-600 block text-[11px]">Campus Safety Status</span>
+                  <span className={`font-bold block ${
+                    checkResult.aiResult.safetyCheck.status === "CLEARED" ? "text-verifier-700" : "text-admin-600"
+                  }`}>
+                    {checkResult.aiResult.safetyCheck.status === "CLEARED" ? "Cleared & Safe ✅" : "Review Flagged ⚠️"}
+                  </span>
+                  <span className="text-[10px] text-ink-500 font-mono block">
+                    Risk Level: {checkResult.aiResult.safetyCheck.riskLevel}
+                  </span>
+                </div>
+
+                {/* Verifier Preview */}
+                <div className="p-3 bg-paper-50 border border-ink-200 rounded text-xs space-y-1">
+                  <span className="font-serif font-bold text-ink-600 block text-[11px]">Verifier Desk Advice</span>
+                  <span className="font-bold text-ink-950 block">
+                    Action: {checkResult.aiResult.verifierAdvice.recommendedAction}
+                  </span>
+                  <span className="text-[10px] text-ink-500 font-mono block">
+                    Confidence: {checkResult.aiResult.verifierAdvice.confidenceScore}%
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* AI Tags Preview */}
+            {checkResult.aiResult?.suggestedTags && checkResult.aiResult.suggestedTags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[11px] font-serif font-bold text-ink-600 mr-1">Auto-Extracted Tags:</span>
+                {checkResult.aiResult.suggestedTags.map((tag) => (
+                  <span key={tag} className="px-2 py-0.5 bg-paper-200 text-ink-800 text-[10px] font-mono rounded border border-ink-300">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Bullet points advice */}
+            {checkResult.reasons.length > 0 && (
+              <ul className="text-xs text-ink-700 space-y-1 list-disc list-inside pt-1 border-t border-ink-200">
                 {checkResult.reasons.map((reason, i) => (
                   <li key={i}>{reason}</li>
                 ))}

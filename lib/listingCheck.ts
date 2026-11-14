@@ -1,5 +1,6 @@
 import { CATEGORY_PRICE_RANGES, MIN_LISTING_IMAGES, COMPRESSED_IMAGE_TARGET_SIZE_KB } from "@/lib/constants";
 import { ListingCategory, ListingCheckResult, ListingCondition } from "@/types/listing";
+import { validateListingAI } from "@/lib/ai";
 
 export interface ListingCheckInput {
   title: string;
@@ -65,9 +66,20 @@ export function runAutomatedListingCheck(input: ListingCheckInput): ListingCheck
     }
   }
 
+  // Run deep AI validation engine
+  const aiResult = validateListingAI(input);
+
+  // If AI detected restricted/prohibited items, add as reasons
+  if (aiResult.safetyCheck.isProhibited) {
+    aiResult.safetyCheck.detectedFlags.forEach((flag) => {
+      reasons.push(`AI Safety Alert: ${flag}`);
+    });
+  }
+
   return {
     passed: reasons.length === 0,
     reasons,
+    aiResult,
   };
 }
 

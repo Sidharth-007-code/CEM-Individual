@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Listing } from "@/types/listing";
-import { Heart, ShieldCheck, Tag } from "lucide-react";
+import { Heart, ShieldCheck, Tag, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { validateListingAI } from "@/lib/ai";
 import { doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -49,6 +50,18 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
   };
 
   const isSold = listing.status === "sold";
+
+  // AI Evaluation (precomputed or evaluated on demand)
+  const aiEval =
+    listing.aiValidation ||
+    validateListingAI({
+      title: listing.title,
+      description: listing.description,
+      category: listing.category,
+      condition: listing.condition,
+      price: listing.price,
+      imageCount: 3,
+    });
 
   return (
     <Link
@@ -119,8 +132,20 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
         </div>
 
         <div className="flex items-baseline justify-between pt-1 border-t border-ink-100">
-          <div className="font-serif text-base font-black text-ink-950">
-            ₹{listing.price.toLocaleString("en-IN")}
+          <div className="flex items-center space-x-1.5">
+            <div className="font-serif text-base font-black text-ink-950">
+              ₹{listing.price.toLocaleString("en-IN")}
+            </div>
+            {aiEval.priceEval.rating === "GREAT_DEAL" ? (
+              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800 rounded border border-emerald-300 flex items-center space-x-0.5">
+                <Sparkles className="w-2.5 h-2.5" />
+                <span>Great Deal</span>
+              </span>
+            ) : aiEval.priceEval.rating === "FAIR_PRICE" ? (
+              <span className="px-1.5 py-0.5 text-[9px] font-mono text-ink-600 bg-paper-200 rounded">
+                Fair Price
+              </span>
+            ) : null}
           </div>
           <span className="text-[10px] text-ink-500 font-mono">
             {listing.sellerName?.split(" ")[0] || "Student"}

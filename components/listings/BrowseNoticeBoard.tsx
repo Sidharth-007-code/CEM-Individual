@@ -6,15 +6,16 @@ import { db } from "@/lib/firebase";
 import { Listing, CATEGORIES, ListingCategory } from "@/types/listing";
 import { ListingCard } from "./ListingCard";
 import { VoiceSearch } from "./VoiceSearch";
-import { Search, SlidersHorizontal, Sparkles, Filter, X } from "lucide-react";
+import { Search, SlidersHorizontal, Sparkles, Filter, X, ArrowUpDown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { parseSearchIntentAI, rankListingsAI, getPersonalizedRecommendationsAI } from "@/lib/ai";
 
 interface BrowseNoticeBoardProps {
   initialCategory?: string;
 }
 
 export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -71,41 +72,40 @@ export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
     return () => unsubscribe();
   }, []);
 
-  // Filter & Sort client-side for rapid responsiveness
-  const filteredListings = listings.filter((item) => {
-    // 1. Category Filter
-    if (selectedCategory !== "all" && item.category !== selectedCategory) {
-      return false;
-    }
+  // AI Search & Intent Parsing
+  const searchIntent = parseSearchIntentAI(searchTerm);
 
-    // 2. Condition Filter
-    if (selectedCondition !== "all" && item.condition !== selectedCondition) {
-      return false;
-    }
+  // AI Personalized Recommendations
+  const personalizedRecs = getPersonalizedRecommendationsAI(profile, listings, 4);
 
-    // 3. Search Term (Title or Description)
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      const matchTitle = item.title?.toLowerCase().includes(term);
-      const matchDesc = item.description?.toLowerCase().includes(term);
-      const matchCategory = item.category?.toLowerCase().includes(term);
-      if (!matchTitle && !matchDesc && !matchCategory) {
-        return false;
-      }
-    }
+  // Compute filtered & ranked listings
+  let filteredListings: Listing[] = [];
 
-    return true;
-  });
+  if (searchTerm.trim()) {
+    // Run AI Semantic Matcher & Ranker
+    const ranked = rankListingsAI(searchTerm, listings);
+    filteredListings = ranked
+      .map((r) => r.listing)
+      .filter((item) => {
+        if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
+        if (selectedCondition !== "all" && item.condition !== selectedCondition) return false;
+        return true;
+      });
+  } else {
+    filteredListings = listings.filter((item) => {
+      if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
+      if (selectedCondition !== "all" && item.condition !== selectedCondition) return false;
+      return true;
+    });
 
-  // Sort
-  filteredListings.sort((a, b) => {
-    if (sortBy === "price_asc") return a.price - b.price;
-    if (sortBy === "price_desc") return b.price - a.price;
-    // Newest
-    const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-    const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-    return bTime - aTime;
-  });
+    filteredListings.sort((a, b) => {
+      if (sortBy === "price_asc") return a.price - b.price;
+      if (sortBy === "price_desc") return b.price - a.price;
+      const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return bTime - aTime;
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -165,6 +165,70 @@ export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
           )}
         </div>
       </div>
+
+      {/* AI Semantic Search Signal Chips */}
+      {searchTerm.trim() && (
+        <div className="p-3 bg-paper-100 border border-saffron-300 rounded-notice flex flex-wrap items-center gap-2 text-xs shadow-sm animate-in fade-in">
+          <span className="font-serif font-bold text-ink-950 flex items-center space-x-1.5 mr-1">
+            <Sparkles className="w-3.5 h-3.5 text-saffron-600" />
+            <span>AI Natural Language Parser:</span>
+          </span>
+          {searchIntent.detectedCategory && (
+            <span className="px-2 py-0.5 bg-paper-50 rounded border border-ink-300 font-mono text-[10px] text-ink-800">
+              Category: {searchIntent.detectedCategory}
+            </span>
+          )}
+          {searchIntent.maxPrice && (
+            <span className="px-2 py-0.5 bg-emerald-50 rounded border border-emerald-400 font-mono text-[10px] text-emerald-800 font-bold">
+              Budget: Under ₹{searchIntent.maxPrice.toLocaleString("en-IN")}
+            </span>
+          )}
+          {searchIntent.detectedCondition && (
+            <span className="px-2 py-0.5 bg-paper-50 rounded border border-ink-300 font-mono text-[10px] text-ink-800">
+              Condition: {searchIntent.detectedCondition}
+            </span>
+          )}
+          {searchIntent.isSpecificModel && (
+            <span className="px-2 py-0.5 bg-saffron-100 rounded border border-saffron-400 font-mono text-[10px] text-saffron-800 font-bold">
+              Specific Model Match
+            </span>
+          )}
+          <span className="text-[11px] text-ink-500 ml-auto font-mono">
+            {filteredListings.length} item(s) matched by relevance
+          </span>
+        </div>
+      )}
+
+      {/* AI Personalized Recommendations Section for Logged-In Student */}
+      {personalizedRecs.length > 0 && selectedCategory === "all" && !searchTerm && (
+        <div className="bg-gradient-to-r from-paper-100 via-paper-50 to-paper-100 border border-ink-200 rounded-notice p-4 sm:p-5 shadow-card space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Sparkles className="w-4 h-4 text-saffron-600" />
+              <h2 className="font-serif font-bold text-sm text-ink-950">
+                AI Recommended For You
+              </h2>
+              <span className="text-[10px] font-mono bg-saffron-100 text-saffron-800 px-2 py-0.5 rounded-full border border-saffron-300">
+                {profile?.course ? profile.course.split("-")[0]?.trim() : "Curated Student Gear"}
+              </span>
+            </div>
+            <span className="text-[11px] text-ink-500 font-mono hidden sm:inline">
+              Personalized Campus Feed
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {personalizedRecs.map((rec) => (
+              <div key={rec.listing.id} className="relative flex flex-col">
+                <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-ink-950/85 backdrop-blur-sm text-paper-50 text-[9px] font-mono rounded shadow">
+                  {rec.recommendationReason}
+                </span>
+                <ListingCard listing={rec.listing} isWishlistedInitial={wishlistIds.has(rec.listing.id)} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Category Pills Bar */}
       <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none">

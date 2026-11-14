@@ -7,6 +7,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as admin from "firebase-admin";
+import { validateListingAI } from "../lib/ai";
 
 // Parse .env.local if present
 const envPath = path.resolve(process.cwd(), ".env.local");
@@ -68,6 +69,7 @@ if (!admin.apps.length) {
 
 const auth = admin.auth();
 const db = admin.firestore();
+db.settings({ ignoreUndefinedProperties: true });
 
 // SVG placeholder data URLs for realistic offline seed imagery
 function createPlaceholderImage(text: string, bgColor = "#EFECE1", textColor = "#0F1E36"): string {
@@ -399,8 +401,20 @@ async function seed() {
     const thumb = createPlaceholderImage(item.title);
     const listingRef = db.collection("listings").doc(item.id);
 
+    // Compute AI validation evaluation
+    const aiRes = validateListingAI({
+      title: item.title,
+      description: item.description,
+      category: item.category as any,
+      condition: item.condition as any,
+      price: item.price,
+      imageCount: 3,
+    });
+
     await listingRef.set({
       ...item,
+      aiValidation: aiRes,
+      aiTags: aiRes.suggestedTags,
       thumbnail: thumb,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),

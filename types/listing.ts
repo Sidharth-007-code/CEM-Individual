@@ -1,3 +1,5 @@
+import { AIListingValidationResult } from "@/lib/ai/types";
+
 export const CATEGORIES = [
   "Textbooks & Notes",
   "Electronics & Calculators",
@@ -24,6 +26,7 @@ export type ListingStatus =
 export interface ListingCheckResult {
   passed: boolean;
   reasons: string[];
+  aiResult?: AIListingValidationResult;
 }
 
 export interface ListingImage {
@@ -47,6 +50,8 @@ export interface Listing {
   verifierId?: string;
   verifierNote?: string;
   reportCount: number;
+  aiValidation?: AIListingValidationResult;
+  aiTags?: string[];
   images?: string[]; // Array of base64 preview strings or image ids
   thumbnail?: string; // Quick preview thumbnail
   createdAt: any;

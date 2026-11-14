@@ -7,6 +7,7 @@ import { collection, query, where, onSnapshot, doc, updateDoc, setDoc, serverTim
 import { db } from "@/lib/firebase";
 import { Listing } from "@/types/listing";
 import { MockBadge } from "@/components/ui/MockBadge";
+import { validateListingAI } from "@/lib/ai";
 import {
   ShieldCheck,
   CheckCircle,
@@ -16,6 +17,7 @@ import {
   Eye,
   MessageSquare,
   Clock,
+  Sparkles,
 } from "lucide-react";
 
 export default function VerifierQueuePage() {
@@ -255,31 +257,77 @@ export default function VerifierQueuePage() {
                     </p>
                   </div>
 
-                  {/* Automated Advisory Linter Advice Box (Mocked) */}
-                  <div className="bg-paper-200/60 border border-ink-300 rounded p-3 text-xs space-y-1.5">
-                    <div className="flex items-center justify-between font-serif font-bold text-ink-900">
-                      <span>Automated Pre-Check Report:</span>
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
-                        selectedListing.checkResult?.passed
-                          ? "bg-verifier-100 text-verifier-800"
-                          : "bg-amber-100 text-amber-900"
-                      }`}>
-                        {selectedListing.checkResult?.passed ? "Passed Bounds" : "Advisories Flagged"}
-                      </span>
-                    </div>
+                  {/* AI Quality & Verifier Advisory Panel */}
+                  {(() => {
+                    const aiEval =
+                      selectedListing.aiValidation ||
+                      validateListingAI({
+                        title: selectedListing.title,
+                        description: selectedListing.description,
+                        category: selectedListing.category,
+                        condition: selectedListing.condition,
+                        price: selectedListing.price,
+                        imageCount: 3,
+                      });
 
-                    {selectedListing.checkResult?.reasons && selectedListing.checkResult.reasons.length > 0 ? (
-                      <ul className="list-disc list-inside text-ink-700 text-[11px] space-y-1">
-                        {selectedListing.checkResult.reasons.map((r, i) => (
-                          <li key={i}>{r}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-[11px] text-verifier-800">
-                        No automated violations detected. Price is within category parameters.
-                      </p>
-                    )}
-                  </div>
+                    return (
+                      <div className="bg-paper-200/70 border border-ink-300 rounded p-4 text-xs space-y-3 shadow-inner">
+                        <div className="flex items-center justify-between border-b border-ink-300 pb-2">
+                          <span className="font-serif font-bold text-ink-950 flex items-center space-x-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-saffron-600" />
+                            <span>AI Quality &amp; Risk Assessment</span>
+                          </span>
+                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold border ${
+                            aiEval.overallPassed
+                              ? "bg-verifier-100 text-verifier-800 border-verifier-400"
+                              : "bg-admin-100 text-admin-800 border-admin-400"
+                          }`}>
+                            AI Advice: {aiEval.verifierAdvice.recommendedAction} ({aiEval.verifierAdvice.confidenceScore}% confidence)
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <div className="p-2 bg-paper-50 rounded border border-ink-200">
+                            <span className="text-[10px] text-ink-500 font-mono block">Safety &amp; Compliance</span>
+                            <span className={`font-bold text-xs ${aiEval.safetyCheck.status === "CLEARED" ? "text-verifier-700" : "text-admin-600"}`}>
+                              {aiEval.safetyCheck.status === "CLEARED" ? "Cleared (Safe) ✅" : "Flagged ⚠️"}
+                            </span>
+                          </div>
+                          <div className="p-2 bg-paper-50 rounded border border-ink-200">
+                            <span className="text-[10px] text-ink-500 font-mono block">Fair Market Range</span>
+                            <span className="font-bold text-xs text-ink-900">
+                              ₹{aiEval.priceEval.estimatedMin} - ₹{aiEval.priceEval.estimatedMax}
+                            </span>
+                          </div>
+                          <div className="p-2 bg-paper-50 rounded border border-ink-200">
+                            <span className="text-[10px] text-ink-500 font-mono block">Quality Grade</span>
+                            <span className="font-bold text-xs text-ink-900">
+                              Grade {aiEval.qualityCheck.grade} ({aiEval.qualityCheck.qualityScore}/100)
+                            </span>
+                          </div>
+                        </div>
+
+                        {aiEval.verifierAdvice.summaryBulletPoints.length > 0 && (
+                          <ul className="list-disc list-inside text-ink-700 text-[11px] space-y-1">
+                            {aiEval.verifierAdvice.summaryBulletPoints.map((pt, i) => (
+                              <li key={i}>{pt}</li>
+                            ))}
+                          </ul>
+                        )}
+
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setActionNote(`AI Verified: ${aiEval.priceEval.ratingLabel}. Approved for notice board.`)}
+                            className="text-[11px] font-serif font-bold text-saffron-700 hover:text-saffron-900 underline flex items-center space-x-1"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            <span>Pre-fill remark from AI Summary</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Decision Controls */}
                   <div className="border-t border-ink-200 pt-4 space-y-3">

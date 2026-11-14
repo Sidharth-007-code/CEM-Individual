@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { doc, getDoc, collection, getDocs, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, onSnapshot, setDoc, serverTimestamp, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Listing, ListingImage } from "@/types/listing";
 import { UserProfile } from "@/types/user";
 import { PRESET_AVATARS } from "@/lib/constants";
+import { validateListingAI, getSimilarListingsAI } from "@/lib/ai";
 import { useAuth } from "@/context/AuthContext";
 import { ReportModal } from "@/components/listings/ReportModal";
+import { ListingCard } from "@/components/listings/ListingCard";
 import {
   Phone,
   MessageSquare,
@@ -24,6 +26,7 @@ import {
   AlertCircle,
   GraduationCap,
   MapPin,
+  Sparkles,
 } from "lucide-react";
 
 export default function ListingDetailPage() {
@@ -41,6 +44,7 @@ export default function ListingDetailPage() {
   // Wishlist state
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [sellerProfile, setSellerProfile] = useState<UserProfile | null>(null);
+  const [otherListings, setOtherListings] = useState<Listing[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -104,6 +108,20 @@ export default function ListingDetailPage() {
     };
     fetchSeller();
   }, [listing?.sellerId]);
+
+  // Fetch candidate listings for AI Similar Gear
+  useEffect(() => {
+    const fetchOthers = async () => {
+      try {
+        const snap = await getDocs(query(collection(db, "listings"), where("status", "==", "available")));
+        const items = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Listing[];
+        setOtherListings(items);
+      } catch (e) {
+        console.warn("[ListingDetailPage] Candidate listings fetch error:", e);
+      }
+    };
+    fetchOthers();
+  }, []);
 
   const toggleWishlist = async () => {
     if (!user || !listing) {
@@ -388,6 +406,55 @@ export default function ListingDetailPage() {
                 </div>
               );
             })()}
+
+            {/* AI Product Valuation & Quality Card */}
+            {(() => {
+              const aiEval =
+                listing.aiValidation ||
+                validateListingAI({
+                  title: listing.title,
+                  description: listing.description,
+                  category: listing.category,
+                  condition: listing.condition,
+                  price: listing.price,
+                  imageCount: images.length || 3,
+                });
+
+              return (
+                <div className="bg-paper-200/50 border border-ink-300 rounded p-4 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-serif font-bold text-xs text-ink-950 flex items-center space-x-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-saffron-600" />
+                      <span>AI Fair Price &amp; Quality Assessment</span>
+                    </span>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-verifier-100 text-verifier-800 border border-verifier-400">
+                      Grade {aiEval.qualityCheck.grade} ({aiEval.qualityCheck.qualityScore}/100)
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-ink-200">
+                    <span className="text-ink-600">Fair Peer Benchmark:</span>
+                    <span className="font-mono font-bold text-ink-950">
+                      ₹{aiEval.priceEval.estimatedMin} - ₹{aiEval.priceEval.estimatedMax}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-ink-600 leading-normal">
+                    {aiEval.priceEval.analysisSummary}
+                  </p>
+
+                  {aiEval.suggestedTags && aiEval.suggestedTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {aiEval.suggestedTags.map((tag) => (
+                        <span key={tag} className="px-1.5 py-0.5 bg-paper-100 text-ink-700 text-[10px] font-mono rounded border border-ink-200">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* CTA Buttons */}
@@ -427,6 +494,39 @@ export default function ListingDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Recommended Similar Products */}
+      {(() => {
+        const similarGear = getSimilarListingsAI(listing, otherListings, 3);
+        if (similarGear.length === 0) return null;
+
+        return (
+          <div className="bg-paper-100 border border-ink-200 rounded-notice p-6 shadow-card space-y-4">
+            <div className="flex items-center justify-between border-b border-ink-200 pb-3">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-saffron-600" />
+                <h3 className="font-serif font-bold text-base text-ink-950">
+                  Similar Campus Gear &amp; Alternatives
+                </h3>
+              </div>
+              <span className="text-xs text-ink-500 font-mono">
+                AI Relevance Matched
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {similarGear.map((item) => (
+                <div key={item.listing.id} className="relative flex flex-col">
+                  <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-ink-950/85 backdrop-blur-sm text-paper-50 text-[9px] font-mono rounded shadow">
+                    {item.recommendationReason}
+                  </span>
+                  <ListingCard listing={item.listing} isWishlistedInitial={isWishlisted} />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Report Modal */}
       <ReportModal
