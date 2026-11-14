@@ -102,10 +102,14 @@ export default function PrivacyPolicyPage() {
 
         <section className="space-y-2">
           <h2 className="font-sans text-lg font-black text-black">
-            6. Moderation, Reporting &amp; Inquiries
+            6. Moderation, Inquiries &amp; Official Contact
           </h2>
           <p>
-            Students can report inappropriate listings using the &quot;Report Listing&quot; button. Listings receiving 3 reports are automatically hidden from public search pending administrative review. For privacy inquiries or account deletion, contact the Dean of Student Affairs or campus marketplace administrators.
+            Students can report inappropriate listings using the &quot;Report Listing&quot; button. Listings receiving 3 reports are automatically hidden from public search pending administrative review. For privacy inquiries, account deletion, or marketplace assistance, contact the campus marketplace team at{" "}
+            <a href="mailto:campus.marketplace.ruas@gmail.com" className="font-mono font-black text-black underline hover:text-brutal-purple-dark">
+              campus.marketplace.ruas@gmail.com
+            </a>{" "}
+            or visit the Dean of Student Affairs office.
           </p>
         </section>
       </div>

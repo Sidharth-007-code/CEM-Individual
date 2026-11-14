@@ -789,7 +789,11 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <p className="text-[11px] font-mono text-ink-600 pt-1">
-                    Institutional details are locked for student peer trust and handover invoice integrity. Contact administration for official name/transfer modifications.
+                    Institutional details are locked for student peer trust and handover invoice integrity. Contact administration at{" "}
+                    <a href="mailto:campus.marketplace.ruas@gmail.com" className="text-black font-bold underline">
+                      campus.marketplace.ruas@gmail.com
+                    </a>{" "}
+                    for official name/transfer modifications.
                   </p>
                 </div>
               ) : (

@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, Lock, KeyRound, AlertTriangle, ShieldAlert, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Lock, KeyRound, AlertTriangle, ShieldAlert, ArrowLeft, CheckCircle2, Mail } from "lucide-react";
 
 export default function SecurityPolicyPage() {
   return (
@@ -86,6 +86,25 @@ export default function SecurityPolicyPage() {
             <strong>Mandatory Human Verifier Approval:</strong> Quality representatives on the student council inspect the submission at <code>/verifier</code> to verify genuine syllabus editions and prevent misleading items.
           </li>
         </ol>
+      </div>
+
+      {/* Official Security & Grievance Contact */}
+      <div className="bg-brutal-yellow/30 border-2 border-black rounded-3xl p-6 shadow-brutal flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h3 className="font-sans font-black text-sm text-black flex items-center space-x-2">
+            <Mail className="w-4 h-4 text-black stroke-[2.5]" />
+            <span>Security &amp; Support Contact</span>
+          </h3>
+          <p className="text-xs font-mono font-medium text-ink-800">
+            For security incident reports, account inquiries, or verification questions, reach the official team:
+          </p>
+        </div>
+        <a
+          href="mailto:campus.marketplace.ruas@gmail.com"
+          className="px-4 py-2 bg-black text-white hover:bg-ink-800 rounded-xl font-mono font-bold text-xs shadow-[2px_2px_0px_#FFD027] transition shrink-0"
+        >
+          campus.marketplace.ruas@gmail.com
+        </a>
       </div>
     </div>
   );

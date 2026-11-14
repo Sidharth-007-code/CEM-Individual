@@ -260,6 +260,18 @@ function LoginForm() {
             <div className="text-[11px] font-mono text-admin-700 truncate">admin@msruas.ac.in</div>
           </button>
         </div>
+
+        <div className="pt-3 border-t border-black/10 text-center">
+          <p className="text-[11px] font-mono text-ink-600">
+            Need support with your account or login? Contact:{" "}
+            <a
+              href="mailto:campus.marketplace.ruas@gmail.com"
+              className="font-bold text-black underline hover:text-brutal-purple-dark"
+            >
+              campus.marketplace.ruas@gmail.com
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

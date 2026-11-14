@@ -56,7 +56,10 @@ export function RouteGuard({
           You cannot access marketplace listings or transactions.
         </p>
         <p className="text-xs font-mono text-ink-600">
-          Contact: Student Affairs / Dean&apos;s Office (Campus Administration).
+          Contact: Student Affairs / Dean&apos;s Office at{" "}
+          <a href="mailto:campus.marketplace.ruas@gmail.com" className="font-bold text-black underline">
+            campus.marketplace.ruas@gmail.com
+          </a>
         </p>
       </div>
     );

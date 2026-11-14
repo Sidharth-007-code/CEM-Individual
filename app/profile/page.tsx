@@ -514,7 +514,11 @@ export default function ProfilePage() {
               <div className="pt-2 text-[11px] font-mono font-bold text-ink-600 flex items-center space-x-2">
                 <span className="w-2 h-2 rounded-full bg-brutal-green shrink-0" />
                 <span>
-                  Institutional credentials are locked to protect campus peer transactions. Contact administration for official name/transfer modifications.
+                  Institutional credentials are locked to protect campus peer transactions. Contact administration at{" "}
+                  <a href="mailto:campus.marketplace.ruas@gmail.com" className="text-black underline">
+                    campus.marketplace.ruas@gmail.com
+                  </a>{" "}
+                  for official name/transfer modifications.
                 </span>
               </div>
             </div>

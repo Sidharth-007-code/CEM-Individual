@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/ui/Logo";
-import { ShieldCheck, MapPin, Heart } from "lucide-react";
+import { ShieldCheck, MapPin, Mail } from "lucide-react";
 
 export function Footer() {
   const { role } = useAuth();
@@ -30,6 +30,14 @@ export function Footer() {
               <MapPin className="w-3.5 h-3.5 mr-1 text-black inline stroke-[2.5]" />
               CCTV Safe Meetup Spots
             </span>
+            <a
+              href="mailto:campus.marketplace.ruas@gmail.com"
+              className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-white hover:bg-brutal-yellow text-black border-2 border-black shadow-[2px_2px_0px_#000] hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] transition-all"
+              title="Official Campus Support Email"
+            >
+              <Mail className="w-3.5 h-3.5 mr-1.5 text-black inline stroke-[2.5]" />
+              <span>campus.marketplace.ruas@gmail.com</span>
+            </a>
           </div>
         </div>
 
@@ -41,10 +49,14 @@ export function Footer() {
             <span>&bull;</span>
             <span className="text-black font-semibold">Student-to-Student Verified Portal</span>
           </p>
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 items-center">
             <Link href="/browse" className="text-black hover:underline">Notice Board</Link>
             <Link href="/privacy" className="text-black hover:underline">Privacy Policy</Link>
             <Link href="/security" className="text-black hover:underline">Trust &amp; Security</Link>
+            <a href="mailto:campus.marketplace.ruas@gmail.com" className="text-black hover:underline inline-flex items-center space-x-1">
+              <Mail className="w-3 h-3 text-black" />
+              <span>Contact: campus.marketplace.ruas@gmail.com</span>
+            </a>
             {(role === "verifier" || role === "admin") && (
               <Link href="/verifier" className="text-verifier-800 hover:underline">Verifier Desk</Link>
             )}
