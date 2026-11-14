@@ -8,6 +8,8 @@ import { collection, query, where, onSnapshot, doc, updateDoc } from "firebase/f
 import { db } from "@/lib/firebase";
 import { Listing } from "@/types/listing";
 import { Order } from "@/types/order";
+import { PRESET_AVATARS } from "@/lib/constants";
+import { syncUserProfile } from "@/lib/profileSync";
 import {
   User,
   Package,
@@ -89,6 +91,8 @@ export default function DashboardPage() {
     return () => unsubscribe();
   }, [user]);
 
+  const activePreset = PRESET_AVATARS.find((a) => a.id === profile?.avatarId);
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -96,17 +100,25 @@ export default function DashboardPage() {
     setProfileMsg(null);
 
     try {
-      const userRef = doc(db, "users", user.uid);
-      // Notice: role and status are omitted, strictly respecting firestore.rules!
-      await updateDoc(userRef, {
-        phone: phone.trim(),
-        course: course.trim(),
-        year: year.trim(),
-        personalEmail: personalEmail.trim(),
+      const result = await syncUserProfile(user.uid, {
+        name: profile?.name || "Student",
+        phone,
+        course,
+        year,
+        personalEmail,
+        campus: profile?.campus,
+        bio: profile?.bio,
+        photoURL: profile?.photoURL,
+        avatarId: profile?.avatarId,
       });
-      await refreshProfile();
-      setEditingProfile(false);
-      setProfileMsg("Profile updated successfully.");
+
+      if (result.success) {
+        await refreshProfile();
+        setEditingProfile(false);
+        setProfileMsg(`Profile updated and synchronized across ${result.updatedListingsCount} listings.`);
+      } else {
+        setProfileMsg("Failed to update profile: " + result.error);
+      }
     } catch (err: any) {
       setProfileMsg("Failed to update profile: " + err.message);
     } finally {
@@ -127,8 +139,15 @@ export default function DashboardPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             
             <div className="flex items-center space-x-4">
-              <div className="w-14 h-14 rounded-full bg-paper-300 border-2 border-ink-300 flex items-center justify-center font-serif text-2xl font-bold text-ink-950 shadow-inner">
-                {profile?.name ? profile.name.charAt(0).toUpperCase() : <User className="w-6 h-6" />}
+              <div className="w-16 h-16 rounded-full bg-paper-300 border-2 border-ink-300 flex items-center justify-center font-serif text-2xl font-bold text-ink-950 shadow-inner overflow-hidden shrink-0">
+                {profile?.photoURL ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
+                ) : activePreset ? (
+                  <span className="text-3xl leading-none">{activePreset.emoji}</span>
+                ) : (
+                  <span>{profile?.name ? profile.name.charAt(0).toUpperCase() : <User className="w-6 h-6" />}</span>
+                )}
               </div>
               <div>
                 <div className="flex items-center space-x-2">
@@ -136,12 +155,17 @@ export default function DashboardPage() {
                     {profile?.name || "Student"}
                   </h1>
                   <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase bg-verifier-100 text-verifier-800 rounded border border-verifier-600/30">
-                    {profile?.status || "active"}
+                    {profile?.role || "student"} &bull; {profile?.status || "active"}
                   </span>
                 </div>
                 <p className="text-xs text-ink-600">
                   {profile?.email} &bull; {profile?.course || "Course unassigned"} &bull; {profile?.year || "Year unassigned"}
                 </p>
+                {profile?.campus && (
+                  <p className="text-xs text-ink-500">
+                    Campus: <span className="font-medium text-ink-700">{profile.campus}</span>
+                  </p>
+                )}
                 {profile?.phone && (
                   <p className="text-xs text-ink-500 mt-0.5">
                     Phone: <span className="font-mono">{profile.phone}</span> (active for buyer call links)
@@ -177,12 +201,19 @@ export default function DashboardPage() {
                 </button>
               </div>
 
+              <Link
+                href="/profile"
+                className="px-3.5 py-1.5 bg-saffron-500 hover:bg-saffron-600 text-white rounded-notice text-xs font-serif font-bold transition flex items-center space-x-1.5 shadow-sm"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Full Profile & Avatar</span>
+              </Link>
+
               <button
                 onClick={() => setEditingProfile(!editingProfile)}
                 className="px-3 py-1.5 bg-paper-50 border border-ink-300 rounded-notice text-xs font-medium text-ink-800 hover:bg-paper-200 transition flex items-center space-x-1.5"
               >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>{editingProfile ? "Cancel" : "Edit Profile"}</span>
+                <span>{editingProfile ? "Cancel" : "Quick Edit"}</span>
               </button>
             </div>
           </div>

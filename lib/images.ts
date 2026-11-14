@@ -74,6 +74,8 @@ export async function compressImageClientSide(
   });
 }
 
+export const compressImage = compressImageClientSide;
+
 export async function compressMultipleImages(
   files: File[]
 ): Promise<CompressedImageResult[]> {

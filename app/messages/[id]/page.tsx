@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import {
   doc,
+  getDoc,
   collection,
   query,
   orderBy,
@@ -18,7 +19,9 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Conversation, ChatMessage } from "@/types/chat";
-import { ChevronLeft, Send, User, ExternalLink, ShieldAlert } from "lucide-react";
+import { UserProfile } from "@/types/user";
+import { PRESET_AVATARS } from "@/lib/constants";
+import { ChevronLeft, Send, User, ExternalLink, ShieldAlert, Phone } from "lucide-react";
 
 export default function ConversationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,8 +33,27 @@ export default function ConversationDetailPage() {
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [otherProfile, setOtherProfile] = useState<UserProfile | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const otherId = conversation?.participantIds?.find((p) => p !== user?.uid);
+
+  // Fetch live student profile of other chat participant
+  useEffect(() => {
+    if (!otherId) return;
+    const fetchOther = async () => {
+      try {
+        const snap = await getDoc(doc(db, "users", otherId));
+        if (snap.exists()) {
+          setOtherProfile({ uid: snap.id, ...snap.data() } as UserProfile);
+        }
+      } catch (e) {
+        console.warn("[Chat] Failed to fetch other participant profile:", e);
+      }
+    };
+    fetchOther();
+  }, [otherId]);
 
   // Auto scroll to bottom
   const scrollToBottom = () => {
@@ -165,8 +187,8 @@ export default function ConversationDetailPage() {
     );
   }
 
-  const otherId = conversation.participantIds?.find((p) => p !== user?.uid);
-  const otherName = otherId && conversation.participantNames ? conversation.participantNames[otherId] : "Student";
+  const displayName = otherProfile?.name || (otherId && conversation.participantNames ? conversation.participantNames[otherId] : "Student");
+  const otherAvatarPreset = PRESET_AVATARS.find((a) => a.id === otherProfile?.avatarId);
 
   return (
     <RouteGuard requireAuth={true}>
@@ -183,29 +205,54 @@ export default function ConversationDetailPage() {
               <ChevronLeft className="w-5 h-5" />
             </Link>
 
-            <div className="w-9 h-9 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-950 text-sm">
-              {otherName.charAt(0).toUpperCase()}
+            <div className="w-9 h-9 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-950 text-sm overflow-hidden shadow-inner shrink-0">
+              {otherProfile?.photoURL ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={otherProfile.photoURL} alt={displayName} className="w-full h-full object-cover" />
+              ) : otherAvatarPreset ? (
+                <span className="text-base leading-none">{otherAvatarPreset.emoji}</span>
+              ) : (
+                <span>{displayName.charAt(0).toUpperCase()}</span>
+              )}
             </div>
 
             <div>
-              <h2 className="font-serif font-bold text-sm text-ink-950">
-                {otherName}
-              </h2>
-              <span className="text-[11px] font-mono text-saffron-700 block">
-                re: {conversation.listingTitle || "Campus Item"}
+              <div className="flex items-center space-x-1.5">
+                <h2 className="font-serif font-bold text-sm text-ink-950">
+                  {displayName}
+                </h2>
+                <span className="px-1.5 py-0.2 bg-verifier-100 text-verifier-800 text-[9px] font-mono rounded border border-verifier-600/30">
+                  Verified
+                </span>
+              </div>
+              <span className="text-[11px] text-ink-600 block">
+                {otherProfile?.course ? `${otherProfile.course} ${otherProfile.year ? `• ${otherProfile.year}` : ""}` : (conversation.listingTitle ? `re: ${conversation.listingTitle}` : "MSRUAS Student")}
               </span>
             </div>
           </div>
 
-          {conversation.listingId && (
-            <Link
-              href={`/listings/${conversation.listingId}`}
-              className="px-2.5 py-1 text-xs text-ink-700 hover:text-ink-950 bg-paper-50 hover:bg-paper-300 border border-ink-300 rounded transition flex items-center space-x-1"
-            >
-              <span>View Item</span>
-              <ExternalLink className="w-3 h-3" />
-            </Link>
-          )}
+          <div className="flex items-center space-x-2">
+            {otherProfile?.phone && (
+              <a
+                href={`tel:${otherProfile.phone}`}
+                className="px-2.5 py-1 text-xs text-verifier-800 hover:text-verifier-950 bg-verifier-50 hover:bg-verifier-100 border border-verifier-300 rounded transition flex items-center space-x-1"
+                title={`Call ${displayName}`}
+              >
+                <Phone className="w-3 h-3 text-verifier-600" />
+                <span className="hidden sm:inline">Call</span>
+              </a>
+            )}
+
+            {conversation.listingId && (
+              <Link
+                href={`/listings/${conversation.listingId}`}
+                className="px-2.5 py-1 text-xs text-ink-700 hover:text-ink-950 bg-paper-50 hover:bg-paper-300 border border-ink-300 rounded transition flex items-center space-x-1"
+              >
+                <span>View Item</span>
+                <ExternalLink className="w-3 h-3" />
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Message Thread */}

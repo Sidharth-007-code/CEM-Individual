@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { NotificationBell } from "./NotificationBell";
+import { PRESET_AVATARS } from "@/lib/constants";
 import {
   Heart,
   MessageSquare,
@@ -26,6 +27,7 @@ export function Navbar() {
 
   const isVerifierRoute = pathname.startsWith("/verifier");
   const isAdminRoute = pathname.startsWith("/admin");
+  const activePreset = PRESET_AVATARS.find((a) => a.id === profile?.avatarId);
 
   // Dynamic theme accent based on active workspace portal
   let headerBgClass = "bg-paper-50 border-ink-100";
@@ -183,15 +185,30 @@ export function Navbar() {
                 <div className="flex items-center space-x-2 pl-2 border-l border-ink-200">
                   <Link
                     href="/dashboard"
-                    className="flex items-center space-x-1.5 text-xs text-ink-800 hover:text-saffron-600 font-medium"
+                    className="flex items-center space-x-1.5 text-xs text-ink-800 hover:text-saffron-600 font-medium group"
                     title={profile?.name || user.email || "Profile"}
                   >
-                    <div className="w-7 h-7 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-900">
-                      {profile?.name ? profile.name.charAt(0).toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}
+                    <div className="w-7 h-7 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-900 overflow-hidden shadow-inner group-hover:border-saffron-400 transition">
+                      {profile?.photoURL ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
+                      ) : activePreset ? (
+                        <span className="text-sm leading-none">{activePreset.emoji}</span>
+                      ) : (
+                        <span>{profile?.name ? profile.name.charAt(0).toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}</span>
+                      )}
                     </div>
                     <span className="hidden xl:inline max-w-[100px] truncate">
                       {profile?.name?.split(" ")[0] || "Profile"}
                     </span>
+                  </Link>
+
+                  <Link
+                    href="/profile"
+                    className="hidden sm:inline-block px-2 py-1 text-[11px] font-serif font-bold bg-paper-100 hover:bg-paper-200 text-ink-800 border border-ink-300 rounded transition"
+                    title="Manage Profile & Identity"
+                  >
+                    Profile
                   </Link>
 
                   <button
@@ -305,6 +322,14 @@ export function Navbar() {
                   className="px-3 py-2 rounded text-ink-800 hover:bg-paper-200 font-medium"
                 >
                   Student Dashboard
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded text-ink-800 hover:bg-paper-200 font-medium flex items-center justify-between"
+                >
+                  <span>My Profile & Avatar</span>
+                  <span className="text-[10px] font-mono text-saffron-600 font-bold uppercase">Settings</span>
                 </Link>
                 {(role === "verifier" || role === "admin") && (
                   <Link

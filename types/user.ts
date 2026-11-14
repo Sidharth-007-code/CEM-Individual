@@ -10,8 +10,11 @@ export interface UserProfile {
   year?: string;
   course?: string;
   phone?: string;
+  campus?: string;
+  bio?: string;
   personalEmail?: string;
   photoURL?: string;
+  avatarId?: string;
   createdAt?: any;
   updatedAt?: any;
 }

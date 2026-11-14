@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 import {
   doc,
+  getDoc,
   collection,
   onSnapshot,
   updateDoc,
@@ -15,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Order, OrderStatus, TrackingEvent } from "@/types/order";
+import { UserProfile } from "@/types/user";
 import { MEETUP_SPOTS, MeetupSpot } from "@/lib/constants";
 import { ReturnModal } from "@/components/orders/ReturnModal";
 import {
@@ -29,6 +31,7 @@ import {
   Calendar,
   XCircle,
   RefreshCw,
+  Phone,
 } from "lucide-react";
 
 export default function OrderTrackingPage() {
@@ -49,6 +52,7 @@ export default function OrderTrackingPage() {
   // Return modal
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+  const [peerProfile, setPeerProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -103,6 +107,25 @@ export default function OrderTrackingPage() {
       unsubscribeTracking();
     };
   }, [id, user, isAdmin]);
+
+  // Fetch live peer student profile for contact phone and verification
+  useEffect(() => {
+    if (!order || !user) return;
+    const peerId = user.uid === order.buyerId ? order.sellerId : order.buyerId;
+    if (!peerId) return;
+
+    const fetchPeer = async () => {
+      try {
+        const snap = await getDoc(doc(db, "users", peerId));
+        if (snap.exists()) {
+          setPeerProfile({ uid: snap.id, ...snap.data() } as UserProfile);
+        }
+      } catch (e) {
+        console.warn("[OrderTracking] Peer profile fetch error:", e);
+      }
+    };
+    fetchPeer();
+  }, [order, user]);
 
   const advanceOrderStatus = async (newStatus: OrderStatus, noteText: string) => {
     if (!order) return;
@@ -248,11 +271,26 @@ export default function OrderTrackingPage() {
 
             <div className="text-right">
               <span className="text-[11px] font-mono text-ink-500 block">
-                {isBuyer ? "Purchased from" : "Sold to"}
+                {isBuyer ? "Purchased from Seller" : "Sold to Student Buyer"}
               </span>
-              <span className="font-serif font-bold text-sm text-ink-950">
-                {isBuyer ? order.sellerName : order.buyerName}
+              <span className="font-serif font-bold text-sm text-ink-950 block">
+                {peerProfile?.name || (isBuyer ? order.sellerName : order.buyerName)}
               </span>
+              {peerProfile?.course && (
+                <span className="text-[11px] text-ink-500 block">
+                  {peerProfile.course} {peerProfile.year ? `• ${peerProfile.year}` : ""}
+                </span>
+              )}
+              {peerProfile?.phone && (
+                <a
+                  href={`tel:${peerProfile.phone}`}
+                  className="inline-flex items-center space-x-1 text-xs font-mono text-verifier-700 hover:text-verifier-900 underline mt-0.5"
+                  title="Call for handover coordination"
+                >
+                  <Phone className="w-3 h-3 text-verifier-600" />
+                  <span>Call {peerProfile.phone}</span>
+                </a>
+              )}
             </div>
           </div>
 

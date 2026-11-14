@@ -6,6 +6,8 @@ import Link from "next/link";
 import { doc, getDoc, collection, getDocs, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Listing, ListingImage } from "@/types/listing";
+import { UserProfile } from "@/types/user";
+import { PRESET_AVATARS } from "@/lib/constants";
 import { useAuth } from "@/context/AuthContext";
 import { ReportModal } from "@/components/listings/ReportModal";
 import {
@@ -20,6 +22,8 @@ import {
   User,
   Tag,
   AlertCircle,
+  GraduationCap,
+  MapPin,
 } from "lucide-react";
 
 export default function ListingDetailPage() {
@@ -36,6 +40,7 @@ export default function ListingDetailPage() {
 
   // Wishlist state
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [sellerProfile, setSellerProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -83,6 +88,22 @@ export default function ListingDetailPage() {
     };
     checkWish();
   }, [user, id]);
+
+  // Fetch live seller profile for real-time contact and student verification
+  useEffect(() => {
+    if (!listing?.sellerId) return;
+    const fetchSeller = async () => {
+      try {
+        const snap = await getDoc(doc(db, "users", listing.sellerId));
+        if (snap.exists()) {
+          setSellerProfile({ uid: snap.id, ...snap.data() } as UserProfile);
+        }
+      } catch (e) {
+        console.warn("[ListingDetailPage] Seller profile fetch warning:", e);
+      }
+    };
+    fetchSeller();
+  }, [listing?.sellerId]);
 
   const toggleWishlist = async () => {
     if (!user || !listing) {
@@ -312,33 +333,61 @@ export default function ListingDetailPage() {
             </div>
 
             {/* Seller Profile Card */}
-            <div className="bg-paper-200/60 border border-ink-300 rounded p-3.5 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-950">
-                  <User className="w-5 h-5 text-ink-700" />
-                </div>
-                <div>
-                  <span className="block font-serif font-bold text-xs text-ink-950">
-                    {listing.sellerName || "Verified Student"}
-                  </span>
-                  <span className="text-[11px] text-ink-500 font-mono">
-                    MSRUAS Enrolled Student
-                  </span>
-                </div>
-              </div>
+            {(() => {
+              const sellerName = sellerProfile?.name || listing.sellerName || "Verified Student";
+              const sellerPhone = sellerProfile?.phone || listing.sellerPhone;
+              const sellerCourse = sellerProfile?.course;
+              const sellerYear = sellerProfile?.year;
+              const sellerCampus = sellerProfile?.campus;
+              const sellerAvatarPreset = PRESET_AVATARS.find((a) => a.id === sellerProfile?.avatarId);
 
-              {/* Direct Call Link */}
-              {listing.sellerPhone && !isSeller && (
-                <a
-                  href={`tel:${listing.sellerPhone}`}
-                  className="px-3 py-1.5 bg-paper-50 hover:bg-paper-100 border border-ink-300 rounded-notice text-xs font-serif font-bold text-ink-900 flex items-center space-x-1.5 transition"
-                  title="Direct phone call (supported on mobile)"
-                >
-                  <Phone className="w-3.5 h-3.5 text-verifier-600" />
-                  <span>Call Seller</span>
-                </a>
-              )}
-            </div>
+              return (
+                <div className="bg-paper-200/60 border border-ink-300 rounded p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-11 h-11 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-950 overflow-hidden shadow-inner shrink-0">
+                      {sellerProfile?.photoURL ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={sellerProfile.photoURL} alt={sellerName} className="w-full h-full object-cover" />
+                      ) : sellerAvatarPreset ? (
+                        <span className="text-xl leading-none">{sellerAvatarPreset.emoji}</span>
+                      ) : (
+                        <span>{sellerName ? sellerName.charAt(0).toUpperCase() : <User className="w-5 h-5 text-ink-700" />}</span>
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className="font-serif font-bold text-xs text-ink-950">
+                          {sellerName}
+                        </span>
+                        <span className="px-1.5 py-0.2 bg-verifier-100 text-verifier-800 text-[9px] font-mono rounded border border-verifier-600/30">
+                          Verified Peer
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-ink-600 block">
+                        {sellerCourse ? `${sellerCourse} ${sellerYear ? `• ${sellerYear}` : ""}` : "MSRUAS Enrolled Student"}
+                      </span>
+                      {sellerCampus && (
+                        <span className="text-[10px] text-ink-500 font-mono block">
+                          Campus: {sellerCampus}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Direct Call Link */}
+                  {sellerPhone && !isSeller && (
+                    <a
+                      href={`tel:${sellerPhone}`}
+                      className="px-3.5 py-2 bg-paper-50 hover:bg-paper-100 border border-ink-300 rounded-notice text-xs font-serif font-bold text-ink-900 flex items-center justify-center space-x-1.5 transition shadow-sm shrink-0"
+                      title="Direct phone call (supported on mobile devices)"
+                    >
+                      <Phone className="w-3.5 h-3.5 text-verifier-600" />
+                      <span>Call Seller</span>
+                    </a>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* CTA Buttons */}
