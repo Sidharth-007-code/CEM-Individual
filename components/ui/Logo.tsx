@@ -51,14 +51,14 @@ export function Logo({
         <div className="flex flex-col leading-none">
           <div className="flex items-center space-x-1.5">
             <span className={`font-sans font-black tracking-tight text-black ${current.text}`}>
-              Brightloop
+              Campus Market
             </span>
-            <span className="px-1.5 py-0.5 bg-brutal-purple-light text-brutal-purple-dark border border-black rounded-md text-[9px] font-mono font-bold tracking-wider uppercase">
-              Campus
+            <span className="px-1.5 py-0.5 bg-brutal-yellow text-black border border-black rounded-md text-[9px] font-mono font-bold tracking-wider uppercase">
+              RUAS
             </span>
           </div>
           <span className={`font-mono text-ink-600 font-semibold tracking-wide ${current.sub} mt-0.5`}>
-            MSRUAS Marketplace
+            MSRUAS Verified Exchange
           </span>
         </div>
       )}

@@ -70,7 +70,7 @@ function LoginForm() {
             Welcome Back!
           </h1>
           <p className="text-xs font-semibold text-ink-600">
-            Sign in to continue to Brightloop Campus
+            Sign in to continue to Campus Marketplace
           </p>
         </div>
 

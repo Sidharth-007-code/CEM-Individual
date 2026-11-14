@@ -2,16 +2,16 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Gamepad2, BookOpen, Laptop, Sparkles } from "lucide-react";
+import { ArrowRight, Calculator, BookOpen, PenTool, CheckCircle2 } from "lucide-react";
 
 export function ExploreCard() {
-  const [activeCategory, setActiveCategory] = useState("Gaming");
+  const [activeCategory, setActiveCategory] = useState("Calculators");
 
   const categories = [
     { label: "All", href: "/browse" },
-    { label: "Gaming", href: "/browse?category=Electronics+%26+Calculators" },
-    { label: "Books", href: "/browse?category=Books+%26+Notes" },
-    { label: "Gear", href: "/browse?category=Lab+%26+Drawing+Equipment" },
+    { label: "Calculators", href: "/browse?category=Calculators+%26+Electronics" },
+    { label: "Textbooks", href: "/browse?category=Textbooks+%26+Notes" },
+    { label: "Lab Gear", href: "/browse?category=Lab+Equipment+%26+Uniforms" },
   ];
 
   return (
@@ -19,7 +19,12 @@ export function ExploreCard() {
       {/* Header */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <h3 className="font-sans font-black text-xl text-black">Explore Gear</h3>
+          <div className="flex items-center space-x-2">
+            <h3 className="font-sans font-black text-xl text-black">Campus Essentials</h3>
+            <span className="px-2 py-0.5 rounded-md bg-brutal-green text-[10px] font-mono font-black border border-black">
+              VERIFIED
+            </span>
+          </div>
           <span className="w-2.5 h-2.5 rounded-full bg-brutal-green border border-black animate-pulse" />
         </div>
 
@@ -42,41 +47,56 @@ export function ExploreCard() {
         </div>
       </div>
 
-      {/* Featured Visual Yellow Hero Card */}
+      {/* Featured Visual Yellow Hero Card: Scientific Calculator / Campus Gear */}
       <div className="my-4 bg-brutal-yellow border-2 border-black rounded-2xl p-4 shadow-[3px_3px_0px_#000] flex flex-col items-center justify-center relative overflow-hidden group/product">
-        {/* Product SVG Graphic - Gamepad from Reference Image */}
+        {/* Visual Badge */}
+        <div className="absolute top-2 left-2 bg-black text-white px-2 py-0.5 rounded-md text-[9px] font-mono font-bold">
+          RUAS Syllabus Approved
+        </div>
+
+        {/* Scientific Calculator SVG Graphic */}
         <div className="w-28 h-28 flex items-center justify-center transform group-hover/product:scale-105 transition-transform duration-300">
-          <svg viewBox="0 0 100 100" className="w-24 h-24 drop-shadow-[4px_4px_0px_#000000]">
-            {/* Gamepad body */}
-            <path
-              d="M 25 35 Q 50 40 75 35 Q 90 45 85 75 Q 80 85 70 80 L 60 55 L 40 55 L 30 80 Q 20 85 15 75 Q 10 45 25 35 Z"
-              fill="#18181B"
-              stroke="#000000"
-              strokeWidth="3"
-            />
-            {/* D-Pad */}
-            <path d="M 25 45 L 33 45 L 33 40 L 37 40 L 37 45 L 45 45 L 45 49 L 37 49 L 37 54 L 33 54 L 33 49 L 25 49 Z" fill="#4B5563" />
-            {/* Buttons */}
-            <circle cx="65" cy="43" r="3" fill="#EF4444" />
-            <circle cx="73" cy="47" r="3" fill="#3B82F6" />
-            <circle cx="65" cy="51" r="3" fill="#10B981" />
-            <circle cx="57" cy="47" r="3" fill="#F59E0B" />
-            {/* Thumbsticks */}
-            <circle cx="36" cy="62" r="5" fill="#374151" stroke="#000000" strokeWidth="1.5" />
-            <circle cx="64" cy="62" r="5" fill="#374151" stroke="#000000" strokeWidth="1.5" />
+          <svg viewBox="0 0 100 120" className="w-20 h-24 drop-shadow-[4px_4px_0px_#000000]">
+            {/* Calculator Body */}
+            <rect x="15" y="10" width="70" height="100" rx="10" fill="#18181B" stroke="#000000" strokeWidth="3" />
+            {/* Solar cell strip */}
+            <rect x="52" y="18" width="25" height="10" rx="2" fill="#78350F" stroke="#000" strokeWidth="1" />
+            {/* Dot Matrix LCD Screen */}
+            <rect x="23" y="32" width="54" height="20" rx="3" fill="#A7F3D0" stroke="#000" strokeWidth="2" />
+            <text x="27" y="46" fontFamily="monospace" fontSize="9" fontWeight="bold" fill="#064E3B">fx-991CW OK</text>
+            {/* Keypad Grid */}
+            <rect x="23" y="58" width="10" height="7" rx="1.5" fill="#3B82F6" stroke="#000" strokeWidth="1" />
+            <rect x="37" y="58" width="10" height="7" rx="1.5" fill="#E2E8F0" stroke="#000" strokeWidth="1" />
+            <rect x="51" y="58" width="10" height="7" rx="1.5" fill="#E2E8F0" stroke="#000" strokeWidth="1" />
+            <rect x="65" y="58" width="12" height="7" rx="1.5" fill="#EF4444" stroke="#000" strokeWidth="1" />
+            {/* Row 2 */}
+            <rect x="23" y="68" width="10" height="7" rx="1.5" fill="#4B5563" stroke="#000" strokeWidth="1" />
+            <rect x="37" y="68" width="10" height="7" rx="1.5" fill="#4B5563" stroke="#000" strokeWidth="1" />
+            <rect x="51" y="68" width="10" height="7" rx="1.5" fill="#4B5563" stroke="#000" strokeWidth="1" />
+            <rect x="65" y="68" width="12" height="7" rx="1.5" fill="#4B5563" stroke="#000" strokeWidth="1" />
+            {/* Row 3 */}
+            <rect x="23" y="78" width="10" height="7" rx="1.5" fill="#4B5563" stroke="#000" strokeWidth="1" />
+            <rect x="37" y="78" width="10" height="7" rx="1.5" fill="#4B5563" stroke="#000" strokeWidth="1" />
+            <rect x="51" y="78" width="10" height="7" rx="1.5" fill="#4B5563" stroke="#000" strokeWidth="1" />
+            <rect x="65" y="78" width="12" height="7" rx="1.5" fill="#3B82F6" stroke="#000" strokeWidth="1" />
+            {/* Row 4 */}
+            <rect x="23" y="88" width="10" height="8" rx="1.5" fill="#E2E8F0" stroke="#000" strokeWidth="1" />
+            <rect x="37" y="88" width="10" height="8" rx="1.5" fill="#E2E8F0" stroke="#000" strokeWidth="1" />
+            <rect x="51" y="88" width="10" height="8" rx="1.5" fill="#E2E8F0" stroke="#000" strokeWidth="1" />
+            <rect x="65" y="88" width="12" height="8" rx="1.5" fill="#10B981" stroke="#000" strokeWidth="1" />
           </svg>
         </div>
 
         <div className="w-full flex justify-between items-end mt-2">
           <div>
-            <h4 className="font-sans font-black text-sm text-black">Game Zone &amp; Tech</h4>
-            <p className="text-[11px] font-bold text-ink-800">Play. Chill. Repeat.</p>
+            <h4 className="font-sans font-black text-sm text-black">Casio fx-991CW ClassWiz</h4>
+            <p className="text-[11px] font-bold text-ink-800">₹850 &bull; Excellent Condition</p>
           </div>
 
           <Link
-            href="/browse?category=Electronics+%26+Calculators"
+            href="/browse?category=Calculators+%26+Electronics"
             className="w-9 h-9 rounded-full bg-black text-white hover:bg-ink-800 flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#FFFFFF] active:translate-x-[1px] active:translate-y-[1px] transition-all"
-            aria-label="Explore Gaming"
+            aria-label="Explore Calculators"
           >
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -85,9 +105,9 @@ export function ExploreCard() {
 
       {/* Bottom Mini Nav */}
       <div className="pt-2 border-t border-black/10 flex justify-around text-center text-xs font-mono font-bold text-ink-700">
-        <Link href="/" className="hover:text-black">Home</Link>
-        <Link href="/browse" className="text-black underline underline-offset-4">Search</Link>
-        <Link href="/orders" className="hover:text-black">Orders</Link>
+        <Link href="/browse" className="hover:text-black">Notice Board</Link>
+        <Link href="/listings/new" className="text-black underline underline-offset-4">+ Post Item</Link>
+        <Link href="/orders" className="hover:text-black">My Orders</Link>
         <Link href="/profile" className="hover:text-black">Profile</Link>
       </div>
     </div>

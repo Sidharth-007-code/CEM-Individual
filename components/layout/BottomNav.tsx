@@ -19,7 +19,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-paper-50/95 backdrop-blur-md border-t border-ink-200 px-2 py-1.5 shadow-float">
+    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-t-2 border-black px-2 py-1.5 shadow-[0_-2px_0px_#000]">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -30,12 +30,12 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center justify-center -mt-4"
+                className="flex flex-col items-center justify-center -mt-5"
               >
-                <div className="w-11 h-11 rounded-full bg-saffron-500 text-white flex items-center justify-center shadow-lg active:scale-90 transition">
-                  <Icon className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-2xl bg-brutal-yellow text-black border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all">
+                  <Icon className="w-6 h-6 stroke-[2.5]" />
                 </div>
-                <span className="text-[10px] font-serif font-bold text-ink-900 mt-0.5">
+                <span className="text-[10px] font-mono font-black text-black mt-0.5">
                   {item.label}
                 </span>
               </Link>
@@ -46,12 +46,14 @@ export function BottomNav() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
-                isActive ? "text-saffron-600 font-bold" : "text-ink-600 hover:text-ink-900"
+              className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all ${
+                isActive
+                  ? "bg-brutal-yellow/60 border border-black text-black font-black shadow-[1px_1px_0px_#000]"
+                  : "text-ink-700 hover:text-black font-semibold"
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-sans mt-0.5">{item.label}</span>
+              <Icon className="w-4 h-4" />
+              <span className="text-[10px] font-mono mt-0.5">{item.label}</span>
             </Link>
           );
         })}

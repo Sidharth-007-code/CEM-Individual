@@ -34,12 +34,14 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center text-xs font-mono font-bold text-ink-600 gap-3">
-          <p className="flex items-center space-x-1">
-            <span>&copy; {new Date().getFullYear()} Brightloop Campus Marketplace</span>
+          <p className="flex items-center space-x-1.5 flex-wrap">
+            <span>&copy; {new Date().getFullYear()} Campus Marketplace</span>
             <span>&bull;</span>
-            <span>Built with</span>
-            <Heart className="w-3.5 h-3.5 text-brutal-pink-dark fill-brutal-pink inline" />
-            <span>for RUAS</span>
+            <span>M.S. Ramaiah University of Applied Sciences</span>
+            <span>&bull;</span>
+            <span>CSC203B Project</span>
+            <span>&bull;</span>
+            <span className="text-admin-700 bg-paper-100 px-2 py-0.5 rounded border border-black/10">10-Min Session Auto-Logout Enabled</span>
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-1.5">
             <Link href="/browse" className="text-black hover:underline">Notice Board</Link>

@@ -7,7 +7,7 @@ import { Sparkles, ShieldCheck, MapPin, Zap } from "lucide-react";
 export default function HomePage() {
   return (
     <div className="space-y-12 pb-8">
-      {/* 1. Full Neo-Brutalist Brightloop Bento Grid & Hero Showcase */}
+      {/* 1. Full Neo-Brutalist Campus Marketplace Bento Grid & Hero Showcase */}
       <section>
         <BentoGrid />
       </section>
