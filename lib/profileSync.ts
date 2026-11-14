@@ -41,14 +41,28 @@ export async function syncUserProfile(
     const existingData = existingSnap.exists() ? existingSnap.data() : {};
     const currentUserEmail = auth.currentUser?.email || existingData.email || "";
 
+    const isAcademicLocked =
+      existingData.academicLocked === true ||
+      Boolean(existingData.course && existingData.year && existingData.campus);
+
     const trimmedData = {
       uid: userId,
       email: currentUserEmail,
-      name: (data.name || auth.currentUser?.displayName || "Student").trim(),
+      // If locked, institutional academic credentials cannot be altered
+      name: isAcademicLocked
+        ? (existingData.name || "Student")
+        : (data.name || auth.currentUser?.displayName || "Student").trim(),
+      course: isAcademicLocked
+        ? (existingData.course || "")
+        : (data.course || "").trim(),
+      year: isAcademicLocked
+        ? (existingData.year || "")
+        : (data.year || "").trim(),
+      campus: isAcademicLocked
+        ? (existingData.campus || "")
+        : (data.campus || "").trim(),
+      academicLocked: true, // Permanent lock after save
       phone: (data.phone || "").trim(),
-      course: (data.course || "").trim(),
-      year: (data.year || "").trim(),
-      campus: (data.campus || "").trim(),
       bio: (data.bio || "").trim(),
       personalEmail: (data.personalEmail || "").trim(),
       photoURL: data.photoURL || "",

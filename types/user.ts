@@ -15,6 +15,7 @@ export interface UserProfile {
   personalEmail?: string;
   photoURL?: string;
   avatarId?: string;
+  academicLocked?: boolean;
   createdAt?: any;
   updatedAt?: any;
 }

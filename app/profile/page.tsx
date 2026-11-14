@@ -62,6 +62,11 @@ export default function ProfilePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
+  // Academic Information Lock: Can only be updated once, then options are removed
+  const isAcademicLocked = Boolean(
+    profile?.academicLocked || (profile?.course && profile?.year && profile?.campus)
+  );
+
   // Prevent background listener updates from erasing user's active typing
   const isLoadedRef = useRef(false);
 
@@ -154,7 +159,11 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!user) return;
 
-    if (!name.trim()) {
+    const finalName = isAcademicLocked
+      ? (profile?.name || name || "Student")
+      : name.trim();
+
+    if (!finalName) {
       setNotification({ type: "error", message: "Please enter your student display name." });
       return;
     }
@@ -181,11 +190,11 @@ export default function ProfilePage() {
 
     try {
       const result = await syncUserProfile(user.uid, {
-        name: name.trim(),
+        name: finalName,
         phone: sanitizedPhone,
-        course,
-        year,
-        campus,
+        course: isAcademicLocked ? (profile?.course || course) : course,
+        year: isAcademicLocked ? (profile?.year || year) : year,
+        campus: isAcademicLocked ? (profile?.campus || campus) : campus,
         bio: bio.trim(),
         personalEmail: personalEmail.trim(),
         photoURL,
@@ -436,87 +445,186 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Academic & Personal Information */}
+          {/* ────────────────── 1. ACADEMIC & STUDENT INFORMATION ────────────────── */}
+          {/* Once updated, these options are permanently removed from the web form */}
+          {isAcademicLocked ? (
+            <div className="bg-paper-100/90 border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
+              <div className="border-b-2 border-black/10 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <ShieldCheck className="w-5 h-5 text-brutal-green-dark stroke-[2.5]" />
+                    <h2 className="font-sans text-base font-black text-black">
+                      Academic &amp; Student Information
+                    </h2>
+                  </div>
+                  <p className="text-xs text-ink-600 font-medium mt-0.5">
+                    Verified university details displayed to peers and on official handover invoices.
+                  </p>
+                </div>
+
+                <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-black text-white rounded-xl text-xs font-mono font-bold self-start sm:self-auto shadow-[1.5px_1.5px_0px_#000]">
+                  <span>🔒</span>
+                  <span>Permanently Locked</span>
+                </div>
+              </div>
+
+              {/* Read-Only Credential Display Cards (Inputs Removed from Web Form) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* Full Name */}
+                <div className="p-3.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000]">
+                  <span className="text-[10px] font-mono font-bold text-ink-500 uppercase tracking-wider block">
+                    Full Name / Display Name
+                  </span>
+                  <span className="font-sans font-black text-sm text-black block mt-0.5">
+                    {profile?.name || name || "Verified Student"}
+                  </span>
+                </div>
+
+                {/* Faculty & Department */}
+                <div className="p-3.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000]">
+                  <span className="text-[10px] font-mono font-bold text-ink-500 uppercase tracking-wider block">
+                    Faculty &amp; Department
+                  </span>
+                  <span className="font-sans font-bold text-sm text-black block mt-0.5">
+                    {profile?.course || course || "Engineering"}
+                  </span>
+                </div>
+
+                {/* Academic Year */}
+                <div className="p-3.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000]">
+                  <span className="text-[10px] font-mono font-bold text-ink-500 uppercase tracking-wider block">
+                    Academic Year
+                  </span>
+                  <span className="font-mono font-bold text-sm text-black block mt-0.5">
+                    {profile?.year || year || "Undergraduate"}
+                  </span>
+                </div>
+
+                {/* Campus / Hostel Residence */}
+                <div className="p-3.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000]">
+                  <span className="text-[10px] font-mono font-bold text-ink-500 uppercase tracking-wider block">
+                    Campus / Hostel Residence
+                  </span>
+                  <span className="font-sans font-bold text-sm text-black block mt-0.5">
+                    {profile?.campus || campus || "Campus Residence"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-2 text-[11px] font-mono font-bold text-ink-600 flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-brutal-green shrink-0" />
+                <span>
+                  Institutional credentials are locked to protect campus peer transactions. Contact administration for official name/transfer modifications.
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
+              <div className="border-b-2 border-black/10 pb-3">
+                <h2 className="font-sans text-base font-black text-black">
+                  Academic &amp; Student Information
+                </h2>
+                <p className="text-xs text-ink-600 font-medium">
+                  Verified university details displayed to peers and on official handover invoices.
+                </p>
+              </div>
+
+              {/* Warning about one-time lock */}
+              <div className="p-3.5 bg-brutal-yellow/30 border-2 border-black rounded-2xl flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-black shrink-0 mt-0.5" />
+                <div className="text-xs font-mono font-bold text-black">
+                  <span>⚠️ One-Time Verification Notice:</span>
+                  <p className="font-normal text-ink-800 mt-0.5">
+                    Your Full Name, Faculty &amp; Department, Academic Year, and Campus Residence can only be updated ONCE. After saving, these options are permanently removed from the web form and cannot be edited again.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                    Full Name / Display Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-semibold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
+                    placeholder="e.g. Aarav Sharma"
+                  />
+                </div>
+
+                {/* Department / Course */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                    Faculty &amp; Department *
+                  </label>
+                  <select
+                    value={course}
+                    onChange={(e) => setCourse(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
+                  >
+                    {POPULAR_DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Year of Study */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                    Academic Year *
+                  </label>
+                  <select
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
+                  >
+                    {STUDY_YEARS.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Campus / Hostel Location */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                    Campus / Hostel Residence *
+                  </label>
+                  <select
+                    value={campus}
+                    onChange={(e) => setCampus(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
+                  >
+                    {CAMPUS_LOCATIONS.map((loc) => (
+                      <option key={loc} value={loc}>
+                        {loc}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ────────────────── 2. CONTACT & TRADING INFORMATION (EDITABLE) ────────────────── */}
           <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
             <div className="border-b-2 border-black/10 pb-3">
               <h2 className="font-sans text-base font-black text-black">
-                Academic &amp; Student Information
+                Contact &amp; Peer Trading Details
               </h2>
               <p className="text-xs text-ink-600 font-medium">
-                Verified university details displayed to peers and on official handover invoices.
+                Keep your mobile phone and trading notes updated for instant buyer/seller connections.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Full Name */}
-              <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
-                  Full Name / Display Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-semibold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
-                  placeholder="e.g. Aarav Sharma"
-                />
-              </div>
-
-              {/* Department / Course */}
-              <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
-                  Faculty &amp; Department *
-                </label>
-                <select
-                  value={course}
-                  onChange={(e) => setCourse(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
-                >
-                  {POPULAR_DEPARTMENTS.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Year of Study */}
-              <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
-                  Academic Year *
-                </label>
-                <select
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
-                >
-                  {STUDY_YEARS.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Campus / Hostel Location */}
-              <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
-                  Campus / Hostel Residence *
-                </label>
-                <select
-                  value={campus}
-                  onChange={(e) => setCampus(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
-                >
-                  {CAMPUS_LOCATIONS.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Contact Phone (for Call links) */}
               <div>
                 <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
@@ -590,7 +698,11 @@ export default function ProfilePage() {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Save &amp; Synchronize Profile</span>
+                  <span>
+                    {isAcademicLocked
+                      ? "Save Contact & Bio Details"
+                      : "Save & Permanently Lock Academic Profile"}
+                  </span>
                 </>
               )}
             </button>
