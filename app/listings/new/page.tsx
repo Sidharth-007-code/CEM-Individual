@@ -48,6 +48,7 @@ export default function NewListingPage() {
     price: numericPrice,
     imageCount: images.length,
     imageSizesKb: images.map((img) => img.sizeKb),
+    images,
   });
 
   const handleAIPolish = () => {
@@ -64,6 +65,7 @@ export default function NewListingPage() {
         category,
         condition,
         price: numericPrice,
+        images,
       });
 
       setTitle(enhanced.polishedTitle);
@@ -262,6 +264,63 @@ export default function NewListingPage() {
                 />
               </label>
             </div>
+
+            {/* AI Image Vision Inspection Panel */}
+            {images.length > 0 && checkResult.aiResult?.imageAnalysis && (
+              <div className="mt-4 p-4 rounded-2xl border-2 border-black bg-paper-50 space-y-3 shadow-[2px_2px_0px_#000]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-black/10 pb-2">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="w-4 h-4 text-brutal-purple" />
+                    <span className="font-sans font-black text-xs text-black uppercase tracking-wider">
+                      AI Vision Inspection &amp; Authenticity Check
+                    </span>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-black border border-black ${
+                    checkResult.aiResult.imageAnalysis.isGenuine
+                      ? "bg-brutal-green text-black"
+                      : "bg-brutal-pink text-black"
+                  }`}>
+                    {checkResult.aiResult.imageAnalysis.isGenuine ? "✓ Verified Authentic Photo" : "⚠️ Authenticity Notice"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  {/* Authenticity Card */}
+                  <div className="p-3 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000] space-y-1">
+                    <span className="text-[10px] font-mono font-bold text-ink-600 block uppercase">Photo Authenticity</span>
+                    <div className="flex items-center space-x-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-brutal-green-dark stroke-[2.5]" />
+                      <strong className="text-black font-sans font-black">
+                        {checkResult.aiResult.imageAnalysis.authenticityScore}% Real Student Photo
+                      </strong>
+                    </div>
+                    <p className="text-[11px] font-mono text-ink-600">
+                      {checkResult.aiResult.imageAnalysis.genuineSignals[0] || "Natural physical item photo with real campus lighting."}
+                    </p>
+                  </div>
+
+                  {/* Product Match Card */}
+                  <div className={`p-3 rounded-xl border border-black shadow-[1px_1px_0px_#000] space-y-1 ${
+                    checkResult.aiResult.imageAnalysis.isMatch ? "bg-white" : "bg-brutal-pink/30"
+                  }`}>
+                    <span className="text-[10px] font-mono font-bold text-ink-600 block uppercase">Product Visual Match</span>
+                    <div className="flex items-center space-x-1.5">
+                      {checkResult.aiResult.imageAnalysis.isMatch ? (
+                        <CheckCircle2 className="w-4 h-4 text-brutal-green-dark stroke-[2.5]" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-admin-600 stroke-[2.5]" />
+                      )}
+                      <strong className="text-black font-sans font-black truncate">
+                        {checkResult.aiResult.imageAnalysis.detectedVisualItem}
+                      </strong>
+                    </div>
+                    <p className="text-[11px] font-mono text-ink-700">
+                      {checkResult.aiResult.imageAnalysis.matchExplanation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Details Card */}
@@ -333,6 +392,32 @@ export default function NewListingPage() {
                 />
               </div>
             </div>
+
+            {/* AI Fair Price Estimator & Instant Auto-Fill */}
+            {checkResult.aiResult?.imageAnalysis?.priceEstimate && (
+              <div className="p-3.5 bg-brutal-yellow/20 border-2 border-black rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[2px_2px_0px_#000]">
+                <div className="space-y-0.5">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-xs font-mono font-black text-black">⚡ AI Price Recommendation:</span>
+                    <span className="px-2 py-0.5 bg-black text-white text-xs font-mono font-black rounded-md">
+                      ₹{checkResult.aiResult.imageAnalysis.priceEstimate.suggestedPrice}
+                    </span>
+                  </div>
+                  <p className="text-[11px] font-mono text-ink-700">
+                    Fair campus resale range: ₹{checkResult.aiResult.imageAnalysis.priceEstimate.fairMin} – ₹{checkResult.aiResult.imageAnalysis.priceEstimate.fairMax}. {checkResult.aiResult.imageAnalysis.priceEstimate.reasoning}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setPrice(checkResult.aiResult!.imageAnalysis!.priceEstimate.suggestedPrice)}
+                  className="px-3.5 py-1.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition shrink-0 flex items-center space-x-1"
+                >
+                  <span>Apply Suggested ₹{checkResult.aiResult.imageAnalysis.priceEstimate.suggestedPrice}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             <div>
               <div className="flex items-center justify-between mb-1.5">

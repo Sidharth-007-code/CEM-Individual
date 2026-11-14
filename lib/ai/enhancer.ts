@@ -1,6 +1,7 @@
 import { ListingCategory, ListingCondition } from "@/types/listing";
 import { AIEnhanceDraftInput, AIEnhancedListingOutput } from "./types";
 import { ACADEMIC_BENCHMARKS } from "./knowledgeBase";
+import { analyzeProductImageAI } from "./vision";
 
 /**
  * AI Listing Assistant
@@ -10,6 +11,17 @@ export function enhanceListingAI(input: AIEnhanceDraftInput): AIEnhancedListingO
   const rawTitle = (input.title || "").trim();
   const rawNotes = (input.notes || input.rawNotes || "").trim();
   const combined = `${rawTitle} ${rawNotes}`.toLowerCase();
+
+  // Run image vision analysis if image is provided
+  let imageAnalysis;
+  if (input.images && input.images.length > 0 && input.images[0].dataUrl) {
+    imageAnalysis = analyzeProductImageAI(input.images[0].dataUrl, {
+      title: rawTitle,
+      description: rawNotes,
+      category: input.category,
+      condition: input.condition,
+    });
+  }
 
   // 1. Identify benchmark or keywords
   const benchmark = ACADEMIC_BENCHMARKS.find((item) =>
@@ -72,15 +84,19 @@ export function enhanceListingAI(input: AIEnhanceDraftInput): AIEnhancedListingO
   const polishedDescription = descriptionSections.join("\n");
 
   // 5. Fair Price Suggestion
-  let suggestedPrice = input.price || (benchmark ? benchmark.averagePrice : 450);
-  if (input.condition === "new") {
-    suggestedPrice = Math.round(suggestedPrice * 1.15);
-  } else if (input.condition === "fair") {
-    suggestedPrice = Math.round(suggestedPrice * 0.8);
+  let suggestedPrice = input.price || (imageAnalysis ? imageAnalysis.priceEstimate.suggestedPrice : benchmark ? benchmark.averagePrice : 450);
+  if (!input.price) {
+    if (imageAnalysis) {
+      suggestedPrice = imageAnalysis.priceEstimate.suggestedPrice;
+    } else if (input.condition === "new") {
+      suggestedPrice = Math.round(suggestedPrice * 1.15);
+    } else if (input.condition === "fair") {
+      suggestedPrice = Math.round(suggestedPrice * 0.8);
+    }
   }
 
   // 6. Category
-  const suggestedCategory = benchmark ? benchmark.category : input.category;
+  const suggestedCategory = (imageAnalysis?.detectedVisualCategory as ListingCategory) || (benchmark ? benchmark.category : input.category);
 
   // 7. Academic Tags
   const academicTags = [
@@ -102,5 +118,6 @@ export function enhanceListingAI(input: AIEnhanceDraftInput): AIEnhancedListingO
       "Official CCTV Campus Meetup Ready",
     ],
     academicTags,
+    imageAnalysis,
   };
 }

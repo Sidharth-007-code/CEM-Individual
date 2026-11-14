@@ -273,6 +273,7 @@ export default function VerifierQueuePage() {
                         condition: selectedListing.condition,
                         price: selectedListing.price,
                         imageCount: 3,
+                        images: selectedListing.thumbnail ? [{ dataUrl: selectedListing.thumbnail }] : undefined,
                       });
 
                     return (
@@ -311,6 +312,30 @@ export default function VerifierQueuePage() {
                             </span>
                           </div>
                         </div>
+
+                        {/* AI Vision & Photo Authenticity */}
+                        {aiEval.imageAnalysis && (
+                          <div className="p-3 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000] space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono font-bold text-ink-600 uppercase text-[10px]">AI Vision &amp; Photo Authenticity</span>
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-black border border-black ${
+                                aiEval.imageAnalysis.isGenuine ? "bg-brutal-green text-black" : "bg-brutal-pink text-black"
+                              }`}>
+                                {aiEval.imageAnalysis.isGenuine ? "Genuine Student Photo" : "Review Photo"}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                              <span className="text-black font-bold">Detected: {aiEval.imageAnalysis.detectedVisualItem}</span>
+                              <span>&bull;</span>
+                              <span className={aiEval.imageAnalysis.isMatch ? "text-verifier-800 font-bold" : "text-admin-800 font-bold"}>
+                                {aiEval.imageAnalysis.matchStatus.replace("_", " ")} ({aiEval.imageAnalysis.matchConfidence}%)
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-ink-600 font-mono">
+                              {aiEval.imageAnalysis.matchExplanation}
+                            </p>
+                          </div>
+                        )}
 
                         {aiEval.verifierAdvice.summaryBulletPoints.length > 0 && (
                           <ul className="list-disc list-inside text-ink-700 text-[11px] space-y-1 font-medium">

@@ -34,6 +34,27 @@ export interface AIQualityCheck {
   hasConditionDetails: boolean;
 }
 
+export interface AIImageAnalysisResult {
+  isGenuine: boolean;
+  authenticityScore: number; // 0 - 100
+  authenticityVerdict: "GENUINE_STUDENT_PHOTO" | "SUSPICIOUS_STOCK_PHOTO" | "POOR_QUALITY_IMAGE" | "UNVERIFIED";
+  genuineSignals: string[];
+  riskFlags: string[];
+  detectedVisualCategory: string;
+  detectedVisualItem: string;
+  isMatch: boolean;
+  matchConfidence: number; // 0 - 100
+  matchStatus: "VERIFIED_MATCH" | "LIKELY_MATCH" | "POTENTIAL_MISMATCH" | "CRITICAL_MISMATCH";
+  matchExplanation: string;
+  priceEstimate: {
+    suggestedPrice: number;
+    fairMin: number;
+    fairMax: number;
+    confidence: number;
+    reasoning: string;
+  };
+}
+
 export interface AIListingValidationResult {
   overallPassed: boolean;
   overallScore: number; // 0 to 100
@@ -41,6 +62,7 @@ export interface AIListingValidationResult {
   priceEval: AIPriceEvaluation;
   safetyCheck: AISafetyCheck;
   qualityCheck: AIQualityCheck;
+  imageAnalysis?: AIImageAnalysisResult;
   recommendedCategory?: ListingCategory;
   suggestedTags: string[];
   verifierAdvice: {
@@ -74,6 +96,7 @@ export interface AIEnhanceDraftInput {
   category: ListingCategory;
   condition: ListingCondition;
   price?: number;
+  images?: Array<{ dataUrl?: string; name?: string }>;
 }
 
 export interface AIEnhancedListingOutput {
@@ -84,4 +107,5 @@ export interface AIEnhancedListingOutput {
   suggestedCondition: ListingCondition;
   keyFeatures: string[];
   academicTags: string[];
+  imageAnalysis?: AIImageAnalysisResult;
 }

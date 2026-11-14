@@ -10,6 +10,7 @@ export interface ListingCheckInput {
   price: number;
   imageCount: number;
   imageSizesKb?: number[];
+  images?: Array<{ dataUrl?: string; name?: string; sizeKb?: number; width?: number; height?: number }>;
 }
 
 /**
@@ -74,6 +75,18 @@ export function runAutomatedListingCheck(input: ListingCheckInput): ListingCheck
     aiResult.safetyCheck.detectedFlags.forEach((flag) => {
       reasons.push(`AI Safety Alert: ${flag}`);
     });
+  }
+
+  // If AI image analysis detected mismatch or authenticity risks, add as reasons
+  if (aiResult.imageAnalysis) {
+    if (!aiResult.imageAnalysis.isMatch) {
+      reasons.push(`AI Vision Alert: ${aiResult.imageAnalysis.matchExplanation}`);
+    }
+    if (!aiResult.imageAnalysis.isGenuine) {
+      aiResult.imageAnalysis.riskFlags.forEach((rf) => {
+        reasons.push(`AI Authenticity Alert: ${rf}`);
+      });
+    }
   }
 
   return {

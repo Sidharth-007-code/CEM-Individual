@@ -67,15 +67,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // 10-Minute Automatic Inactivity Logout for Campus Security
+  // STRICT RULE: Session timeout MUST ONLY take place if there is NO user activity for 10 consecutive minutes.
+  // Synchronized across multiple browser tabs via localStorage so active browsing in one tab preserves the session.
   useEffect(() => {
     if (!user) return;
 
     const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
-    let timeoutId: NodeJS.Timeout;
+    const STORAGE_KEY = "campus_last_active";
+    let lastThrottledRecord = 0;
+
+    // Record activity timestamp in current tab and across tabs
+    const recordUserActivity = () => {
+      const now = Date.now();
+      // Throttle localStorage writes to once every 2 seconds
+      if (now - lastThrottledRecord > 2000) {
+        lastThrottledRecord = now;
+        try {
+          localStorage.setItem(STORAGE_KEY, now.toString());
+        } catch (e) {
+          // localStorage might be unavailable or full
+        }
+      }
+    };
 
     const performInactivityLogout = async () => {
-      console.warn("[Security] User session expired after 10 minutes of inactivity.");
-      await firebaseSignOut(auth);
+      console.warn("[Security] User session expired after 10 full minutes of inactivity across all tabs.");
+      try {
+        await firebaseSignOut(auth);
+      } catch (e) {}
       setProfile(null);
       setUser(null);
       if (typeof window !== "undefined") {
@@ -83,20 +102,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    const resetInactivityTimer = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(performInactivityLogout, INACTIVITY_TIMEOUT_MS);
+    // Initialize last active timestamp on login
+    recordUserActivity();
+
+    // Comprehensive interaction events to detect active user presence
+    const interactionEvents = [
+      "mousedown",
+      "mousemove",
+      "keydown",
+      "scroll",
+      "touchstart",
+      "pointerdown",
+      "click",
+      "wheel",
+      "focus",
+    ];
+
+    interactionEvents.forEach((evt) => {
+      window.addEventListener(evt, recordUserActivity, { passive: true });
+    });
+
+    // Synchronize across tabs when user interacts in another window
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        lastThrottledRecord = Date.now();
+      }
     };
+    window.addEventListener("storage", handleStorageChange);
 
-    const events = ["mousedown", "keydown", "scroll", "touchstart"];
-    events.forEach((evt) => window.addEventListener(evt, resetInactivityTimer, { passive: true }));
+    // When student returns to tab, check if they were active in another tab or just woke the screen
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        const now = Date.now();
+        const storedTime = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
+        if (storedTime && now - storedTime < INACTIVITY_TIMEOUT_MS) {
+          recordUserActivity();
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Initialize timer on login
-    resetInactivityTimer();
+    // Heartbeat checker: checks every 15 seconds if true idle time exceeded 10 minutes
+    const heartbeatInterval = setInterval(() => {
+      const now = Date.now();
+      const storedTime = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
+      const lastActive = storedTime || lastThrottledRecord || now;
+      const elapsed = now - lastActive;
+
+      if (elapsed >= INACTIVITY_TIMEOUT_MS) {
+        clearInterval(heartbeatInterval);
+        performInactivityLogout();
+      }
+    }, 15000);
 
     return () => {
-      clearTimeout(timeoutId);
-      events.forEach((evt) => window.removeEventListener(evt, resetInactivityTimer));
+      clearInterval(heartbeatInterval);
+      interactionEvents.forEach((evt) => {
+        window.removeEventListener(evt, recordUserActivity);
+      });
+      window.removeEventListener("storage", handleStorageChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [user]);
 

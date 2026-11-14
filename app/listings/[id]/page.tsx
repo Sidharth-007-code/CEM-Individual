@@ -430,7 +430,8 @@ export default function ListingDetailPage() {
                   category: listing.category,
                   condition: listing.condition,
                   price: listing.price,
-                  imageCount: images.length || 3,
+                  imageCount: displayImages.length || 3,
+                  images: displayImages.map((src) => ({ dataUrl: src })),
                 });
 
               return (
@@ -444,6 +445,19 @@ export default function ListingDetailPage() {
                       Grade {aiEval.qualityCheck.grade} ({aiEval.qualityCheck.qualityScore}/100)
                     </span>
                   </div>
+
+                  {/* AI Visual Verification Badge */}
+                  {aiEval.imageAnalysis && (
+                    <div className="flex items-center justify-between text-xs px-2.5 py-1.5 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000]">
+                      <span className="font-mono text-[11px] text-ink-700 font-bold flex items-center space-x-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-verifier-700" />
+                        <span>AI Visual Authenticity:</span>
+                      </span>
+                      <span className="font-mono font-black text-black text-[11px]">
+                        {aiEval.imageAnalysis.isGenuine ? "✓ Verified Genuine Physical Item" : "Under Review"}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between text-xs pt-1 border-t-2 border-black/10">
                     <span className="font-mono text-ink-700">Fair Peer Benchmark:</span>

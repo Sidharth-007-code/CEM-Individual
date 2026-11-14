@@ -4,6 +4,7 @@ import {
   AIPriceEvaluation,
   AISafetyCheck,
   AIQualityCheck,
+  AIImageAnalysisResult,
   PriceFairnessRating,
 } from "./types";
 import {
@@ -11,6 +12,7 @@ import {
   PROHIBITED_KEYWORDS,
   AcademicBenchmarkItem,
 } from "./knowledgeBase";
+import { analyzeProductImageAI } from "./vision";
 import { CATEGORY_PRICE_RANGES, MIN_LISTING_IMAGES } from "@/lib/constants";
 
 export interface ValidateListingInput {
@@ -21,6 +23,7 @@ export interface ValidateListingInput {
   price: number;
   imageCount?: number;
   imageSizesKb?: number[];
+  images?: Array<{ dataUrl?: string; name?: string; sizeKb?: number; width?: number; height?: number }>;
 }
 
 /**
@@ -90,12 +93,26 @@ export function validateListingAI(input: ValidateListingInput): AIListingValidat
   // 5. Auto-Generated Academic Tags
   const suggestedTags = extractAcademicTags(cleanTitle, cleanDesc, input.category);
 
-  // 6. Overall Composite Score & Verifier Action
+  // 6. Image Vision & Genuineness Analysis
+  let imageAnalysis: AIImageAnalysisResult | undefined;
+  if (input.images && input.images.length > 0) {
+    imageAnalysis = analyzeProductImageAI(input.images[0], {
+      title: cleanTitle,
+      description: cleanDesc,
+      category: input.category,
+      condition: input.condition,
+    });
+  }
+
+  // 7. Overall Composite Score & Verifier Action
   const overallScore = Math.round(
-    safetyScore * 0.45 + qualityCheck.qualityScore * 0.35 + priceEval.fairnessConfidence * 0.2
+    safetyScore * 0.4 +
+    qualityCheck.qualityScore * 0.3 +
+    priceEval.fairnessConfidence * 0.15 +
+    (imageAnalysis ? imageAnalysis.authenticityScore * 0.15 : 12)
   );
 
-  const overallPassed =
+  let overallPassed =
     !isProhibited &&
     qualityCheck.qualityScore >= 45 &&
     numericPrice > 0 &&
@@ -120,6 +137,26 @@ export function validateListingAI(input: ValidateListingInput): AIListingValidat
     summaryBulletPoints.push(`Image count shortfall: has ${imageCount}, required minimum is ${MIN_LISTING_IMAGES}`);
   }
 
+  // Add Vision & Genuineness feedback
+  if (imageAnalysis) {
+    if (!imageAnalysis.isMatch) {
+      overallPassed = false;
+      recommendedAction = "REQUEST_CHANGES";
+      summaryBulletPoints.push(`⚠️ Image Mismatch: ${imageAnalysis.matchExplanation}`);
+    } else {
+      summaryBulletPoints.push(`Visual Match: ${imageAnalysis.detectedVisualItem} (Confidence: ${imageAnalysis.matchConfidence}%)`);
+    }
+
+    if (!imageAnalysis.isGenuine) {
+      summaryBulletPoints.push(`⚠️ Image Authenticity Notice: ${imageAnalysis.riskFlags.join("; ")}`);
+      if (imageAnalysis.authenticityVerdict === "SUSPICIOUS_STOCK_PHOTO") {
+        recommendedAction = "REQUEST_CHANGES";
+      }
+    } else {
+      summaryBulletPoints.push(`Image Authenticity: Verified Genuine Physical Photo (${imageAnalysis.authenticityScore}%)`);
+    }
+  }
+
   return {
     overallPassed,
     overallScore,
@@ -127,6 +164,7 @@ export function validateListingAI(input: ValidateListingInput): AIListingValidat
     priceEval,
     safetyCheck,
     qualityCheck,
+    imageAnalysis,
     recommendedCategory: recommendedCategory || input.category,
     suggestedTags,
     verifierAdvice: {
