@@ -16,10 +16,8 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Connect to local emulators if configured
-const useEmulator =
-  process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" ||
-  typeof window !== "undefined" && window.location.hostname === "localhost";
+// Connect to local emulators ONLY if explicitly configured
+const useEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
 
 let emulatorsConnected = false;
 

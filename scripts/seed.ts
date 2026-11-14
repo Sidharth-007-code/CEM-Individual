@@ -4,16 +4,66 @@
  * Provisions: 1 Admin, 1 Verifier, 3 Students, 12 realistic listings, sample orders, reports, and audit log.
  */
 
-process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || "127.0.0.1:8080";
-process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOST || "127.0.0.1:9099";
-process.env.FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "campus-marketplace-dev";
-
+import * as fs from "fs";
+import * as path from "path";
 import * as admin from "firebase-admin";
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: process.env.FIREBASE_PROJECT_ID,
+// Parse .env.local if present
+const envPath = path.resolve(process.cwd(), ".env.local");
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, "utf8");
+  envContent.split(/\r?\n/).forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith("#") && trimmed.includes("=")) {
+      const idx = trimmed.indexOf("=");
+      const key = trimmed.substring(0, idx).trim();
+      let val = trimmed.substring(idx + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      if (!process.env[key]) {
+        process.env[key] = val;
+      }
+    }
   });
+}
+
+const isEmulator = process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true";
+const projectId =
+  process.env.FIREBASE_PROJECT_ID ||
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+  "campus-marketplace-46e4d";
+
+if (isEmulator) {
+  process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || "127.0.0.1:8080";
+  process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOST || "127.0.0.1:9099";
+  console.log(`[Seed] Operating against LOCAL EMULATOR (${projectId})`);
+} else {
+  // Clear any emulator host env vars to connect to live Google Cloud
+  delete process.env.FIRESTORE_EMULATOR_HOST;
+  delete process.env.FIREBASE_AUTH_EMULATOR_HOST;
+  console.log(`[Seed] Operating against LIVE GOOGLE CLOUD (${projectId})`);
+}
+
+if (!admin.apps.length) {
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (!isEmulator && privateKey && clientEmail) {
+    privateKey = privateKey.replace(/\\n/g, "\n");
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+      projectId,
+    });
+  } else {
+    admin.initializeApp({
+      projectId,
+    });
+  }
 }
 
 const auth = admin.auth();

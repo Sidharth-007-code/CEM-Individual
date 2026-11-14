@@ -5,12 +5,14 @@ const projectId =
   process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
   "campus-marketplace-dev";
 
-// Ensure emulator env vars are set if not provided
-if (!process.env.FIRESTORE_EMULATOR_HOST && (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" || !process.env.FIREBASE_PRIVATE_KEY)) {
-  process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
-}
-if (!process.env.FIREBASE_AUTH_EMULATOR_HOST && (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true" || !process.env.FIREBASE_PRIVATE_KEY)) {
-  process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
+// Ensure emulator env vars are set ONLY if explicitly requested in environment
+if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true") {
+  if (!process.env.FIRESTORE_EMULATOR_HOST) {
+    process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
+  }
+  if (!process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
+  }
 }
 
 if (!admin.apps.length) {
