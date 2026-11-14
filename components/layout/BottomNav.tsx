@@ -15,7 +15,7 @@ export function BottomNav() {
     { label: "Browse", href: "/browse", icon: Search },
     { label: "Post", href: user ? "/listings/new" : "/login", icon: PlusCircle, isCta: true },
     { label: "Orders", href: user ? "/orders" : "/login", icon: Package },
-    { label: "Profile", href: user ? "/dashboard" : "/login", icon: User },
+    { label: "Profile", href: user ? "/profile" : "/login", icon: User },
   ];
 
   return (

@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   Compass,
+  LayoutDashboard,
 } from "lucide-react";
 
 export function Navbar() {
@@ -106,6 +107,16 @@ export function Navbar() {
             {user && (
               <>
                 <Link
+                  href="/dashboard"
+                  className={`px-3 py-1.5 rounded-notice text-sm font-medium transition ${
+                    pathname === "/dashboard" ? "text-saffron-600 bg-paper-200" : "text-ink-700 hover:text-ink-950 hover:bg-paper-100"
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4 inline mr-1.5 text-ink-500" />
+                  Dashboard
+                </Link>
+
+                <Link
                   href="/orders"
                   className={`px-3 py-1.5 rounded-notice text-sm font-medium transition ${
                     pathname.startsWith("/orders") ? "text-saffron-600 bg-paper-200" : "text-ink-700 hover:text-ink-950 hover:bg-paper-100"
@@ -181,34 +192,26 @@ export function Navbar() {
                 {/* Notifications Bell */}
                 <NotificationBell />
 
-                {/* User Profile & Menu */}
+                {/* Single Clean User Profile & Sign Out */}
                 <div className="flex items-center space-x-2 pl-2 border-l border-ink-200">
                   <Link
-                    href="/dashboard"
-                    className="flex items-center space-x-1.5 text-xs text-ink-800 hover:text-saffron-600 font-medium group"
-                    title={profile?.name || user.email || "Profile"}
+                    href="/profile"
+                    className="flex items-center space-x-2 px-2.5 py-1 rounded-notice bg-paper-100 hover:bg-paper-200 border border-ink-200 hover:border-ink-300 text-xs text-ink-800 hover:text-saffron-600 font-medium transition group"
+                    title="My Profile & Settings"
                   >
-                    <div className="w-7 h-7 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-900 overflow-hidden shadow-inner group-hover:border-saffron-400 transition">
+                    <div className="w-6 h-6 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-900 overflow-hidden shadow-inner group-hover:border-saffron-400 transition shrink-0">
                       {profile?.photoURL ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
                       ) : activePreset ? (
-                        <span className="text-sm leading-none">{activePreset.emoji}</span>
+                        <span className="text-xs leading-none">{activePreset.emoji}</span>
                       ) : (
-                        <span>{profile?.name ? profile.name.charAt(0).toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}</span>
+                        <span>{profile?.name ? profile.name.charAt(0).toUpperCase() : <UserIcon className="w-3 h-3" />}</span>
                       )}
                     </div>
-                    <span className="hidden xl:inline max-w-[100px] truncate">
-                      {profile?.name?.split(" ")[0] || "Profile"}
+                    <span className="max-w-[110px] truncate font-serif font-bold">
+                      {profile?.name ? profile.name.split(" ")[0] : "Profile"}
                     </span>
-                  </Link>
-
-                  <Link
-                    href="/profile"
-                    className="hidden sm:inline-block px-2 py-1 text-[11px] font-serif font-bold bg-paper-100 hover:bg-paper-200 text-ink-800 border border-ink-300 rounded transition"
-                    title="Manage Profile & Identity"
-                  >
-                    Profile
                   </Link>
 
                   <button

@@ -144,8 +144,9 @@ export default function ProfilePage() {
       return;
     }
 
-    if (!phone.trim()) {
-      setNotification({ type: "error", message: "Phone number is required so students can call for handovers." });
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length > 0 && phoneDigits.length < 10) {
+      setNotification({ type: "error", message: "Please provide a valid 10-digit mobile number for call handovers." });
       return;
     }
 
@@ -478,9 +479,11 @@ export default function ProfilePage() {
                   </span>
                   <input
                     type="tel"
-                    required
-                    value={phone.startsWith("+91") ? phone.slice(3).trim() : phone}
-                    onChange={(e) => setPhone("+91 " + e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    value={phone.replace(/^\+91\s*/, "")}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      setPhone(digits ? `+91 ${digits}` : "");
+                    }}
                     className="w-full pl-12 pr-3 py-2 bg-paper-50 border border-ink-300 rounded-notice text-xs font-mono text-ink-950 focus:outline-none focus:border-saffron-500"
                     placeholder="9876543210"
                   />

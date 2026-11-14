@@ -150,7 +150,7 @@ function LoginForm() {
         <div className="flex items-center justify-between">
           <span className="text-xs font-serif font-bold text-ink-900 uppercase tracking-wider flex items-center">
             <span className="w-2 h-2 rounded-full bg-saffron-500 mr-2" />
-            Quick Demo Accounts (CSC203B Evaluation)
+            Quick Demo Accounts (Campus Demo Accounts)
           </span>
           <span className="text-[10px] font-mono text-ink-600">Click to autofill</span>
         </div>

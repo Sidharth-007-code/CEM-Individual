@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { MockBadge } from "@/components/ui/MockBadge";
 import { CheckCircle2, XCircle, QrCode, AlertTriangle, ShieldCheck, X } from "lucide-react";
 
 interface UpiModalProps {
@@ -45,11 +44,13 @@ export function UpiModal({
         <div className="flex justify-between items-start border-b border-ink-200 pb-3">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-serif font-black text-lg text-ink-950">UPI Payment</span>
-              <MockBadge label="Interactive Mock" />
+              <span className="font-serif font-black text-lg text-ink-950">Campus UPI Payment</span>
+              <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-saffron-100 text-saffron-800 border border-saffron-300 rounded">
+                Testnet Sandbox
+              </span>
             </div>
             <p className="text-[11px] text-ink-600 mt-0.5">
-              Simulated campus payment sandbox for CSC203B demonstration.
+              Zero-fee peer-to-peer student transfer simulator.
             </p>
           </div>
           <button onClick={onClose} className="text-ink-500 hover:text-ink-950 p-1">

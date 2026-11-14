@@ -41,11 +41,11 @@ service cloud.firestore {
     // Users
     match /users/{userId} {
       allow read: if isAuthenticated();
-      // Only admin or user creation via Admin SDK.
+      // Only admin or user creation via Admin SDK / client.
       // If user updates their own profile, forbid role or status changes:
       allow update: if (isOwner(userId) &&
-                        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
-                        (!('status' in request.resource.data) || request.resource.data.status == resource.data.status))
+                        (!('role' in request.resource.data) || !('role' in resource.data) || request.resource.data.role == resource.data.role) &&
+                        (!('status' in request.resource.data) || !('status' in resource.data) || request.resource.data.status == resource.data.status))
                     || isAdmin();
       allow create: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
@@ -67,10 +67,12 @@ service cloud.firestore {
         (request.resource.data.status == 'pending' || request.resource.data.status == 'draft');
 
       allow update: if isActiveUser() && (
-        // Seller updating draft/pending listing
-        (resource.data.sellerId == request.auth.uid &&
-          (resource.data.status == 'draft' || resource.data.status == 'pending' || resource.data.status == 'needs_changes') &&
-          (!('status' in request.resource.data) || request.resource.data.status == 'pending' || request.resource.data.status == 'draft'))
+        // Seller updating their own listing contact info (sellerName, sellerPhone, updatedAt) or draft/pending listing
+        (resource.data.sellerId == request.auth.uid && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sellerName', 'sellerPhone', 'updatedAt']) ||
+          ((resource.data.status == 'draft' || resource.data.status == 'pending' || resource.data.status == 'needs_changes') &&
+           (!('status' in request.resource.data) || request.resource.data.status == 'pending' || request.resource.data.status == 'draft'))
+        ))
         ||
         // Verifier approving, rejecting, or requesting changes
         (isVerifier() &&

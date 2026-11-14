@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { ShieldCheck, Lock, KeyRound, AlertTriangle, ShieldAlert, ArrowLeft, CheckCircle2 } from "lucide-react";
-import { MockBadge } from "@/components/ui/MockBadge";
 
 export default function SecurityPolicyPage() {
   return (
@@ -19,7 +18,7 @@ export default function SecurityPolicyPage() {
       <div className="border-b border-ink-200 pb-4 space-y-2">
         <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 bg-paper-200 text-ink-800 rounded text-xs font-mono">
           <ShieldCheck className="w-3.5 h-3.5 text-verifier-600" />
-          <span>CSC203B Security Architecture</span>
+          <span>RUAS Campus Security Architecture</span>
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl font-black text-ink-950 tracking-tight">
           Trust, Safety &amp; Security Architecture
@@ -81,7 +80,7 @@ export default function SecurityPolicyPage() {
         </p>
         <ol className="list-decimal list-inside space-y-2 text-ink-700">
           <li>
-            <strong>Automated Rule-Based Linter (<MockBadge label="Mocked" />):</strong> Evaluates category-specific price ceilings (e.g. ₹5,000 max for textbooks) and requires a minimum of 3 item photographs.
+            <strong>Automated AI &amp; Rule-Based Linter:</strong> Evaluates category-specific price ceilings (e.g. ₹5,000 max for textbooks), scans prohibited academic keywords, and requires item photographs.
           </li>
           <li>
             <strong>Mandatory Human Verifier Approval:</strong> Quality representatives on the student council inspect the submission at <code>/verifier</code> to verify genuine syllabus editions and prevent misleading items.

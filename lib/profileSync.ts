@@ -1,13 +1,23 @@
-import { doc, updateDoc, collection, query, where, getDocs, writeBatch, serverTimestamp, getDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  writeBatch,
+  serverTimestamp,
+  getDoc,
+} from "firebase/firestore";
 import { updateProfile as updateFirebaseProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { UserProfile } from "@/types/user";
 
 export interface ProfileUpdateInput {
   name: string;
-  phone: string;
-  course: string;
-  year: string;
+  phone?: string;
+  course?: string;
+  year?: string;
   campus?: string;
   bio?: string;
   personalEmail?: string;
@@ -26,21 +36,31 @@ export async function syncUserProfile(
   try {
     const userRef = doc(db, "users", userId);
 
+    // Fetch existing document to preserve system fields (role, status, createdAt)
+    const existingSnap = await getDoc(userRef);
+    const existingData = existingSnap.exists() ? existingSnap.data() : {};
+    const currentUserEmail = auth.currentUser?.email || existingData.email || "";
+
     const trimmedData = {
-      name: data.name.trim(),
-      phone: data.phone.trim(),
-      course: data.course.trim(),
-      year: data.year.trim(),
+      uid: userId,
+      email: currentUserEmail,
+      name: (data.name || auth.currentUser?.displayName || "Student").trim(),
+      phone: (data.phone || "").trim(),
+      course: (data.course || "").trim(),
+      year: (data.year || "").trim(),
       campus: (data.campus || "").trim(),
       bio: (data.bio || "").trim(),
       personalEmail: (data.personalEmail || "").trim(),
       photoURL: data.photoURL || "",
       avatarId: data.avatarId || "",
+      role: existingData.role || "student",
+      status: existingData.status || "active",
       updatedAt: serverTimestamp(),
+      ...(existingSnap.exists() ? {} : { createdAt: serverTimestamp() }),
     };
 
-    // 1. Update Firestore User Profile Document
-    await updateDoc(userRef, trimmedData);
+    // 1. Upsert Firestore User Profile Document (safe against missing doc)
+    await setDoc(userRef, trimmedData, { merge: true });
 
     // 2. Synchronize Firebase Auth Profile (displayName & photoURL)
     if (auth.currentUser && auth.currentUser.uid === userId) {

@@ -7,7 +7,7 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
 } from "firebase/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { UserProfile, UserRole } from "@/types/user";
 
@@ -117,13 +117,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (snap.exists()) {
             setProfile(snap.data() as UserProfile);
           } else {
-            // Document might still be creating or fallback
-            setProfile({
+            // Auto-provision initial Firestore document for the authenticated student
+            const initialData: UserProfile = {
               uid: firebaseUser.uid,
               name: firebaseUser.displayName || "Student",
               email: firebaseUser.email || "",
               role: "student",
               status: "active",
+              course: "B.Tech - Engineering",
+              year: "1st Year",
+              phone: "",
+              campus: "Gnanagangothri Campus (Mathikere)",
+            };
+            setProfile(initialData);
+
+            // Persist into Firestore so exists(users/{uid}) and status == 'active' are guaranteed
+            setDoc(
+              userDocRef,
+              {
+                ...initialData,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+              },
+              { merge: true }
+            ).catch((err) => {
+              console.warn("[AuthContext] Auto-provision user doc warning:", err.message);
             });
           }
           setLoading(false);
