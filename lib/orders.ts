@@ -22,9 +22,10 @@ export function isValidStatusTransition(current: OrderStatus, next: OrderStatus)
 }
 
 export function generateInvoiceNumber(orderId: string): string {
-  const cleanId = orderId.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 8);
+  const cleanId = orderId.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  const token = cleanId.length > 8 ? cleanId.slice(-8) : cleanId.padStart(8, "0");
   const year = new Date().getFullYear();
-  return `MSRUAS-${year}-${cleanId}`;
+  return `MSRUAS-${year}-${token}`;
 }
 
 export interface CreateOrderParams {

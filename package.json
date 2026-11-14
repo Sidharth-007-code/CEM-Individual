@@ -13,7 +13,8 @@
     "test:unit": "vitest run tests/unit",
     "test:clumsy": "vitest run tests/unit/clumsyUser.test.ts",
     "test:burglar": "vitest run tests/unit/burglar.test.ts",
-    "test:personas": "vitest run tests/unit/burglar.test.ts tests/unit/clumsyUser.test.ts",
+    "test:crowd": "vitest run tests/unit/crowd.test.ts",
+    "test:personas": "vitest run tests/unit/burglar.test.ts tests/unit/clumsyUser.test.ts tests/unit/crowd.test.ts",
     "emulators": "firebase emulators:start --only auth,firestore",
     "seed": "tsx scripts/seed.ts",
     "test:smtp": "tsx scripts/test-smtp.ts"
