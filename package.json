@@ -12,7 +12,8 @@
     "test:rules": "vitest run tests/rules.test.ts",
     "test:unit": "vitest run tests/unit",
     "emulators": "firebase emulators:start --only auth,firestore",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "test:smtp": "tsx scripts/test-smtp.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
