@@ -25,6 +25,9 @@ interface AuthContextType {
   signIn: (email: string, pass: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  isWarningVisible: boolean;
+  secondsRemaining: number;
+  resetActivityTimer: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -41,6 +44,9 @@ const AuthContext = createContext<AuthContextType>({
   signIn: async () => {},
   signOut: async () => {},
   refreshProfile: async () => {},
+  isWarningVisible: false,
+  secondsRemaining: 60,
+  resetActivityTimer: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -48,6 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [studentMode, setStudentModeState] = useState<"buy" | "sell">("buy");
+  const [isWarningVisible, setIsWarningVisible] = useState<boolean>(false);
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(60);
 
   // Restore preferred mode from localStorage if available
   useEffect(() => {
@@ -66,32 +74,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetActivityTimer = () => {
+    const now = Date.now();
+    try {
+      localStorage.setItem("campus_last_active", now.toString());
+    } catch (e) {}
+    setIsWarningVisible(false);
+    setSecondsRemaining(60);
+  };
+
   // 10-Minute Automatic Inactivity Logout for Campus Security
   // STRICT RULE: Session timeout MUST ONLY take place if there is NO user activity for 10 consecutive minutes.
   // Synchronized across multiple browser tabs via localStorage so active browsing in one tab preserves the session.
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsWarningVisible(false);
+      setSecondsRemaining(60);
+      return;
+    }
 
-    const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+    const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes (600,000ms)
+    const WARNING_THRESHOLD_MS = 9 * 60 * 1000;   // 9 minutes (540,000ms)
     const STORAGE_KEY = "campus_last_active";
-    let lastThrottledRecord = 0;
+    let lastThrottledRecord = Date.now();
 
     // Record activity timestamp in current tab and across tabs
     const recordUserActivity = () => {
       const now = Date.now();
-      // Throttle localStorage writes to once every 2 seconds
+      // If warning modal was open and user interacts, immediately dismiss it
+      setIsWarningVisible(false);
+      setSecondsRemaining(60);
+
+      // Throttle localStorage writes to once every 2 seconds for performance
       if (now - lastThrottledRecord > 2000) {
         lastThrottledRecord = now;
         try {
           localStorage.setItem(STORAGE_KEY, now.toString());
-        } catch (e) {
-          // localStorage might be unavailable or full
-        }
+        } catch (e) {}
       }
     };
 
     const performInactivityLogout = async () => {
       console.warn("[Security] User session expired after 10 full minutes of inactivity across all tabs.");
+      setIsWarningVisible(false);
       try {
         await firebaseSignOut(auth);
       } catch (e) {}
@@ -103,19 +128,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Initialize last active timestamp on login
-    recordUserActivity();
+    try {
+      localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    } catch (e) {}
+    lastThrottledRecord = Date.now();
 
     // Comprehensive interaction events to detect active user presence
     const interactionEvents = [
       "mousedown",
       "mousemove",
       "keydown",
+      "keypress",
+      "keyup",
       "scroll",
       "touchstart",
       "pointerdown",
       "click",
       "wheel",
       "focus",
+      "input",
+      "change",
     ];
 
     interactionEvents.forEach((evt) => {
@@ -124,8 +156,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Synchronize across tabs when user interacts in another window
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) {
-        lastThrottledRecord = Date.now();
+      if (e.key === STORAGE_KEY && e.newValue) {
+        const remoteTime = parseInt(e.newValue, 10);
+        if (!isNaN(remoteTime)) {
+          lastThrottledRecord = Math.max(lastThrottledRecord, remoteTime);
+          setIsWarningVisible(false);
+          setSecondsRemaining(60);
+        }
       }
     };
     window.addEventListener("storage", handleStorageChange);
@@ -135,25 +172,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (document.visibilityState === "visible") {
         const now = Date.now();
         const storedTime = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
-        if (storedTime && now - storedTime < INACTIVITY_TIMEOUT_MS) {
+        const lastActive = Math.max(storedTime || 0, lastThrottledRecord);
+        if (now - lastActive < INACTIVITY_TIMEOUT_MS) {
           recordUserActivity();
+        } else {
+          performInactivityLogout();
         }
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Heartbeat checker: checks every 15 seconds if true idle time exceeded 10 minutes
+    // Heartbeat checker: checks every second for smooth countdown and timely 10-minute timeout
     const heartbeatInterval = setInterval(() => {
       const now = Date.now();
       const storedTime = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
-      const lastActive = storedTime || lastThrottledRecord || now;
+      const lastActive = Math.max(storedTime || 0, lastThrottledRecord || now);
       const elapsed = now - lastActive;
 
       if (elapsed >= INACTIVITY_TIMEOUT_MS) {
         clearInterval(heartbeatInterval);
         performInactivityLogout();
+      } else if (elapsed >= WARNING_THRESHOLD_MS) {
+        setIsWarningVisible(true);
+        const remaining = Math.max(0, Math.ceil((INACTIVITY_TIMEOUT_MS - elapsed) / 1000));
+        setSecondsRemaining(remaining);
+      } else {
+        setIsWarningVisible(false);
+        setSecondsRemaining(60);
       }
-    }, 15000);
+    }, 1000);
 
     return () => {
       clearInterval(heartbeatInterval);
@@ -267,6 +314,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signOut,
         refreshProfile,
+        isWarningVisible,
+        secondsRemaining,
+        resetActivityTimer,
       }}
     >
       {children}

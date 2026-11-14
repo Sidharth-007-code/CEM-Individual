@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
 import { CookieConsent } from "@/components/ui/CookieConsent";
+import { SessionTimeoutWarning } from "@/components/auth/SessionTimeoutWarning";
 
 const serifFont = Playfair_Display({
   subsets: ["latin"],
@@ -42,6 +43,7 @@ export default function RootLayout({
           <BottomNav />
           <Footer />
           <CookieConsent />
+          <SessionTimeoutWarning />
         </AuthProvider>
       </body>
     </html>
