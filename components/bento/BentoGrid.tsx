@@ -1,22 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowDown, Sparkles, ShieldCheck, MapPin, Zap } from "lucide-react";
+import { ArrowRight, ArrowDown } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { AsteriskSticker } from "./AsteriskSticker";
 import { WeatherWidget } from "./WeatherWidget";
 import { CalendarWidget } from "./CalendarWidget";
-import { TasksWidget } from "./TasksWidget";
 import { StatsWidget } from "./StatsWidget";
 import { AppSwitcherWidget } from "./AppSwitcherWidget";
 import { UserProfileCard } from "./UserProfileCard";
 import { ExploreCard } from "./ExploreCard";
-import { BrutalToast } from "@/components/ui/BrutalToast";
 
 export function BentoGrid() {
-  const [showSuccessToast, setShowSuccessToast] = useState(true);
-  const [showAttentionToast, setShowAttentionToast] = useState(true);
-  const [showInfoToast, setShowInfoToast] = useState(true);
+  const { user } = useAuth();
 
   return (
     <div className="space-y-6">
@@ -91,77 +88,33 @@ export function BentoGrid() {
       {/* ────────────────── SECTION 2: MIDDLE BENTO ROW ────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-stretch">
         {/* Live Marketplace Pulse / Stats Widget */}
-        <div className="lg:col-span-3">
+        <div className={user ? "lg:col-span-4" : "lg:col-span-6"}>
           <StatsWidget />
         </div>
 
         {/* Weather Bento (Bengaluru 24°C & Safe Spots) */}
-        <div className="lg:col-span-3">
+        <div className={user ? "lg:col-span-4" : "lg:col-span-6"}>
           <WeatherWidget />
         </div>
 
-        {/* Tasks Checklist Bento */}
-        <div className="lg:col-span-3">
-          <TasksWidget />
-        </div>
-
-        {/* Shreyas Adiga Student Profile Card */}
-        <div className="lg:col-span-3">
-          <UserProfileCard />
-        </div>
+        {/* Verified Student Profile Card - STRICTLY visible ONLY to the logged-in user with their name! */}
+        {user && (
+          <div className="lg:col-span-4">
+            <UserProfileCard />
+          </div>
+        )}
       </div>
 
       {/* ────────────────── SECTION 3: LOWER BENTO ROW ────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-5 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-stretch">
         {/* Quick App Switcher Widget (6 Tiles) */}
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-6">
           <AppSwitcherWidget />
         </div>
 
         {/* Academic Calendar Bento */}
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-6">
           <CalendarWidget />
-        </div>
-
-        {/* Interactive Toasts Stack from Reference Image */}
-        <div className="lg:col-span-4 bg-white border-2 border-black rounded-3xl p-5 shadow-brutal flex flex-col justify-between space-y-3">
-          <div className="flex items-center justify-between text-xs font-mono font-black text-black border-b border-black/10 pb-2">
-            <span>LIVE CAMPUS ALERTS</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-brutal-green border border-black animate-pulse" />
-          </div>
-
-          <div className="space-y-2.5 flex-1 flex flex-col justify-center">
-            {showSuccessToast && (
-              <BrutalToast
-                type="success"
-                title="Success!"
-                message="Peer handover confirmed at Central Library CCTV Zone."
-                onClose={() => setShowSuccessToast(false)}
-              />
-            )}
-
-            {showAttentionToast && (
-              <BrutalToast
-                type="warning"
-                title="Attention!"
-                message="Transact only with verified @msruas.ac.in student emails."
-                onClose={() => setShowAttentionToast(false)}
-              />
-            )}
-
-            {showInfoToast && (
-              <BrutalToast
-                type="info"
-                title="Info"
-                message="AI Product Validation Engine v2.4 actively auditing fair prices."
-                onClose={() => setShowInfoToast(false)}
-              />
-            )}
-          </div>
-
-          <div className="text-[10px] font-mono font-bold text-ink-600 pt-1 border-t border-black/10 text-center">
-            MSRUAS Safe Student Network &bull; 0% Platform Fees
-          </div>
         </div>
       </div>
     </div>

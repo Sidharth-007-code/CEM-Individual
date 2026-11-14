@@ -3,31 +3,30 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { MoreHorizontal, User, Sparkles } from "lucide-react";
+import { User, Sparkles, ShieldCheck } from "lucide-react";
 
 export function UserProfileCard() {
   const { user, profile } = useAuth();
 
-  // If user is logged in, show their data; otherwise showcase the exact "Shreyas Adiga" card from the reference image!
-  const displayName = profile?.name || user?.displayName || "Shreyas Adiga";
+  // STRICT PRIVACY DIRECTIVE: Never display the verified student card to the public.
+  // It is visible strictly to the authenticated student who is using the site, displaying their own name only.
+  if (!user) {
+    return null;
+  }
+
+  const displayName = profile?.name || user.displayName || user.email?.split("@")[0] || "Verified Student";
   const displayHandle = profile?.email
     ? `@${profile.email.split("@")[0]}`
-    : "@shreyas_25";
+    : `@${user.email?.split("@")[0] || "student"}`;
 
   return (
     <div className="bg-white border-2 border-black rounded-3xl p-5 shadow-brutal flex flex-col items-center justify-between text-center h-full min-h-[170px] relative group hover:-translate-y-1 transition-transform">
       <div className="w-full flex justify-between items-center text-xs font-mono font-bold text-ink-600">
-        <span className="flex items-center space-x-1">
-          <Sparkles className="w-3 h-3 text-brutal-yellow" />
-          <span>Verified Student</span>
+        <span className="flex items-center space-x-1.5 px-2 py-0.5 bg-brutal-mint/30 border border-black rounded-full">
+          <ShieldCheck className="w-3.5 h-3.5 text-black" />
+          <span className="text-[11px] font-black text-black">Verified Student</span>
         </span>
-        <button
-          type="button"
-          className="p-1 hover:bg-paper-200 rounded border border-transparent hover:border-black transition"
-          aria-label="Options"
-        >
-          <MoreHorizontal className="w-4 h-4 text-ink-800" />
-        </button>
+        <span className="w-2.5 h-2.5 rounded-full bg-brutal-green border border-black animate-pulse" title="Active Session" />
       </div>
 
       {/* Avatar Container with Green Online Badge */}
@@ -41,24 +40,9 @@ export function UserProfileCard() {
               className="w-full h-full object-cover"
             />
           ) : (
-            // Illustrated boy avatar from reference visual
-            <svg viewBox="0 0 80 80" className="w-14 h-14 translate-y-1">
-              <ellipse cx="40" cy="45" rx="22" ry="24" fill="#FFD0A8" stroke="#000000" strokeWidth="2.5" />
-              {/* Hair */}
-              <path
-                d="M 20 40 Q 22 20 40 18 Q 58 20 60 40 Q 55 25 40 25 Q 25 25 20 40 Z"
-                fill="#18181B"
-                stroke="#000000"
-                strokeWidth="2"
-              />
-              {/* Eyes */}
-              <circle cx="33" cy="42" r="2.5" fill="#000000" />
-              <circle cx="47" cy="42" r="2.5" fill="#000000" />
-              {/* Smile */}
-              <path d="M 36 52 Q 40 56 44 52" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
-              {/* Shirt */}
-              <path d="M 22 68 Q 40 60 58 68 L 62 80 L 18 80 Z" fill="#18181B" stroke="#000000" strokeWidth="2.5" />
-            </svg>
+            <div className="font-sans font-black text-2xl text-black">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
           )}
         </div>
         <div
@@ -90,4 +74,3 @@ export function UserProfileCard() {
     </div>
   );
 }
-
