@@ -3,55 +3,53 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { ShieldCheck, MapPin } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
+import { ShieldCheck, MapPin, Heart } from "lucide-react";
 
 export function Footer() {
   const { role } = useAuth();
 
   return (
-    <footer className="border-t border-ink-200 bg-paper-100 text-ink-800 text-xs py-8 pb-20 sm:pb-8 mt-12 transition-colors">
+    <footer className="border-t-2 border-black bg-white text-black text-xs py-10 pb-24 sm:pb-10 mt-16 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-ink-200 pb-6">
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-serif text-lg font-black tracking-tight text-ink-950">
-                CAMPUS<span className="text-saffron-500 font-sans font-light">MARKET</span>
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 bg-saffron-100 text-saffron-800 font-bold rounded border border-saffron-300">
-                MSRUAS VERIFIED
-              </span>
-            </div>
-            <p className="text-ink-600 mt-1 max-w-md text-[11px] leading-relaxed">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-2 border-black/10 pb-6">
+          <div className="space-y-2">
+            <Logo size="md" href="/" />
+            <p className="text-ink-700 max-w-md text-xs leading-relaxed font-medium">
               M.S. Ramaiah University of Applied Sciences student-to-student verified marketplace.
               Designed for fair exchange, zero commercial fees, and campus safety.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-mono bg-paper-200 text-ink-800 border border-ink-300">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1 text-verifier-700 inline" />
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-brutal-green text-black border-2 border-black shadow-[2px_2px_0px_#000]">
+              <ShieldCheck className="w-3.5 h-3.5 mr-1 text-black inline stroke-[2.5]" />
               Verified Student IDs
             </span>
-            <span className="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-mono bg-paper-200 text-ink-800 border border-ink-300">
-              <MapPin className="w-3.5 h-3.5 mr-1 text-saffron-600 inline" />
+            <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-brutal-yellow text-black border-2 border-black shadow-[2px_2px_0px_#000]">
+              <MapPin className="w-3.5 h-3.5 mr-1 text-black inline stroke-[2.5]" />
               CCTV Safe Meetup Spots
             </span>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center text-[11px] text-ink-500 gap-2">
-          <p>
-            &copy; {new Date().getFullYear()} Campus Marketplace &bull; RUAS Verified Student Community &bull; 10-Min Session Auto-Logout Enabled
+        <div className="flex flex-col sm:flex-row justify-between items-center text-xs font-mono font-bold text-ink-600 gap-3">
+          <p className="flex items-center space-x-1">
+            <span>&copy; {new Date().getFullYear()} Brightloop Campus Marketplace</span>
+            <span>&bull;</span>
+            <span>Built with</span>
+            <Heart className="w-3.5 h-3.5 text-brutal-pink-dark fill-brutal-pink inline" />
+            <span>for RUAS</span>
           </p>
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <Link href="/browse" className="hover:text-ink-900 transition">Notice Board</Link>
-            <Link href="/privacy" className="hover:text-ink-900 transition font-medium">Privacy Policy</Link>
-            <Link href="/security" className="hover:text-ink-900 transition font-medium">Trust &amp; Security</Link>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+            <Link href="/browse" className="text-black hover:underline">Notice Board</Link>
+            <Link href="/privacy" className="text-black hover:underline">Privacy Policy</Link>
+            <Link href="/security" className="text-black hover:underline">Trust &amp; Security</Link>
             {(role === "verifier" || role === "admin") && (
-              <Link href="/verifier" className="text-verifier-700 hover:text-verifier-900 font-medium transition">Verifier Desk</Link>
+              <Link href="/verifier" className="text-verifier-800 hover:underline">Verifier Desk</Link>
             )}
             {role === "admin" && (
-              <Link href="/admin" className="text-admin-700 hover:text-admin-900 font-medium transition">Admin Console</Link>
+              <Link href="/admin" className="text-admin-800 hover:underline">Admin Console</Link>
             )}
           </div>
         </div>

@@ -61,10 +61,11 @@ service cloud.firestore {
         isVerifier()
       );
 
-      allow create: if isActiveUser() &&
+      allow create: if (isActiveUser() &&
         request.resource.data.sellerId == request.auth.uid &&
         request.resource.data.price > 0 &&
-        (request.resource.data.status == 'pending' || request.resource.data.status == 'draft');
+        (request.resource.data.status == 'pending' || request.resource.data.status == 'draft'))
+        || isAdmin();
 
       allow update: if isActiveUser() && (
         // Seller updating their own listing contact info (sellerName, sellerPhone, updatedAt) or draft/pending listing

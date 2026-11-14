@@ -50,6 +50,7 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
   };
 
   const isSold = listing.status === "sold";
+  const isDemo = Boolean((listing as any).isPresentationDemo);
 
   // AI Evaluation (precomputed or evaluated on demand)
   const aiEval =
@@ -66,10 +67,10 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="group bg-paper-100 border border-ink-200 hover:border-ink-400 rounded-notice overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-200 flex flex-col relative"
+      className="group bg-white border-2 border-black rounded-2xl overflow-hidden shadow-brutal hover:shadow-brutal-lg hover:-translate-y-1 transition-all duration-200 flex flex-col relative"
     >
       {/* Thumbnail Aspect Box */}
-      <div className="relative aspect-[4/3] bg-paper-200 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-paper-100 border-b-2 border-black overflow-hidden">
         {listing.thumbnail ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -81,16 +82,25 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-ink-400">
-            <Tag className="w-8 h-8 mb-1" />
-            <span className="text-[10px] font-mono">No Image</span>
+            <Tag className="w-8 h-8 mb-1 text-black" />
+            <span className="text-[10px] font-mono font-bold text-black">Verified Item</span>
           </div>
         )}
 
         {/* Sold Overlay Banner */}
         {isSold && (
-          <div className="absolute inset-0 bg-ink-950/60 backdrop-blur-[1px] flex items-center justify-center">
-            <span className="px-3 py-1 bg-admin-600 text-white font-serif font-black text-xs tracking-widest uppercase border border-white shadow-float rotate-[-6deg]">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center">
+            <span className="px-3 py-1 bg-admin-600 text-white font-sans font-black text-xs tracking-widest uppercase border-2 border-white shadow-[2px_2px_0px_#000] rotate-[-6deg]">
               SOLD
+            </span>
+          </div>
+        )}
+
+        {/* Presentation Demo Badge */}
+        {isDemo && (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="px-2 py-0.5 bg-brutal-yellow text-black font-mono font-black text-[9px] uppercase tracking-wider rounded-md border border-black shadow-[1px_1px_0px_#000]">
+              Demo
             </span>
           </div>
         )}
@@ -101,20 +111,20 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
             type="button"
             onClick={toggleWishlist}
             disabled={savingWishlist}
-            className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-md transition shadow ${
+            className={`absolute top-2 right-2 p-1.5 rounded-xl border-2 border-black transition shadow-[1.5px_1.5px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] ${
               isWishlisted
-                ? "bg-saffron-500 text-white"
-                : "bg-paper-50/80 text-ink-700 hover:text-saffron-600 hover:bg-paper-50"
+                ? "bg-brutal-pink text-black"
+                : "bg-white text-black hover:bg-brutal-pink/30"
             }`}
             title={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
           >
-            <Heart className={`w-3.5 h-3.5 ${isWishlisted ? "fill-white" : ""}`} />
+            <Heart className={`w-3.5 h-3.5 ${isWishlisted ? "fill-black" : ""}`} />
           </button>
         )}
 
         {/* Verified Badge */}
-        <div className="absolute bottom-2 left-2 flex items-center space-x-1 px-1.5 py-0.5 bg-paper-50/90 backdrop-blur-md rounded text-[10px] font-mono text-verifier-800 border border-verifier-600/30">
-          <ShieldCheck className="w-3 h-3 text-verifier-600" />
+        <div className="absolute bottom-2 left-2 flex items-center space-x-1 px-2 py-0.5 bg-white/95 backdrop-blur-md rounded-lg text-[10px] font-mono font-bold text-black border border-black shadow-[1px_1px_0px_#000]">
+          <ShieldCheck className="w-3 h-3 text-verifier-700" />
           <span>Verified</span>
         </div>
       </div>
@@ -122,32 +132,32 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
       {/* Card Content */}
       <div className="p-3.5 flex-1 flex flex-col justify-between space-y-2">
         <div>
-          <div className="flex items-center justify-between text-[11px] text-ink-500 font-mono mb-1">
+          <div className="flex items-center justify-between text-[11px] text-ink-600 font-mono font-semibold mb-1">
             <span className="truncate max-w-[140px]">{listing.category}</span>
             <span className="capitalize">{listing.condition.replace("_", " ")}</span>
           </div>
-          <h3 className="font-serif font-bold text-sm text-ink-950 line-clamp-2 leading-snug group-hover:text-saffron-600 transition-colors">
+          <h3 className="font-sans font-black text-sm text-black line-clamp-2 leading-snug group-hover:text-brutal-purple-dark transition-colors">
             {listing.title}
           </h3>
         </div>
 
-        <div className="flex items-baseline justify-between pt-1 border-t border-ink-100">
+        <div className="flex items-baseline justify-between pt-1.5 border-t border-black/10">
           <div className="flex items-center space-x-1.5">
-            <div className="font-serif text-base font-black text-ink-950">
+            <div className="font-sans text-base font-black text-black">
               ₹{listing.price.toLocaleString("en-IN")}
             </div>
             {aiEval.priceEval.rating === "GREAT_DEAL" ? (
-              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800 rounded border border-emerald-300 flex items-center space-x-0.5">
+              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-brutal-green text-black rounded-md border border-black flex items-center space-x-0.5">
                 <Sparkles className="w-2.5 h-2.5" />
                 <span>Great Deal</span>
               </span>
             ) : aiEval.priceEval.rating === "FAIR_PRICE" ? (
-              <span className="px-1.5 py-0.5 text-[9px] font-mono text-ink-600 bg-paper-200 rounded">
+              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold text-black bg-paper-200 border border-black/30 rounded-md">
                 Fair Price
               </span>
             ) : null}
           </div>
-          <span className="text-[10px] text-ink-500 font-mono">
+          <span className="text-[10px] text-ink-600 font-mono font-bold">
             {listing.sellerName?.split(" ")[0] || "Student"}
           </span>
         </div>
@@ -155,4 +165,3 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
     </Link>
   );
 }
-

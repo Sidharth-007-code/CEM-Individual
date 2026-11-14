@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { NotificationBell } from "./NotificationBell";
+import { Logo } from "@/components/ui/Logo";
 import { PRESET_AVATARS } from "@/lib/constants";
 import {
   Heart,
@@ -31,57 +32,44 @@ export function Navbar() {
   const activePreset = PRESET_AVATARS.find((a) => a.id === profile?.avatarId);
 
   // Dynamic theme accent based on active workspace portal
-  let headerBgClass = "bg-paper-50 border-ink-100";
-  let badgeText = "MSRUAS VERIFIED";
-  let badgeClass = "bg-saffron-100 text-saffron-700 border-saffron-300";
+  let headerBgClass = "bg-[#FDFBF7]/95 border-black";
 
   if (isAdminRoute) {
-    headerBgClass = "bg-admin-50 border-admin-600/30";
-    badgeText = "ADMIN CONSOLE";
-    badgeClass = "bg-admin-100 text-admin-900 border-admin-600";
+    headerBgClass = "bg-admin-50/95 border-black";
   } else if (isVerifierRoute) {
-    headerBgClass = "bg-verifier-50 border-verifier-600/30";
-    badgeText = "VERIFIER DESK";
-    badgeClass = "bg-verifier-100 text-verifier-900 border-verifier-600";
+    headerBgClass = "bg-verifier-50/95 border-black";
   }
 
   return (
-    <header className={`sticky top-0 z-40 border-b transition-colors duration-200 ${headerBgClass} backdrop-blur-md bg-opacity-95`}>
+    <header className={`sticky top-0 z-40 border-b-2 transition-colors duration-200 ${headerBgClass} backdrop-blur-md`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           
           {/* Logo & Masthead */}
           <div className="flex items-center space-x-3">
-            <Link href="/" className="flex items-baseline space-x-2 group">
-              <span className="font-serif text-2xl font-black tracking-tight text-ink-950 group-hover:text-saffron-600 transition-colors">
-                CAMPUS<span className="text-saffron-500 font-sans font-light">MARKET</span>
-              </span>
-              <span className={`hidden sm:inline-block px-1.5 py-0.5 text-[9px] font-mono font-bold tracking-widest border rounded ${badgeClass}`}>
-                {badgeText}
-              </span>
-            </Link>
+            <Logo size="md" href="/" />
 
             {/* Quick Switch for Verifier/Admin if user has privileges */}
             {(role === "verifier" || role === "admin") && (
-              <div className="hidden md:flex items-center pl-4 border-l border-ink-200 space-x-2 text-xs">
+              <div className="hidden md:flex items-center pl-3 border-l-2 border-black/20 space-x-2 text-xs">
                 <Link
                   href="/verifier"
-                  className={`px-2.5 py-1 rounded-notice font-medium transition ${
+                  className={`px-3 py-1 rounded-xl border-2 border-black font-sans font-black text-xs transition-all ${
                     isVerifierRoute
-                      ? "bg-verifier-600 text-white"
-                      : "text-verifier-700 hover:bg-verifier-100"
+                      ? "bg-verifier-600 text-white shadow-[2px_2px_0px_#000]"
+                      : "bg-white text-verifier-800 hover:bg-verifier-100 shadow-[1.5px_1.5px_0px_#000]"
                   }`}
                 >
                   <ShieldCheck className="w-3.5 h-3.5 inline mr-1" />
-                  Verifier Queue
+                  Verifier Desk
                 </Link>
                 {role === "admin" && (
                   <Link
                     href="/admin"
-                    className={`px-2.5 py-1 rounded-notice font-medium transition ${
+                    className={`px-3 py-1 rounded-xl border-2 border-black font-sans font-black text-xs transition-all ${
                       isAdminRoute
-                        ? "bg-admin-600 text-white"
-                        : "text-admin-700 hover:bg-admin-100"
+                        ? "bg-black text-white shadow-[2px_2px_0px_#000]"
+                        : "bg-white text-admin-900 hover:bg-admin-100 shadow-[1.5px_1.5px_0px_#000]"
                     }`}
                   >
                     <ShieldAlert className="w-3.5 h-3.5 inline mr-1" />
@@ -93,14 +81,16 @@ export function Navbar() {
           </div>
 
           {/* Desktop Central Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1.5">
             <Link
               href="/browse"
-              className={`px-3 py-1.5 rounded-notice text-sm font-medium transition ${
-                pathname === "/browse" ? "text-saffron-600 bg-paper-200" : "text-ink-700 hover:text-ink-950 hover:bg-paper-100"
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
+                pathname === "/browse"
+                  ? "bg-brutal-yellow text-black shadow-[2px_2px_0px_#000]"
+                  : "bg-transparent border-transparent hover:border-black hover:bg-paper-100 text-ink-800"
               }`}
             >
-              <Compass className="w-4 h-4 inline mr-1.5 text-ink-500" />
+              <Compass className="w-3.5 h-3.5 inline mr-1 text-black" />
               Notice Board
             </Link>
 
@@ -108,42 +98,50 @@ export function Navbar() {
               <>
                 <Link
                   href="/dashboard"
-                  className={`px-3 py-1.5 rounded-notice text-sm font-medium transition ${
-                    pathname === "/dashboard" ? "text-saffron-600 bg-paper-200" : "text-ink-700 hover:text-ink-950 hover:bg-paper-100"
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
+                    pathname === "/dashboard"
+                      ? "bg-brutal-yellow text-black shadow-[2px_2px_0px_#000]"
+                      : "bg-transparent border-transparent hover:border-black hover:bg-paper-100 text-ink-800"
                   }`}
                 >
-                  <LayoutDashboard className="w-4 h-4 inline mr-1.5 text-ink-500" />
+                  <LayoutDashboard className="w-3.5 h-3.5 inline mr-1 text-black" />
                   Dashboard
                 </Link>
 
                 <Link
                   href="/orders"
-                  className={`px-3 py-1.5 rounded-notice text-sm font-medium transition ${
-                    pathname.startsWith("/orders") ? "text-saffron-600 bg-paper-200" : "text-ink-700 hover:text-ink-950 hover:bg-paper-100"
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
+                    pathname.startsWith("/orders")
+                      ? "bg-brutal-yellow text-black shadow-[2px_2px_0px_#000]"
+                      : "bg-transparent border-transparent hover:border-black hover:bg-paper-100 text-ink-800"
                   }`}
                 >
-                  <Package className="w-4 h-4 inline mr-1.5 text-ink-500" />
+                  <Package className="w-3.5 h-3.5 inline mr-1 text-black" />
                   Orders
                 </Link>
 
                 <Link
                   href="/messages"
-                  className={`px-3 py-1.5 rounded-notice text-sm font-medium transition ${
-                    pathname.startsWith("/messages") ? "text-saffron-600 bg-paper-200" : "text-ink-700 hover:text-ink-950 hover:bg-paper-100"
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
+                    pathname.startsWith("/messages")
+                      ? "bg-brutal-yellow text-black shadow-[2px_2px_0px_#000]"
+                      : "bg-transparent border-transparent hover:border-black hover:bg-paper-100 text-ink-800"
                   }`}
                 >
-                  <MessageSquare className="w-4 h-4 inline mr-1.5 text-ink-500" />
+                  <MessageSquare className="w-3.5 h-3.5 inline mr-1 text-black" />
                   Chat
                 </Link>
 
                 <Link
                   href="/wishlist"
-                  className={`px-3 py-1.5 rounded-notice text-sm font-medium transition ${
-                    pathname === "/wishlist" ? "text-saffron-600 bg-paper-200" : "text-ink-700 hover:text-ink-950 hover:bg-paper-100"
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
+                    pathname === "/wishlist"
+                      ? "bg-brutal-yellow text-black shadow-[2px_2px_0px_#000]"
+                      : "bg-transparent border-transparent hover:border-black hover:bg-paper-100 text-ink-800"
                   }`}
                   title="Wishlist"
                 >
-                  <Heart className="w-4 h-4 inline mr-1.5 text-ink-500" />
+                  <Heart className="w-3.5 h-3.5 inline mr-1 text-black" />
                   Wishlist
                 </Link>
               </>
@@ -155,14 +153,14 @@ export function Navbar() {
             {user ? (
               <>
                 {/* Buy / Sell Mode Toggle for Student */}
-                <div className="hidden sm:flex items-center bg-paper-200 p-0.5 rounded-full border border-ink-300">
+                <div className="hidden sm:flex items-center bg-white p-0.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
                   <button
                     type="button"
                     onClick={() => setStudentMode("buy")}
-                    className={`px-3 py-1 text-xs font-serif font-bold rounded-full transition-all ${
+                    className={`px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
                       studentMode === "buy"
-                        ? "bg-ink-900 text-paper-50 shadow-sm"
-                        : "text-ink-600 hover:text-ink-950"
+                        ? "bg-black text-white shadow-sm"
+                        : "text-ink-600 hover:text-black"
                     }`}
                   >
                     BUY
@@ -170,20 +168,20 @@ export function Navbar() {
                   <button
                     type="button"
                     onClick={() => setStudentMode("sell")}
-                    className={`px-3 py-1 text-xs font-serif font-bold rounded-full transition-all ${
+                    className={`px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
                       studentMode === "sell"
-                        ? "bg-saffron-500 text-white shadow-sm"
-                        : "text-ink-600 hover:text-ink-950"
+                        ? "bg-brutal-yellow text-black shadow-sm"
+                        : "text-ink-600 hover:text-black"
                     }`}
                   >
                     SELL
                   </button>
                 </div>
 
-                {/* Sell CTA button when in sell mode or always accessible */}
+                {/* Sell CTA button with Neo-Brutalist Yellow Button */}
                 <Link
                   href="/listings/new"
-                  className="hidden md:inline-flex items-center px-3.5 py-1.5 bg-saffron-500 hover:bg-saffron-600 text-white text-xs font-serif font-bold tracking-wide rounded-notice shadow-sm transition transform active:scale-95"
+                  className="hidden md:inline-flex items-center px-4 py-2 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black tracking-wide rounded-xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
                 >
                   <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
                   POST ITEM
@@ -193,13 +191,13 @@ export function Navbar() {
                 <NotificationBell />
 
                 {/* Single Clean User Profile & Sign Out */}
-                <div className="flex items-center space-x-2 pl-2 border-l border-ink-200">
+                <div className="flex items-center space-x-2 pl-2 border-l-2 border-black/20">
                   <Link
                     href="/profile"
-                    className="flex items-center space-x-2 px-2.5 py-1 rounded-notice bg-paper-100 hover:bg-paper-200 border border-ink-200 hover:border-ink-300 text-xs text-ink-800 hover:text-saffron-600 font-medium transition group"
+                    className="flex items-center space-x-2 px-3 py-1 rounded-xl bg-white hover:bg-brutal-yellow/30 border-2 border-black shadow-[2px_2px_0px_#000] text-xs text-black font-sans font-black transition group"
                     title="My Profile & Settings"
                   >
-                    <div className="w-6 h-6 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-900 overflow-hidden shadow-inner group-hover:border-saffron-400 transition shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-brutal-yellow border border-black flex items-center justify-center font-bold text-black overflow-hidden shadow-inner group-hover:scale-105 transition shrink-0">
                       {profile?.photoURL ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
@@ -209,14 +207,14 @@ export function Navbar() {
                         <span>{profile?.name ? profile.name.charAt(0).toUpperCase() : <UserIcon className="w-3 h-3" />}</span>
                       )}
                     </div>
-                    <span className="max-w-[110px] truncate font-serif font-bold">
+                    <span className="max-w-[110px] truncate">
                       {profile?.name ? profile.name.split(" ")[0] : "Profile"}
                     </span>
                   </Link>
 
                   <button
                     onClick={() => signOut()}
-                    className="p-1.5 text-ink-500 hover:text-admin-600 rounded hover:bg-paper-200 transition"
+                    className="p-1.5 text-ink-700 hover:text-admin-600 rounded-xl hover:bg-paper-200 transition"
                     title="Sign Out"
                   >
                     <LogOut className="w-4 h-4" />
@@ -227,15 +225,15 @@ export function Navbar() {
               <div className="flex items-center space-x-2">
                 <Link
                   href="/login"
-                  className="px-3 py-1.5 text-xs font-medium text-ink-800 hover:text-ink-950 hover:bg-paper-200 rounded-notice transition"
+                  className="px-3.5 py-1.5 text-xs font-mono font-bold text-black border-2 border-black rounded-xl bg-white hover:bg-paper-100 shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition"
                 >
-                  Log in
+                  Log In
                 </Link>
                 <Link
                   href="/register"
-                  className="px-3.5 py-1.5 text-xs font-serif font-bold bg-ink-900 text-paper-50 hover:bg-ink-800 rounded-notice transition shadow-sm"
+                  className="px-4 py-1.5 text-xs font-sans font-black bg-brutal-yellow text-black hover:bg-brutal-yellow-light border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition"
                 >
-                  Student Sign Up
+                  Sign Up
                 </Link>
               </div>
             )}
@@ -243,7 +241,7 @@ export function Navbar() {
             {/* Mobile menu trigger */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-ink-700 hover:text-ink-950 rounded"
+              className="lg:hidden p-2 text-black border-2 border-black rounded-xl bg-white shadow-[2px_2px_0px_#000]"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -254,16 +252,16 @@ export function Navbar() {
 
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-ink-100 bg-paper-100 px-4 pt-3 pb-5 space-y-3">
+        <div className="lg:hidden border-t-2 border-black bg-white px-4 pt-3 pb-5 space-y-3">
           {user && (
-            <div className="flex items-center justify-between pb-3 border-b border-ink-200">
-              <span className="text-xs text-ink-600">Active Campus Mode:</span>
-              <div className="flex items-center bg-paper-200 p-0.5 rounded-full border border-ink-300">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-black/10">
+              <span className="text-xs font-mono font-bold text-ink-600">Active Campus Mode:</span>
+              <div className="flex items-center bg-paper-100 p-0.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
                 <button
                   type="button"
                   onClick={() => setStudentMode("buy")}
-                  className={`px-3 py-0.5 text-xs font-serif font-bold rounded-full ${
-                    studentMode === "buy" ? "bg-ink-900 text-white" : "text-ink-600"
+                  className={`px-3 py-0.5 text-xs font-mono font-black rounded-lg ${
+                    studentMode === "buy" ? "bg-black text-white" : "text-ink-600"
                   }`}
                 >
                   BUY
@@ -271,8 +269,8 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={() => setStudentMode("sell")}
-                  className={`px-3 py-0.5 text-xs font-serif font-bold rounded-full ${
-                    studentMode === "sell" ? "bg-saffron-500 text-white" : "text-ink-600"
+                  className={`px-3 py-0.5 text-xs font-mono font-black rounded-lg ${
+                    studentMode === "sell" ? "bg-brutal-yellow text-black" : "text-ink-600"
                   }`}
                 >
                   SELL
@@ -281,11 +279,11 @@ export function Navbar() {
             </div>
           )}
 
-          <div className="flex flex-col space-y-2 text-sm">
+          <div className="flex flex-col space-y-2 text-sm font-sans font-bold">
             <Link
               href="/browse"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded text-ink-800 hover:bg-paper-200 font-medium"
+              className="px-3 py-2 rounded-xl text-black hover:bg-paper-100 border border-transparent hover:border-black"
             >
               Browse Notice Board
             </Link>
@@ -294,51 +292,51 @@ export function Navbar() {
                 <Link
                   href="/listings/new"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded text-saffron-700 bg-saffron-50 font-bold"
+                  className="px-3 py-2 rounded-xl text-black bg-brutal-yellow border-2 border-black font-black shadow-[2px_2px_0px_#000]"
                 >
                   + Post New Listing
                 </Link>
                 <Link
-                  href="/orders"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded text-ink-800 hover:bg-paper-200 font-medium"
-                >
-                  My Orders & Purchases
-                </Link>
-                <Link
-                  href="/messages"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded text-ink-800 hover:bg-paper-200 font-medium"
-                >
-                  Messages & Chats
-                </Link>
-                <Link
-                  href="/wishlist"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded text-ink-800 hover:bg-paper-200 font-medium"
-                >
-                  Saved Wishlist
-                </Link>
-                <Link
                   href="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded text-ink-800 hover:bg-paper-200 font-medium"
+                  className="px-3 py-2 rounded-xl text-black hover:bg-paper-100"
                 >
                   Student Dashboard
                 </Link>
                 <Link
+                  href="/orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl text-black hover:bg-paper-100"
+                >
+                  My Orders &amp; Purchases
+                </Link>
+                <Link
+                  href="/messages"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl text-black hover:bg-paper-100"
+                >
+                  Messages &amp; Chats
+                </Link>
+                <Link
+                  href="/wishlist"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl text-black hover:bg-paper-100"
+                >
+                  Saved Wishlist
+                </Link>
+                <Link
                   href="/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded text-ink-800 hover:bg-paper-200 font-medium flex items-center justify-between"
+                  className="px-3 py-2 rounded-xl text-black hover:bg-paper-100 flex items-center justify-between"
                 >
-                  <span>My Profile & Avatar</span>
-                  <span className="text-[10px] font-mono text-saffron-600 font-bold uppercase">Settings</span>
+                  <span>My Profile &amp; Avatar</span>
+                  <span className="text-[10px] font-mono text-brutal-purple-dark font-black uppercase">Settings</span>
                 </Link>
                 {(role === "verifier" || role === "admin") && (
                   <Link
                     href="/verifier"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-2 rounded text-verifier-700 bg-verifier-50 font-medium"
+                    className="px-3 py-2 rounded-xl text-verifier-900 bg-verifier-100 border-2 border-black font-black"
                   >
                     Verifier Quality Queue
                   </Link>
@@ -347,9 +345,9 @@ export function Navbar() {
                   <Link
                     href="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-2 rounded text-admin-700 bg-admin-50 font-medium"
+                    className="px-3 py-2 rounded-xl text-admin-900 bg-admin-100 border-2 border-black font-black"
                   >
-                    Admin Moderation & Audit
+                    Admin Moderation &amp; Presentation Data
                   </Link>
                 )}
               </>
@@ -360,4 +358,3 @@ export function Navbar() {
     </header>
   );
 }
-

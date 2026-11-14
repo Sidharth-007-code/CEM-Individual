@@ -1,83 +1,64 @@
 import React from "react";
 import Link from "next/link";
+import { BentoGrid } from "@/components/bento/BentoGrid";
 import { BrowseNoticeBoard } from "@/components/listings/BrowseNoticeBoard";
-import { ShieldCheck, BookOpen, Clock, Users, ArrowRight } from "lucide-react";
+import { Sparkles, ShieldCheck, MapPin, Zap } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <div className="space-y-8">
-      
-      {/* Editorial Notice-Board Masthead */}
-      <section className="relative overflow-hidden bg-paper-100 border border-ink-200 rounded-notice p-6 sm:p-10 shadow-card">
-        <div className="max-w-3xl space-y-4">
-          <div className="inline-flex items-center space-x-2 px-2.5 py-1 bg-saffron-100 text-saffron-800 rounded-full border border-saffron-300 text-xs font-serif font-bold tracking-wide">
-            <span className="w-2 h-2 rounded-full bg-saffron-500 animate-pulse" />
-            <span>M.S. RAMAIAH UNIVERSITY OF APPLIED SCIENCES</span>
+    <div className="space-y-12 pb-8">
+      {/* 1. Full Neo-Brutalist Brightloop Bento Grid & Hero Showcase */}
+      <section>
+        <BentoGrid />
+      </section>
+
+      {/* 2. Safe University Safeguards Strip */}
+      <section className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal grid grid-cols-1 sm:grid-cols-3 gap-6 text-black">
+        <div className="flex items-start space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-brutal-green border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-5 h-5 text-black" />
           </div>
-
-          <h1 className="font-serif text-3xl sm:text-5xl font-black text-ink-950 tracking-tight leading-[1.15]">
-            The Verified Student Buy &amp; Sell Notice Board.
-          </h1>
-
-          <p className="text-sm sm:text-base text-ink-700 font-sans leading-relaxed">
-            Direct peer-to-peer textbook exchanges, calculators, and hostel essentials.
-            Pre-moderated by campus verifiers, zero middleman fees, and official safe meetup zones.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Link
-              href="/browse"
-              className="px-5 py-2.5 bg-ink-950 hover:bg-ink-900 text-paper-50 font-serif font-bold text-xs sm:text-sm rounded-notice shadow-sm transition flex items-center space-x-2"
-            >
-              <span>Explore Notice Board</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            <Link
-              href="/listings/new"
-              className="px-5 py-2.5 bg-saffron-500 hover:bg-saffron-600 text-white font-serif font-bold text-xs sm:text-sm rounded-notice shadow-sm transition"
-            >
-              + Sell an Item
-            </Link>
+          <div>
+            <strong className="block font-sans font-black text-sm">100% Student Verified</strong>
+            <span className="text-xs font-semibold text-ink-600">Requires institutional @msruas.ac.in credentials.</span>
           </div>
         </div>
 
-        {/* Safe Campus Safeguards Badges */}
-        <div className="mt-8 pt-6 border-t border-ink-200 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-ink-700">
-          <div className="flex items-start space-x-2.5">
-            <ShieldCheck className="w-5 h-5 text-verifier-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <strong className="block font-serif font-bold text-ink-950">100% Student Verified</strong>
-              <span>Requires institutional @msruas.ac.in credentials.</span>
-            </div>
+        <div className="flex items-start space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-brutal-yellow border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center shrink-0">
+            <Zap className="w-5 h-5 text-black" />
           </div>
-
-          <div className="flex items-start space-x-2.5">
-            <BookOpen className="w-5 h-5 text-saffron-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <strong className="block font-serif font-bold text-ink-950">Pre-Approved Listings</strong>
-              <span>Checked for reasonable price caps and image clarity.</span>
-            </div>
+          <div>
+            <strong className="block font-sans font-black text-sm">AI Product Validation</strong>
+            <span className="text-xs font-semibold text-ink-600">Automated fair price benchmarks and syllabus safety checks.</span>
           </div>
+        </div>
 
-          <div className="flex items-start space-x-2.5">
-            <Clock className="w-5 h-5 text-ink-700 flex-shrink-0 mt-0.5" />
-            <div>
-              <strong className="block font-serif font-bold text-ink-950">Designated Meetup Spots</strong>
-              <span>Safe exchanges at Campus Library, Canteen &amp; Main Gate.</span>
-            </div>
+        <div className="flex items-start space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-brutal-purple-light border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center shrink-0">
+            <MapPin className="w-5 h-5 text-brutal-purple-dark" />
+          </div>
+          <div>
+            <strong className="block font-sans font-black text-sm">Official CCTV Meetup Zones</strong>
+            <span className="text-xs font-semibold text-ink-600">Safe verified handovers at Library, Canteen &amp; Main Gate.</span>
           </div>
         </div>
       </section>
 
-      {/* Main Notice Board Grid */}
-      <section className="space-y-4">
-        <div className="flex justify-between items-baseline">
-          <h2 className="font-serif text-2xl font-black text-ink-950 tracking-tight">
-            Active Campus Postings
-          </h2>
-          <span className="text-xs text-ink-500 font-mono">
-            Updated in real-time
+      {/* 3. Main Live Notice Board & Product Showings */}
+      <section className="space-y-6 pt-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2 border-b-2 border-black pb-4">
+          <div>
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brutal-yellow border border-black text-[10px] font-mono font-bold uppercase mb-1">
+              <Sparkles className="w-3 h-3 text-black" />
+              <span>Verified Campus Listings</span>
+            </div>
+            <h2 className="font-sans font-black text-3xl sm:text-4xl text-black tracking-tight">
+              Notice Board
+            </h2>
+          </div>
+          <span className="text-xs font-mono font-bold text-ink-600 bg-paper-100 border border-black/20 px-3 py-1 rounded-xl">
+            Updated in real-time &bull; RUAS Net
           </span>
         </div>
 
@@ -86,4 +67,3 @@ export default function HomePage() {
     </div>
   );
 }
-

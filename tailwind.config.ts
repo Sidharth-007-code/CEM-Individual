@@ -9,6 +9,36 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        brutal: {
+          bg: "#FDFBF7",
+          dark: "#09090B",
+          black: "#000000",
+          yellow: {
+            DEFAULT: "#FFD027",
+            light: "#FFE366",
+            dark: "#E5B810",
+          },
+          purple: {
+            DEFAULT: "#8B5CF6",
+            light: "#DDD6FE",
+            dark: "#7C3AED",
+          },
+          green: {
+            DEFAULT: "#86EFAC",
+            light: "#DCFCE7",
+            dark: "#22C55E",
+          },
+          pink: {
+            DEFAULT: "#FDA4AF",
+            light: "#FFE4E6",
+            dark: "#FB7185",
+          },
+          blue: {
+            DEFAULT: "#38BDF8",
+            light: "#E0F2FE",
+            dark: "#0284C7",
+          },
+        },
         paper: {
           50: "#FCFBF7",
           100: "#F7F5EE",
@@ -55,16 +85,25 @@ const config: Config = {
       },
       fontFamily: {
         serif: ["var(--font-serif)", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "-apple-system", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
       boxShadow: {
         card: "0 1px 3px rgba(15, 30, 54, 0.06), 0 1px 2px rgba(15, 30, 54, 0.04)",
         "card-hover": "0 8px 24px -4px rgba(15, 30, 54, 0.12), 0 2px 6px -1px rgba(15, 30, 54, 0.06)",
         float: "0 14px 34px -6px rgba(15, 30, 54, 0.18)",
+        // Neo-Brutalist 3D hard offset drop shadows
+        "brutal-sm": "2px 2px 0px 0px #000000",
+        brutal: "4px 4px 0px 0px #000000",
+        "brutal-lg": "6px 6px 0px 0px #000000",
+        "brutal-xl": "8px 8px 0px 0px #000000",
       },
       borderRadius: {
         notice: "6px",
+        "brutal-sm": "10px",
+        brutal: "16px",
+        "brutal-lg": "24px",
+        "brutal-xl": "32px",
       },
     },
   },
@@ -72,4 +111,3 @@ const config: Config = {
 };
 
 export default config;
-
