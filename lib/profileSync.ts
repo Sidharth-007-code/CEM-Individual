@@ -73,8 +73,40 @@ export async function syncUserProfile(
       ...(existingSnap.exists() ? {} : { createdAt: serverTimestamp() }),
     };
 
+    let updatedListingsCount = 0;
+    let clientWriteFailed = false;
+
     // 1. Upsert Firestore User Profile Document (safe against missing doc)
-    await setDoc(userRef, trimmedData, { merge: true });
+    try {
+      await setDoc(userRef, trimmedData, { merge: true });
+    } catch (writeErr: any) {
+      console.warn("[ProfileSync] Direct client Firestore write warning:", writeErr.message);
+      clientWriteFailed = true;
+    }
+
+    // If client write failed (e.g. permission or network constraint), fallback to Server-Side Admin API
+    if (clientWriteFailed) {
+      try {
+        const idToken = auth.currentUser ? await auth.currentUser.getIdToken().catch(() => "") : "";
+        const apiRes = await fetch("/api/profile/update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+          },
+          body: JSON.stringify({ userId, data, token: idToken }),
+        });
+
+        const apiJson = await apiRes.json();
+        if (!apiRes.ok || !apiJson.success) {
+          throw new Error(apiJson.error || "Server profile sync failed");
+        }
+        updatedListingsCount = apiJson.updatedListingsCount || 0;
+      } catch (fallbackErr: any) {
+        console.error("[ProfileSync] Server fallback error:", fallbackErr.message);
+        throw fallbackErr;
+      }
+    }
 
     // 2. Synchronize Firebase Auth Profile (displayName & photoURL)
     if (auth.currentUser && auth.currentUser.uid === userId) {
@@ -88,27 +120,28 @@ export async function syncUserProfile(
       }
     }
 
-    // 3. Synchronize across all seller's active campus listings so "Call Seller" & seller tags stay updated
-    let updatedListingsCount = 0;
-    try {
-      const listingsRef = collection(db, "listings");
-      const q = query(listingsRef, where("sellerId", "==", userId));
-      const snap = await getDocs(q);
+    // 3. If client write succeeded, synchronize active listings directly
+    if (!clientWriteFailed) {
+      try {
+        const listingsRef = collection(db, "listings");
+        const q = query(listingsRef, where("sellerId", "==", userId));
+        const snap = await getDocs(q);
 
-      if (!snap.empty) {
-        const batch = writeBatch(db);
-        snap.docs.forEach((listingDoc) => {
-          batch.update(listingDoc.ref, {
-            sellerName: trimmedData.name,
-            sellerPhone: trimmedData.phone,
-            updatedAt: serverTimestamp(),
+        if (!snap.empty) {
+          const batch = writeBatch(db);
+          snap.docs.forEach((listingDoc) => {
+            batch.update(listingDoc.ref, {
+              sellerName: trimmedData.name,
+              sellerPhone: trimmedData.phone,
+              updatedAt: serverTimestamp(),
+            });
+            updatedListingsCount++;
           });
-          updatedListingsCount++;
-        });
-        await batch.commit();
+          await batch.commit();
+        }
+      } catch (listErr) {
+        console.warn("[ProfileSync] Warning synchronizing seller listings:", listErr);
       }
-    } catch (listErr) {
-      console.warn("[ProfileSync] Warning synchronizing seller listings:", listErr);
     }
 
     return {
