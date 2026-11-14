@@ -3,9 +3,20 @@ import crypto from "crypto";
 import * as admin from "firebase-admin";
 import { validateUniversityEmail } from "@/lib/auth/emailValidator";
 import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
+import { checkIpRateLimit, getClientIp } from "@/lib/auth/rateLimiter";
 
 export async function POST(req: NextRequest) {
   try {
+    // 0. Per-IP Rate Limiting
+    const clientIp = getClientIp(req.headers);
+    const ipLimit = checkIpRateLimit(clientIp);
+    if (!ipLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many verification requests from this IP address. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const { email, otp, password, name, year, course, phone, personalEmail } = body;
 
@@ -17,9 +28,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (typeof password !== "string" || password.length < 6) {
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasDigit = /[0-9]/.test(password);
+    if (typeof password !== "string" || password.length < 8 || !hasLetter || !hasDigit) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters long." },
+        { error: "Password must be at least 8 characters long and contain at least one letter and one number." },
         { status: 400 }
       );
     }
@@ -71,9 +84,15 @@ export async function POST(req: NextRequest) {
     await otpDocRef.update({ attempts: currentAttempts });
 
     // 5. Compare Hashes with timingSafeEqual
-    const hmacSecret = process.env.OTP_HMAC_SECRET || "default-campus-secret-key-change-me";
+    const hmacSecret = process.env.OTP_HMAC_SECRET;
+    if (!hmacSecret) {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("Missing required environment variable OTP_HMAC_SECRET in production.");
+      }
+    }
+    const effectiveSecret = hmacSecret || "default-campus-secret-key-change-me";
     const userProvidedHash = crypto
-      .createHmac("sha256", hmacSecret)
+      .createHmac("sha256", effectiveSecret)
       .update(otp.trim())
       .digest("hex");
 

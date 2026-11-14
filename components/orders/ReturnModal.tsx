@@ -55,6 +55,7 @@ export function ReturnModal({
       const notifRef = doc(collection(db, `notifications/${sellerId}/items`));
       await setDoc(notifRef, {
         id: notifRef.id,
+        senderId: user.uid,
         type: "order",
         text: `Return requested for "${listingTitle}". Reason: ${reason}.`,
         link: `/orders/${orderId}`,

@@ -31,6 +31,7 @@ export interface ReturnRequest {
 
 export interface InAppNotification {
   id: string;
+  senderId?: string;
   type: "verification" | "order" | "chat" | "report" | "system";
   text: string;
   link?: string;

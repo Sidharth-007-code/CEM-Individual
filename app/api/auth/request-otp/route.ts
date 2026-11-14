@@ -3,9 +3,20 @@ import crypto from "crypto";
 import { validateUniversityEmail } from "@/lib/auth/emailValidator";
 import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
 import { sendOtpEmail } from "@/lib/mail";
+import { checkIpRateLimit, getClientIp } from "@/lib/auth/rateLimiter";
 
 export async function POST(req: NextRequest) {
   try {
+    // 0. Per-IP Rate Limiting Check
+    const clientIp = getClientIp(req.headers);
+    const ipLimit = checkIpRateLimit(clientIp);
+    if (!ipLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests from this IP address. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const { email } = body;
 
@@ -83,9 +94,15 @@ export async function POST(req: NextRequest) {
     const otpCode = crypto.randomInt(100000, 1000000).toString();
 
     // 5. Store HMAC-SHA256 of the OTP (never plain text)
-    const hmacSecret = process.env.OTP_HMAC_SECRET || "default-campus-secret-key-change-me";
+    const hmacSecret = process.env.OTP_HMAC_SECRET;
+    if (!hmacSecret) {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("Missing required environment variable OTP_HMAC_SECRET in production.");
+      }
+    }
+    const effectiveSecret = hmacSecret || "default-campus-secret-key-change-me";
     const hashedCode = crypto
-      .createHmac("sha256", hmacSecret)
+      .createHmac("sha256", effectiveSecret)
       .update(otpCode)
       .digest("hex");
 

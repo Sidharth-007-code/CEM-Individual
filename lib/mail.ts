@@ -95,7 +95,7 @@ export async function sendOtpEmail({ toEmail, otpCode }: SendOtpEmailParams): Pr
     await transporter.sendMail({
       from: `"${fromName}" <${fromUser}>`,
       to: normalizedEmail,
-      subject: `Campus Marketplace - Verification Code: ${otpCode}`,
+      subject: "Campus Marketplace - Verification Code",
       text: plainText,
     });
 

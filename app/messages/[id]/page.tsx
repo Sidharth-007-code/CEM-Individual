@@ -145,6 +145,7 @@ export default function ConversationDetailPage() {
         const notifRef = doc(collection(db, `notifications/${otherParticipantId}/items`));
         await setDoc(notifRef, {
           id: notifRef.id,
+          senderId: user.uid,
           type: "chat",
           text: `New message from ${profile?.name || "Student"}: "${textToSend.slice(0, 50)}"`,
           link: `/messages/${conversation.id}`,

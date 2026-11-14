@@ -58,8 +58,10 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasDigit = /[0-9]/.test(password);
+    if (password.length < 8 || !hasLetter || !hasDigit) {
+      setError("Password must be at least 8 characters and contain at least one letter and one number.");
       return;
     }
 

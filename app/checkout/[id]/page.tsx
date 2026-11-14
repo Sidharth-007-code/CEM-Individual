@@ -86,6 +86,7 @@ export default function CheckoutPage() {
       const notifRef = doc(collection(db, `notifications/${listing.sellerId}/items`));
       await setDoc(notifRef, {
         id: notifRef.id,
+        senderId: user.uid,
         type: "order",
         text: `New order placed for "${listing.title}" by ${profile?.name || "Student"}. Meetup spot: ${meetupSpot}.`,
         link: `/orders/${orderId}`,

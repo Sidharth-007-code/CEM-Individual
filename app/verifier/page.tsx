@@ -244,6 +244,7 @@ export default function VerifierQueuePage() {
 
         await setDoc(notifRef, {
           id: notifRef.id,
+          senderId: user.uid,
           type: "verification",
           text,
           link: `/listings/${listingId}`,
@@ -314,6 +315,7 @@ export default function VerifierQueuePage() {
           const notifRef = doc(collection(db, `notifications/${item.sellerId}/items`));
           await setDoc(notifRef, {
             id: notifRef.id,
+            senderId: user.uid,
             type: "verification",
             text: `Your listing "${item.title}" has been verified and published to the Notice Board!`,
             link: `/listings/${item.id}`,

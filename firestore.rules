@@ -47,7 +47,7 @@ service cloud.firestore {
                         (!('role' in request.resource.data) || !('role' in resource.data) || request.resource.data.role == resource.data.role) &&
                         (!('status' in request.resource.data) || !('status' in resource.data) || request.resource.data.status == resource.data.status))
                     || isAdmin();
-      allow create: if isOwner(userId) || isAdmin();
+      allow create: if isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -79,9 +79,13 @@ service cloud.firestore {
         (isVerifier() &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'verifierId', 'verifierNote', 'updatedAt']))
         ||
-        // Report count increment
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount', 'status']) &&
-          request.resource.data.reportCount == resource.data.reportCount + 1)
+        // Report count increment: allow only reportCount == old + 1, and may change status only from 'available' to 'hidden' when new reportCount >= 3; otherwise status must stay unchanged
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount', 'status', 'updatedAt']) &&
+          request.resource.data.reportCount == resource.data.reportCount + 1 &&
+          (request.resource.data.status == resource.data.status ||
+           (resource.data.status == 'available' &&
+            request.resource.data.status == 'hidden' &&
+            request.resource.data.reportCount >= 3)))
         ||
         // Order purchase: buyer marks listing as 'sold' atomically when creating order
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
@@ -131,15 +135,18 @@ service cloud.firestore {
       );
 
       // Rule enforcing transactional listing sale:
-      // Buyer cannot be seller; listing must be 'available' prior to tx and marked 'sold' after tx!
+      // Buyer cannot be seller; listing must be 'available' prior to tx and marked 'sold' after tx; price must match listing price!
       allow create: if isActiveUser() &&
         request.resource.data.buyerId == request.auth.uid &&
         request.resource.data.buyerId != request.resource.data.sellerId &&
         get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.status == 'available' &&
-        getAfter(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.status == 'sold';
+        getAfter(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.status == 'sold' &&
+        request.resource.data.price == get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.price;
 
+      // Buyer/seller can change ONLY status, meetupSpot, meetupTime, updatedAt (never price or paymentStatus)
       allow update: if isActiveUser() && (
-        (request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId) ||
+        ((request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'meetupSpot', 'meetupTime', 'updatedAt'])) ||
         isAdmin()
       );
 
@@ -182,16 +189,20 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // Notifications
+    // Notifications: create must be admin-only or restricted to sender's own uid
     match /notifications/{userId}/items/{notifId} {
       allow read, update, delete: if isOwner(userId);
-      allow create: if isAuthenticated();
+      allow create: if isAdmin() || (
+        isActiveUser() && (
+          isOwner(userId) ||
+          request.resource.data.senderId == request.auth.uid
+        )
+      );
     }
 
-    // Audit Log: only read and created by admin or server
+    // Audit Log: only read and created by admin
     match /auditLog/{logId} {
-      allow read: if isAdmin();
-      allow create: if isAuthenticated();
+      allow read, create: if isAdmin();
       allow update, delete: if false;
     }
 
