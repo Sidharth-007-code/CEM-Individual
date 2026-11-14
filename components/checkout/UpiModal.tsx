@@ -37,82 +37,82 @@ export function UpiModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-950/60 backdrop-blur-sm">
-      <div className="bg-paper-50 border border-ink-300 rounded-notice max-w-sm w-full p-6 shadow-float space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white border-2 border-black rounded-3xl max-w-sm w-full p-6 shadow-brutal space-y-5">
         
         {/* Header */}
-        <div className="flex justify-between items-start border-b border-ink-200 pb-3">
+        <div className="flex justify-between items-start border-b-2 border-black/10 pb-3">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-serif font-black text-lg text-ink-950">Campus UPI Payment</span>
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-saffron-100 text-saffron-800 border border-saffron-300 rounded">
+              <span className="font-sans font-black text-lg text-black">Campus UPI Payment</span>
+              <span className="px-2 py-0.5 text-[10px] font-mono font-black bg-brutal-yellow text-black border border-black rounded-md shadow-[1px_1px_0px_#000]">
                 Testnet Sandbox
               </span>
             </div>
-            <p className="text-[11px] text-ink-600 mt-0.5">
+            <p className="text-[11px] font-mono font-bold text-ink-600 mt-0.5">
               Zero-fee peer-to-peer student transfer simulator.
             </p>
           </div>
-          <button onClick={onClose} className="text-ink-500 hover:text-ink-950 p-1">
-            <X className="w-4 h-4" />
+          <button onClick={onClose} className="text-black hover:bg-paper-200 p-1.5 rounded-xl border border-black">
+            <X className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
         {/* QR & Amount Card */}
-        <div className="bg-paper-100 border border-ink-200 rounded p-4 text-center space-y-3">
-          <div className="w-32 h-32 mx-auto bg-white border border-ink-300 rounded flex flex-col items-center justify-center shadow-inner">
-            <QrCode className="w-20 h-20 text-ink-900" />
-            <span className="text-[9px] font-mono text-ink-500 mt-1">SIMULATED QR</span>
+        <div className="bg-paper-50 border-2 border-black rounded-2xl p-4 text-center space-y-3 shadow-[2px_2px_0px_#000]">
+          <div className="w-32 h-32 mx-auto bg-white border-2 border-black rounded-xl flex flex-col items-center justify-center shadow-[2px_2px_0px_#000]">
+            <QrCode className="w-20 h-20 text-black stroke-[2]" />
+            <span className="text-[9px] font-mono font-black text-black mt-1">SIMULATED QR</span>
           </div>
 
           <div>
-            <div className="font-serif text-2xl font-black text-ink-950">
+            <div className="font-sans text-2xl font-black text-black">
               ₹{amount.toLocaleString("en-IN")}
             </div>
-            <p className="text-xs text-ink-600 font-mono truncate max-w-xs mx-auto">
+            <p className="text-xs text-ink-700 font-mono font-bold truncate max-w-xs mx-auto">
               {listingTitle}
             </p>
             <p className="text-[10px] text-ink-500 font-mono mt-1">
-              VPA: <span className="underline">msruas.escrow@upi</span>
+              VPA: <span className="font-bold underline text-black">msruas.escrow@upi</span>
             </p>
           </div>
         </div>
 
         {/* Feedback states */}
         {simState === "success" && (
-          <div className="p-3 bg-verifier-50 border border-verifier-600 rounded text-xs text-verifier-900 flex items-center space-x-2 animate-bounce">
-            <CheckCircle2 className="w-4 h-4 text-verifier-600 flex-shrink-0" />
+          <div className="p-3 bg-brutal-green/30 border-2 border-black rounded-xl text-xs font-mono font-bold text-black flex items-center space-x-2 animate-bounce shadow-[2px_2px_0px_#000]">
+            <CheckCircle2 className="w-4 h-4 text-black stroke-[2.5] flex-shrink-0" />
             <span>Simulated UPI authorization succeeded! Creating order...</span>
           </div>
         )}
 
         {simState === "failed" && (
-          <div className="p-3 bg-admin-50 border border-admin-600 rounded text-xs text-admin-900 flex items-start space-x-2">
+          <div className="p-3 bg-admin-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-admin-900 flex items-start space-x-2 shadow-[2px_2px_0px_#000]">
             <AlertTriangle className="w-4 h-4 text-admin-600 flex-shrink-0 mt-0.5" />
             <div>
-              <strong className="block font-serif">Simulated Payment Failed</strong>
+              <strong className="block font-sans font-black text-black">Simulated Payment Failed</strong>
               <span>Transaction declined. As required by business rules, failed payments never confirm orders. You may retry or switch to Cash.</span>
             </div>
           </div>
         )}
 
         {/* Action Simulation Controls */}
-        <div className="space-y-2 pt-2">
+        <div className="space-y-2.5 pt-1">
           <button
             type="button"
             onClick={handleSimulateSuccess}
-            className="w-full py-2.5 bg-verifier-600 hover:bg-verifier-700 text-white font-serif font-bold text-xs rounded-notice shadow-sm transition flex items-center justify-center space-x-1.5"
+            className="w-full py-3 bg-brutal-green hover:opacity-90 text-black font-sans font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition flex items-center justify-center space-x-1.5"
           >
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
             <span>Simulate Successful UPI Pay</span>
           </button>
 
           <button
             type="button"
             onClick={handleSimulateFailure}
-            className="w-full py-2.5 bg-admin-50 hover:bg-admin-100 text-admin-800 border border-admin-600/40 font-serif font-bold text-xs rounded-notice transition flex items-center justify-center space-x-1.5"
+            className="w-full py-3 bg-admin-100 hover:bg-admin-200 text-admin-900 border-2 border-black font-sans font-black text-xs rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition flex items-center justify-center space-x-1.5"
           >
-            <XCircle className="w-4 h-4" />
+            <XCircle className="w-4 h-4 stroke-[2.5]" />
             <span>Simulate Failed Payment Response</span>
           </button>
         </div>
@@ -121,7 +121,7 @@ export function UpiModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-xs text-ink-600 hover:text-ink-950 underline"
+            className="text-xs font-mono font-bold text-ink-600 hover:text-black underline"
           >
             Cancel and Return to Checkout
           </button>

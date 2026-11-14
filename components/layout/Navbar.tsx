@@ -149,15 +149,15 @@ export function Navbar() {
           </nav>
 
           {/* Right Action Items */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0 flex-nowrap">
             {user ? (
               <>
                 {/* Buy / Sell Mode Toggle for Student */}
-                <div className="hidden sm:flex items-center bg-white p-0.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
+                <div className="hidden sm:flex items-center bg-white p-0.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000] shrink-0">
                   <button
                     type="button"
                     onClick={() => setStudentMode("buy")}
-                    className={`px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
+                    className={`px-2.5 sm:px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
                       studentMode === "buy"
                         ? "bg-black text-white shadow-sm"
                         : "text-ink-600 hover:text-black"
@@ -168,7 +168,7 @@ export function Navbar() {
                   <button
                     type="button"
                     onClick={() => setStudentMode("sell")}
-                    className={`px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
+                    className={`px-2.5 sm:px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
                       studentMode === "sell"
                         ? "bg-brutal-yellow text-black shadow-sm"
                         : "text-ink-600 hover:text-black"
@@ -181,20 +181,22 @@ export function Navbar() {
                 {/* Sell CTA button with Neo-Brutalist Yellow Button */}
                 <Link
                   href="/listings/new"
-                  className="hidden md:inline-flex items-center px-4 py-2 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black tracking-wide rounded-xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
+                  className="hidden md:inline-flex items-center px-3.5 py-1.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black tracking-wide rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all shrink-0"
                 >
                   <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
                   POST ITEM
                 </Link>
 
                 {/* Notifications Bell */}
-                <NotificationBell />
+                <div className="shrink-0">
+                  <NotificationBell />
+                </div>
 
                 {/* Single Clean User Profile & Sign Out */}
-                <div className="flex items-center space-x-2 pl-2 border-l-2 border-black/20">
+                <div className="flex items-center space-x-1.5 sm:space-x-2 pl-1.5 sm:pl-2 border-l-2 border-black/20 shrink-0">
                   <Link
                     href="/profile"
-                    className="flex items-center space-x-2 px-3 py-1 rounded-xl bg-white hover:bg-brutal-yellow/30 border-2 border-black shadow-[2px_2px_0px_#000] text-xs text-black font-sans font-black transition group"
+                    className="flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-1 rounded-xl bg-white hover:bg-brutal-yellow/30 border-2 border-black shadow-[2px_2px_0px_#000] text-xs text-black font-sans font-black transition group shrink-0"
                     title="My Profile & Settings"
                   >
                     <div className="w-6 h-6 rounded-full bg-brutal-yellow border border-black flex items-center justify-center font-bold text-black overflow-hidden shadow-inner group-hover:scale-105 transition shrink-0">
@@ -207,14 +209,14 @@ export function Navbar() {
                         <span>{profile?.name ? profile.name.charAt(0).toUpperCase() : <UserIcon className="w-3 h-3" />}</span>
                       )}
                     </div>
-                    <span className="max-w-[110px] truncate">
+                    <span className="max-w-[70px] sm:max-w-[110px] truncate">
                       {profile?.name ? profile.name.split(" ")[0] : "Profile"}
                     </span>
                   </Link>
 
                   <button
                     onClick={() => signOut()}
-                    className="p-1.5 text-ink-700 hover:text-admin-600 rounded-xl hover:bg-paper-200 transition"
+                    className="p-1.5 text-ink-700 hover:text-admin-600 rounded-xl hover:bg-paper-200 transition shrink-0"
                     title="Sign Out"
                   >
                     <LogOut className="w-4 h-4" />
@@ -222,7 +224,7 @@ export function Navbar() {
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 shrink-0">
                 <Link
                   href="/login"
                   className="px-3.5 py-1.5 text-xs font-mono font-bold text-black border-2 border-black rounded-xl bg-white hover:bg-paper-100 shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition"

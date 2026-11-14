@@ -221,9 +221,9 @@ export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {personalizedRecs.map((rec) => (
-              <div key={rec.listing.id} className="relative flex flex-col">
-                <span className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-black text-white text-[9px] font-mono font-bold rounded-md border border-white shadow">
-                  {rec.recommendationReason}
+              <div key={rec.listing.id} className="flex flex-col">
+                <span className="mb-1.5 inline-flex items-center self-start px-2 py-0.5 bg-black text-white text-[9px] font-mono font-bold rounded-md border border-black shadow-[1px_1px_0px_#000] truncate max-w-full">
+                  ★ {rec.recommendationReason}
                 </span>
                 <ListingCard listing={rec.listing} isWishlistedInitial={wishlistIds.has(rec.listing.id)} />
               </div>

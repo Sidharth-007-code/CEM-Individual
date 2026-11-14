@@ -96,30 +96,30 @@ export function ReportModal({ listingId, listingTitle, isOpen, onClose }: Report
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-950/50 backdrop-blur-sm">
-      <div className="bg-paper-50 border border-ink-300 rounded-notice max-w-md w-full p-6 shadow-float space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white border-2 border-black rounded-3xl max-w-md w-full p-6 shadow-brutal space-y-4">
         
-        <div className="flex justify-between items-start">
-          <div className="flex items-center space-x-2 text-admin-600">
-            <Flag className="w-5 h-5" />
-            <h3 className="font-serif font-bold text-lg text-ink-950">
+        <div className="flex justify-between items-start border-b-2 border-black/10 pb-3">
+          <div className="flex items-center space-x-2 text-black">
+            <Flag className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="font-sans font-black text-lg text-black">
               Report Campus Listing
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-ink-500 hover:text-ink-950 p-1 rounded"
+            className="text-black hover:bg-paper-200 p-1.5 rounded-xl border border-black"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
-        <p className="text-xs text-ink-600">
-          Reporting: <strong className="text-ink-900">{listingTitle}</strong>
+        <p className="text-xs font-mono text-ink-700">
+          Reporting: <strong className="text-black">{listingTitle}</strong>
         </p>
 
         {error && (
-          <div className="p-3 bg-admin-50 border border-admin-600/30 text-admin-900 text-xs rounded-notice flex items-start space-x-2">
+          <div className="p-3 bg-admin-50 border-2 border-black text-admin-900 text-xs font-mono font-bold rounded-xl flex items-start space-x-2 shadow-[2px_2px_0px_#000]">
             <AlertTriangle className="w-4 h-4 text-admin-600 flex-shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -127,24 +127,24 @@ export function ReportModal({ listingId, listingTitle, isOpen, onClose }: Report
 
         {success ? (
           <div className="p-6 text-center space-y-2">
-            <CheckCircle2 className="w-8 h-8 text-verifier-600 mx-auto" />
-            <p className="font-serif font-bold text-sm text-ink-950">
+            <CheckCircle2 className="w-8 h-8 text-black stroke-[2.5] mx-auto" />
+            <p className="font-sans font-black text-base text-black">
               Report Submitted for Moderation
             </p>
-            <p className="text-xs text-ink-600">
+            <p className="text-xs font-mono text-ink-600">
               Thank you for keeping Campus Marketplace safe and trustworthy.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-sans font-black text-black uppercase tracking-wider mb-1">
                 Violation Reason
               </label>
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3 py-2 bg-paper-100 border border-ink-300 rounded-notice text-xs text-ink-900 focus:outline-none focus:border-saffron-500"
+                className="w-full px-3.5 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
               >
                 <option>Misleading or fraudulent price</option>
                 <option>Prohibited or dangerous item</option>
@@ -155,7 +155,7 @@ export function ReportModal({ listingId, listingTitle, isOpen, onClose }: Report
             </div>
 
             <div>
-              <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-sans font-black text-black uppercase tracking-wider mb-1">
                 Additional Details (Optional)
               </label>
               <textarea
@@ -163,7 +163,7 @@ export function ReportModal({ listingId, listingTitle, isOpen, onClose }: Report
                 placeholder="Explain the issue for the university administrative review team..."
                 value={customNote}
                 onChange={(e) => setCustomNote(e.target.value)}
-                className="w-full px-3 py-2 bg-paper-100 border border-ink-300 rounded-notice text-xs text-ink-900 focus:outline-none focus:border-saffron-500"
+                className="w-full px-3.5 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
               />
             </div>
 
@@ -171,14 +171,14 @@ export function ReportModal({ listingId, listingTitle, isOpen, onClose }: Report
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3 py-1.5 text-xs text-ink-700 hover:text-ink-950"
+                className="px-3.5 py-2 text-xs font-mono font-bold text-ink-700 hover:text-black"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-admin-600 hover:bg-admin-700 text-white text-xs font-serif font-bold rounded-notice shadow-sm transition flex items-center space-x-1.5 disabled:opacity-50"
+                className="px-4 py-2.5 bg-admin-600 hover:bg-admin-700 text-white text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition flex items-center space-x-1.5 disabled:opacity-50"
               >
                 {loading ? (
                   <>

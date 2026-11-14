@@ -72,27 +72,27 @@ export function ReturnModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-950/50 backdrop-blur-sm">
-      <div className="bg-paper-50 border border-ink-300 rounded-notice max-w-md w-full p-6 shadow-float space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white border-2 border-black rounded-3xl max-w-md w-full p-6 shadow-brutal space-y-4">
         
-        <div className="flex justify-between items-start">
-          <div className="flex items-center space-x-2 text-saffron-600">
-            <RotateCcw className="w-5 h-5" />
-            <h3 className="font-serif font-bold text-lg text-ink-950">
+        <div className="flex justify-between items-start border-b-2 border-black/10 pb-3">
+          <div className="flex items-center space-x-2 text-black">
+            <RotateCcw className="w-5 h-5 stroke-[2.5]" />
+            <h3 className="font-sans font-black text-lg text-black">
               Request Order Return
             </h3>
           </div>
-          <button onClick={onClose} className="text-ink-500 hover:text-ink-950 p-1 rounded">
-            <X className="w-4 h-4" />
+          <button onClick={onClose} className="text-black hover:bg-paper-200 p-1.5 rounded-xl border border-black">
+            <X className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
-        <p className="text-xs text-ink-600">
-          Order for: <strong className="text-ink-900">{listingTitle}</strong>
+        <p className="text-xs font-mono text-ink-700">
+          Order for: <strong className="text-black">{listingTitle}</strong>
         </p>
 
         {error && (
-          <div className="p-3 bg-admin-50 border border-admin-600/30 text-admin-900 text-xs rounded-notice flex items-start space-x-2">
+          <div className="p-3 bg-admin-50 border-2 border-black text-admin-900 text-xs font-mono font-bold rounded-xl flex items-start space-x-2 shadow-[2px_2px_0px_#000]">
             <AlertTriangle className="w-4 h-4 text-admin-600 flex-shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -100,13 +100,13 @@ export function ReturnModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-sans font-black text-black uppercase tracking-wider mb-1">
               Return Grounds
             </label>
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-3 py-2 bg-paper-100 border border-ink-300 rounded-notice text-xs text-ink-900 focus:outline-none focus:border-saffron-500"
+              className="w-full px-3.5 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
             >
               <option>Item condition does not match description</option>
               <option>Wrong textbook edition or missing syllabus units</option>
@@ -116,7 +116,7 @@ export function ReturnModal({
           </div>
 
           <div>
-            <label className="block text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-sans font-black text-black uppercase tracking-wider mb-1">
               Explanation for Seller / Administration
             </label>
             <textarea
@@ -125,7 +125,7 @@ export function ReturnModal({
               placeholder="Explain why the item is being returned..."
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              className="w-full px-3 py-2 bg-paper-100 border border-ink-300 rounded-notice text-xs text-ink-900 focus:outline-none focus:border-saffron-500"
+              className="w-full px-3.5 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
             />
           </div>
 
@@ -133,14 +133,14 @@ export function ReturnModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs text-ink-700 hover:text-ink-950"
+              className="px-3.5 py-2 text-xs font-mono font-bold text-ink-700 hover:text-black"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-saffron-500 hover:bg-saffron-600 text-white text-xs font-serif font-bold rounded-notice shadow-sm transition flex items-center space-x-1.5 disabled:opacity-50"
+              className="px-4 py-2.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition flex items-center space-x-1.5 disabled:opacity-50"
             >
               {loading ? (
                 <>

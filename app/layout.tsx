@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className="bg-paper-50 text-ink-950 min-h-screen flex flex-col font-sans selection:bg-saffron-200 selection:text-ink-950">
         <AuthProvider>
           <Navbar />
-          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 sm:pb-8">
             {children}
           </main>
           <BottomNav />

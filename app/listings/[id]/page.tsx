@@ -191,23 +191,23 @@ export default function ListingDetailPage() {
   if (loading) {
     return (
       <div className="py-20 text-center space-y-3">
-        <div className="w-8 h-8 border-2 border-ink-300 border-t-saffron-500 rounded-full animate-spin mx-auto" />
-        <p className="text-xs font-serif text-ink-600">Loading item specifications...</p>
+        <div className="w-10 h-10 border-4 border-black border-t-brutal-yellow rounded-full animate-spin mx-auto" />
+        <p className="text-xs font-mono font-bold text-ink-600">Loading item specifications...</p>
       </div>
     );
   }
 
   if (!listing) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-paper-100 border border-ink-200 rounded-notice p-8 text-center space-y-4">
-        <AlertCircle className="w-8 h-8 text-admin-600 mx-auto" />
-        <h2 className="font-serif text-xl font-bold text-ink-950">Listing Unavailable</h2>
-        <p className="text-xs text-ink-600 leading-relaxed">
+      <div className="max-w-md mx-auto my-12 bg-white border-2 border-black rounded-2xl p-8 text-center space-y-4 shadow-brutal">
+        <AlertCircle className="w-10 h-10 text-admin-600 mx-auto" />
+        <h2 className="font-sans text-2xl font-black text-black">Listing Unavailable</h2>
+        <p className="text-xs font-mono text-ink-600 leading-relaxed">
           This listing does not exist, has been removed, or was taken down by campus moderation.
         </p>
         <Link
           href="/browse"
-          className="inline-block px-4 py-2 bg-ink-950 text-paper-50 rounded text-xs font-serif font-bold"
+          className="inline-block px-5 py-2.5 bg-brutal-yellow text-black border-2 border-black rounded-xl text-xs font-sans font-black shadow-[2px_2px_0px_#000] hover:bg-brutal-yellow-light"
         >
           Return to Notice Board
         </Link>
@@ -226,9 +226,9 @@ export default function ListingDetailPage() {
       <div className="flex items-center justify-between">
         <Link
           href="/browse"
-          className="inline-flex items-center space-x-1 text-xs font-medium text-ink-600 hover:text-ink-950"
+          className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] hover:bg-paper-100 transition"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
           <span>Back to Notice Board</span>
         </Link>
 
@@ -236,48 +236,50 @@ export default function ListingDetailPage() {
           {/* Wishlist */}
           <button
             onClick={toggleWishlist}
-            className={`p-2 rounded-full border transition flex items-center space-x-1 text-xs font-serif ${
+            className={`px-3 py-1.5 rounded-xl border-2 border-black transition flex items-center space-x-1.5 text-xs font-sans font-black shadow-[2px_2px_0px_#000] ${
               isWishlisted
-                ? "bg-saffron-100 border-saffron-400 text-saffron-800"
-                : "bg-paper-100 border-ink-200 text-ink-700 hover:bg-paper-200"
+                ? "bg-brutal-pink text-black"
+                : "bg-white text-black hover:bg-brutal-pink/30"
             }`}
           >
-            <Heart className={`w-4 h-4 ${isWishlisted ? "fill-saffron-500 text-saffron-500" : ""}`} />
-            <span className="hidden sm:inline">{isWishlisted ? "Saved" : "Save"}</span>
+            <Heart className={`w-4 h-4 stroke-[2.5] ${isWishlisted ? "fill-black" : ""}`} />
+            <span>{isWishlisted ? "Saved" : "Save"}</span>
           </button>
 
           {/* Report Button */}
           <button
             onClick={() => setReportModalOpen(true)}
-            className="p-2 rounded-full border border-ink-200 bg-paper-100 text-ink-600 hover:text-admin-600 hover:bg-paper-200 transition"
+            className="p-1.5 rounded-xl border-2 border-black bg-white text-ink-600 hover:text-admin-600 hover:bg-admin-50 shadow-[2px_2px_0px_#000] transition"
             title="Report this listing"
           >
-            <Flag className="w-4 h-4" />
+            <Flag className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
       </div>
 
       {/* Sold Banner Notice */}
       {isSold && (
-        <div className="p-4 bg-admin-50 border border-admin-600 rounded-notice text-admin-900 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="font-serif font-black text-sm uppercase tracking-wider bg-admin-600 text-white px-2.5 py-0.5 rounded">
+        <div className="p-4 bg-admin-50 border-2 border-black rounded-2xl text-admin-900 shadow-[3px_3px_0px_#000] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-2.5">
+            <span className="font-sans font-black text-xs uppercase tracking-wider bg-admin-600 text-white px-2.5 py-1 rounded-lg border border-black shadow-[1px_1px_0px_#000]">
               ITEM SOLD
             </span>
-            <span className="text-xs">
+            <span className="text-xs font-mono font-bold">
               This item has found a student buyer and is no longer available.
             </span>
           </div>
-          <span className="text-xs font-mono text-admin-700">Single-Sale Verified</span>
+          <span className="text-xs font-mono font-black text-admin-700 bg-white px-2 py-0.5 rounded border border-black">
+            Single-Sale Verified
+          </span>
         </div>
       )}
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 bg-paper-100 border border-ink-200 rounded-notice p-6 sm:p-8 shadow-card">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal">
         
         {/* Gallery Column (6 Cols) */}
         <div className="md:col-span-6 space-y-4">
-          <div className="aspect-[4/3] rounded-notice overflow-hidden border border-ink-200 bg-paper-200 relative">
+          <div className="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-black bg-paper-100 relative shadow-[2px_2px_0px_#000]">
             {displayImages[activeImgIndex] ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -286,26 +288,28 @@ export default function ListingDetailPage() {
                 className={`w-full h-full object-cover ${isSold ? "grayscale" : ""}`}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-ink-400">
+              <div className="w-full h-full flex items-center justify-center text-xs font-mono font-bold text-ink-400">
                 No Photo Available
               </div>
             )}
 
-            <div className="absolute bottom-3 left-3 flex items-center space-x-1 px-2 py-0.5 bg-paper-50/90 backdrop-blur-md rounded text-[11px] font-mono text-verifier-800 border border-verifier-600/30">
-              <ShieldCheck className="w-3.5 h-3.5 text-verifier-600" />
+            <div className="absolute bottom-3 left-3 flex items-center space-x-1.5 px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-xl text-xs font-mono font-black text-black border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
+              <ShieldCheck className="w-4 h-4 text-verifier-600 stroke-[2.5]" />
               <span>Campus Verified Listing</span>
             </div>
           </div>
 
           {/* Thumbnails row */}
           {displayImages.length > 1 && (
-            <div className="flex space-x-2 overflow-x-auto pb-1">
+            <div className="flex space-x-2.5 overflow-x-auto pb-1">
               {displayImages.map((src, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImgIndex(i)}
-                  className={`w-16 h-16 rounded overflow-hidden border-2 flex-shrink-0 transition ${
-                    activeImgIndex === i ? "border-saffron-500 shadow" : "border-ink-200 opacity-70 hover:opacity-100"
+                  className={`w-16 h-16 rounded-xl overflow-hidden border-2 flex-shrink-0 transition ${
+                    activeImgIndex === i
+                      ? "border-black ring-2 ring-brutal-yellow shadow-[2px_2px_0px_#000]"
+                      : "border-black/30 opacity-70 hover:opacity-100"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -320,32 +324,32 @@ export default function ListingDetailPage() {
         <div className="md:col-span-6 flex flex-col justify-between space-y-6">
           <div className="space-y-4">
             
-            <div className="flex items-center space-x-2 text-xs font-mono">
-              <span className="px-2 py-0.5 bg-paper-200 text-ink-800 rounded border border-ink-300 uppercase">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+              <span className="px-2.5 py-1 bg-brutal-yellow text-black font-black rounded-xl border-2 border-black uppercase shadow-[1.5px_1.5px_0px_#000]">
                 {listing.category}
               </span>
-              <span className="px-2 py-0.5 bg-paper-200 text-ink-800 rounded border border-ink-300 capitalize">
+              <span className="px-2.5 py-1 bg-paper-100 text-black font-bold rounded-xl border-2 border-black capitalize shadow-[1.5px_1.5px_0px_#000]">
                 Condition: {listing.condition.replace("_", " ")}
               </span>
             </div>
 
-            <h1 className="font-serif text-2xl sm:text-3xl font-black text-ink-950 leading-tight">
+            <h1 className="font-sans text-2xl sm:text-3xl font-black text-black leading-tight tracking-tight">
               {listing.title}
             </h1>
 
             <div className="flex items-baseline space-x-3">
-              <div className="font-serif text-3xl font-black text-saffron-600">
+              <div className="font-sans text-3xl sm:text-4xl font-black text-black">
                 ₹{listing.price.toLocaleString("en-IN")}
               </div>
-              <span className="text-xs text-ink-500 font-mono">Fair-Trade Fixed Price</span>
+              <span className="text-xs text-ink-600 font-mono font-bold">Fair-Trade Fixed Price</span>
             </div>
 
             {/* Description */}
-            <div className="pt-2 border-t border-ink-200">
-              <h3 className="text-xs font-serif font-bold text-ink-800 uppercase tracking-wider mb-2">
+            <div className="pt-2 border-t-2 border-black/10">
+              <h3 className="text-xs font-sans font-black text-black uppercase tracking-wider mb-2">
                 Item Description &amp; Usage Notes
               </h3>
-              <p className="text-xs text-ink-800 leading-relaxed whitespace-pre-wrap bg-paper-50 p-3.5 rounded border border-ink-200">
+              <p className="text-xs font-mono text-ink-900 leading-relaxed whitespace-pre-wrap bg-paper-50 p-4 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000]">
                 {listing.description}
               </p>
             </div>
@@ -360,32 +364,32 @@ export default function ListingDetailPage() {
               const sellerAvatarPreset = PRESET_AVATARS.find((a) => a.id === sellerProfile?.avatarId);
 
               return (
-                <div className="bg-paper-200/60 border border-ink-300 rounded p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="bg-brutal-yellow/20 border-2 border-black rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[2px_2px_0px_#000]">
                   <div className="flex items-center space-x-3">
-                    <div className="w-11 h-11 rounded-full bg-paper-300 border border-ink-300 flex items-center justify-center font-serif font-bold text-ink-950 overflow-hidden shadow-inner shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-brutal-yellow border-2 border-black flex items-center justify-center font-sans font-black text-black overflow-hidden shadow-[2px_2px_0px_#000] shrink-0">
                       {sellerProfile?.photoURL ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={sellerProfile.photoURL} alt={sellerName} className="w-full h-full object-cover" />
                       ) : sellerAvatarPreset ? (
-                        <span className="text-xl leading-none">{sellerAvatarPreset.emoji}</span>
+                        <span className="text-2xl leading-none">{sellerAvatarPreset.emoji}</span>
                       ) : (
-                        <span>{sellerName ? sellerName.charAt(0).toUpperCase() : <User className="w-5 h-5 text-ink-700" />}</span>
+                        <span>{sellerName ? sellerName.charAt(0).toUpperCase() : <User className="w-5 h-5 text-black" />}</span>
                       )}
                     </div>
                     <div>
                       <div className="flex items-center space-x-1.5">
-                        <span className="font-serif font-bold text-xs text-ink-950">
+                        <span className="font-sans font-black text-xs text-black">
                           {sellerName}
                         </span>
-                        <span className="px-1.5 py-0.2 bg-verifier-100 text-verifier-800 text-[9px] font-mono rounded border border-verifier-600/30">
+                        <span className="px-1.5 py-0.5 bg-brutal-green text-black text-[9px] font-mono font-bold rounded-md border border-black">
                           Verified Peer
                         </span>
                       </div>
-                      <span className="text-[11px] text-ink-600 block">
+                      <span className="text-[11px] font-mono text-ink-700 block">
                         {sellerCourse ? `${sellerCourse} ${sellerYear ? `• ${sellerYear}` : ""}` : "MSRUAS Enrolled Student"}
                       </span>
                       {sellerCampus && (
-                        <span className="text-[10px] text-ink-500 font-mono block">
+                        <span className="text-[10px] text-ink-600 font-mono block">
                           Campus: {sellerCampus}
                         </span>
                       )}
@@ -396,10 +400,10 @@ export default function ListingDetailPage() {
                   {sellerPhone && !isSeller && (
                     <a
                       href={`tel:${sellerPhone}`}
-                      className="px-3.5 py-2 bg-paper-50 hover:bg-paper-100 border border-ink-300 rounded-notice text-xs font-serif font-bold text-ink-900 flex items-center justify-center space-x-1.5 transition shadow-sm shrink-0"
+                      className="px-3.5 py-2 bg-white hover:bg-paper-100 border-2 border-black rounded-xl text-xs font-sans font-black text-black flex items-center justify-center space-x-1.5 transition shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] shrink-0"
                       title="Direct phone call (supported on mobile devices)"
                     >
-                      <Phone className="w-3.5 h-3.5 text-verifier-600" />
+                      <Phone className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                       <span>Call Seller</span>
                     </a>
                   )}
@@ -421,32 +425,32 @@ export default function ListingDetailPage() {
                 });
 
               return (
-                <div className="bg-paper-200/50 border border-ink-300 rounded p-4 space-y-2.5">
+                <div className="bg-brutal-purple-light/50 border-2 border-black rounded-2xl p-4 space-y-2.5 shadow-[2px_2px_0px_#000]">
                   <div className="flex items-center justify-between">
-                    <span className="font-serif font-bold text-xs text-ink-950 flex items-center space-x-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-saffron-600" />
+                    <span className="font-sans font-black text-xs text-black flex items-center space-x-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-black" />
                       <span>AI Fair Price &amp; Quality Assessment</span>
                     </span>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-verifier-100 text-verifier-800 border border-verifier-400">
+                    <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-lg bg-brutal-green text-black border border-black shadow-[1px_1px_0px_#000]">
                       Grade {aiEval.qualityCheck.grade} ({aiEval.qualityCheck.qualityScore}/100)
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-ink-200">
-                    <span className="text-ink-600">Fair Peer Benchmark:</span>
-                    <span className="font-mono font-bold text-ink-950">
+                  <div className="flex items-center justify-between text-xs pt-1 border-t-2 border-black/10">
+                    <span className="font-mono text-ink-700">Fair Peer Benchmark:</span>
+                    <span className="font-mono font-black text-black">
                       ₹{aiEval.priceEval.estimatedMin} - ₹{aiEval.priceEval.estimatedMax}
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-ink-600 leading-normal">
+                  <p className="text-[11px] font-mono text-ink-700 leading-normal">
                     {aiEval.priceEval.analysisSummary}
                   </p>
 
                   {aiEval.suggestedTags && aiEval.suggestedTags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 pt-1">
+                    <div className="flex flex-wrap gap-1.5 pt-1">
                       {aiEval.suggestedTags.map((tag) => (
-                        <span key={tag} className="px-1.5 py-0.5 bg-paper-100 text-ink-700 text-[10px] font-mono rounded border border-ink-200">
+                        <span key={tag} className="px-2 py-0.5 bg-white text-black text-[10px] font-mono font-bold rounded-lg border border-black shadow-[1px_1px_0px_#000]">
                           {tag}
                         </span>
                       ))}
@@ -458,36 +462,36 @@ export default function ListingDetailPage() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="pt-4 border-t border-ink-200 space-y-3">
+          <div className="pt-4 border-t-2 border-black/10">
             {isSeller ? (
-              <div className="p-3 bg-paper-200 text-center text-xs text-ink-700 font-serif rounded">
+              <div className="p-3.5 bg-paper-100 border-2 border-black rounded-2xl text-center text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000]">
                 This is your listing. Switch to Seller Dashboard to manage your items.
               </div>
             ) : isSold ? (
               <button
                 disabled
-                className="w-full py-3 bg-ink-300 text-ink-600 font-serif font-bold text-sm rounded-notice cursor-not-allowed uppercase tracking-wider"
+                className="w-full py-3.5 bg-ink-200 text-ink-600 font-sans font-black text-sm rounded-xl border-2 border-black cursor-not-allowed uppercase tracking-wider"
               >
                 Item Sold &bull; Checkout Closed
               </button>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
                   onClick={handleStartChat}
                   disabled={startingChat}
-                  className="py-3 bg-paper-50 hover:bg-paper-200 text-ink-950 border border-ink-300 font-serif font-bold text-xs sm:text-sm rounded-notice transition flex items-center justify-center space-x-2"
+                  className="flex-1 py-3.5 px-4 bg-white hover:bg-paper-100 text-black border-2 border-black font-sans font-black text-xs sm:text-sm rounded-xl shadow-[3px_3px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition flex items-center justify-center space-x-2"
                 >
-                  <MessageSquare className="w-4 h-4 text-saffron-600" />
+                  <MessageSquare className="w-4 h-4 stroke-[2.5]" />
                   <span>Chat with Seller</span>
                 </button>
 
                 <Link
                   href={`/checkout/${listing.id}`}
-                  className="py-3 bg-saffron-500 hover:bg-saffron-600 text-white font-serif font-bold text-xs sm:text-sm rounded-notice shadow-sm transition flex items-center justify-center space-x-2"
+                  className="flex-1 py-3.5 px-4 bg-brutal-yellow hover:bg-brutal-yellow-light text-black border-2 border-black font-sans font-black text-xs sm:text-sm rounded-xl shadow-[3px_3px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition flex items-center justify-center space-x-2"
                 >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Buy Now (₹{listing.price})</span>
+                  <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
+                  <span>Buy Now (₹{listing.price.toLocaleString("en-IN")})</span>
                 </Link>
               </div>
             )}
@@ -501,24 +505,24 @@ export default function ListingDetailPage() {
         if (similarGear.length === 0) return null;
 
         return (
-          <div className="bg-paper-100 border border-ink-200 rounded-notice p-6 shadow-card space-y-4">
-            <div className="flex items-center justify-between border-b border-ink-200 pb-3">
+          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
+            <div className="flex items-center justify-between border-b-2 border-black/10 pb-3">
               <div className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-saffron-600" />
-                <h3 className="font-serif font-bold text-base text-ink-950">
+                <Sparkles className="w-4 h-4 text-black" />
+                <h3 className="font-sans font-black text-base text-black">
                   Similar Campus Gear &amp; Alternatives
                 </h3>
               </div>
-              <span className="text-xs text-ink-500 font-mono">
+              <span className="text-xs text-ink-600 font-mono font-bold">
                 AI Relevance Matched
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {similarGear.map((item) => (
-                <div key={item.listing.id} className="relative flex flex-col">
-                  <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 bg-ink-950/85 backdrop-blur-sm text-paper-50 text-[9px] font-mono rounded shadow">
-                    {item.recommendationReason}
+                <div key={item.listing.id} className="flex flex-col">
+                  <span className="mb-1.5 inline-flex items-center self-start px-2 py-0.5 bg-black text-white text-[9px] font-mono font-bold rounded-md border border-black shadow-[1px_1px_0px_#000] truncate max-w-full">
+                    ★ {item.recommendationReason}
                   </span>
                   <ListingCard listing={item.listing} isWishlistedInitial={isWishlisted} />
                 </div>

@@ -58,12 +58,12 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-ink-700 hover:text-ink-950 relative rounded-full hover:bg-paper-200 transition"
+        className="p-1.5 sm:p-2 text-black bg-white hover:bg-brutal-yellow/30 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] relative transition"
         title="Notifications"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-4 h-4 bg-saffron-500 text-white font-mono text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.2 min-w-[18px] h-[18px] bg-brutal-pink text-white font-mono text-[9px] font-black rounded-full border border-black shadow-[1px_1px_0px_#000] flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -75,19 +75,19 @@ export function NotificationBell() {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-80 bg-paper-50 rounded-notice shadow-float border border-ink-100 z-50 overflow-hidden">
-            <div className="p-3 border-b border-ink-100 flex items-center justify-between bg-paper-100">
-              <h4 className="text-xs font-serif font-bold tracking-wider uppercase text-ink-900">
+          <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-brutal border-2 border-black z-50 overflow-hidden">
+            <div className="p-3 border-b-2 border-black flex items-center justify-between bg-paper-100">
+              <h4 className="text-xs font-sans font-black tracking-wider uppercase text-black">
                 Campus Alerts
               </h4>
-              <span className="text-[11px] font-mono text-ink-600">
+              <span className="text-[10px] font-mono font-bold bg-white px-2 py-0.5 rounded-md border border-black text-black">
                 {unreadCount} unread
               </span>
             </div>
 
-            <div className="max-h-72 overflow-y-auto divide-y divide-ink-100">
+            <div className="max-h-72 overflow-y-auto divide-y-2 divide-black/10">
               {notifications.length === 0 ? (
-                <div className="p-6 text-center text-xs text-ink-500 italic">
+                <div className="p-6 text-center text-xs font-mono font-bold text-ink-500">
                   No campus notices at this time.
                 </div>
               ) : (
@@ -95,7 +95,7 @@ export function NotificationBell() {
                   <div
                     key={item.id}
                     className={`p-3 text-xs flex items-start justify-between space-x-2 hover:bg-paper-100 transition ${
-                      !item.read ? "bg-saffron-50/60 font-medium" : ""
+                      !item.read ? "bg-brutal-yellow/20 font-medium" : ""
                     }`}
                   >
                     <div className="flex-1">
@@ -103,7 +103,7 @@ export function NotificationBell() {
                         <Link
                           href={item.link}
                           onClick={() => setIsOpen(false)}
-                          className="text-ink-900 hover:text-saffron-600 line-clamp-2"
+                          className="text-black hover:underline font-medium line-clamp-2"
                         >
                           {item.text}
                         </Link>
@@ -114,10 +114,10 @@ export function NotificationBell() {
                     {!item.read && (
                       <button
                         onClick={(e) => markAsRead(item.id, e)}
-                        className="text-ink-500 hover:text-saffron-600 p-1"
+                        className="text-black hover:text-brutal-purple-dark p-1 rounded-md border border-black bg-white hover:bg-paper-100 shadow-[1px_1px_0px_#000] shrink-0"
                         title="Mark read"
                       >
-                        <Check className="w-3.5 h-3.5" />
+                        <Check className="w-3 h-3 stroke-[2.5]" />
                       </button>
                     )}
                   </div>

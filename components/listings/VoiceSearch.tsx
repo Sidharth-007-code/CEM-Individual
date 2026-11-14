@@ -62,19 +62,19 @@ export function VoiceSearch({ onTranscript }: VoiceSearchProps) {
       <button
         type="button"
         onClick={startListening}
-        className={`p-2 rounded-full transition-all ${
+        className={`p-2 rounded-xl border border-black transition-all ${
           isListening
-            ? "bg-saffron-500 text-white animate-pulse shadow-md"
-            : "text-ink-500 hover:text-ink-900 hover:bg-paper-200"
+            ? "bg-brutal-pink text-white animate-pulse shadow-[2px_2px_0px_#000]"
+            : "text-black bg-white hover:bg-brutal-yellow/30 shadow-[1px_1px_0px_#000]"
         }`}
         title={isListening ? "Listening..." : "Search with voice"}
       >
-        {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+        {isListening ? <MicOff className="w-4 h-4 stroke-[2.5]" /> : <Mic className="w-4 h-4 stroke-[2.5]" />}
       </button>
 
       {unsupportedMsg && (
-        <div className="absolute top-10 right-0 z-50 w-60 p-2 bg-paper-100 border border-ink-300 rounded-notice shadow-float text-[11px] text-ink-700 flex items-start space-x-1.5">
-          <AlertCircle className="w-3.5 h-3.5 text-saffron-600 flex-shrink-0 mt-0.5" />
+        <div className="absolute top-11 right-0 z-50 w-60 p-2.5 bg-white border-2 border-black rounded-xl shadow-brutal text-[11px] font-mono font-bold text-black flex items-start space-x-1.5">
+          <AlertCircle className="w-3.5 h-3.5 text-black flex-shrink-0 mt-0.5 stroke-[2.5]" />
           <span>{unsupportedMsg}</span>
         </div>
       )}

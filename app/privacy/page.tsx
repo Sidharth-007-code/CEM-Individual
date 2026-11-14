@@ -9,29 +9,29 @@ export default function PrivacyPolicyPage() {
       {/* Top Breadcrumb */}
       <Link
         href="/"
-        className="inline-flex items-center space-x-1 text-xs font-medium text-ink-600 hover:text-ink-950"
+        className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] hover:bg-paper-100 transition"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
         <span>Return to Campus Notice Board</span>
       </Link>
 
-      <div className="border-b border-ink-200 pb-4 space-y-2">
-        <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 bg-paper-200 text-ink-800 rounded text-xs font-mono">
-          <Shield className="w-3.5 h-3.5 text-verifier-600" />
+      <div className="border-b-2 border-black/10 pb-4 space-y-2">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brutal-green text-black rounded-xl text-xs font-mono font-black border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
+          <Shield className="w-4 h-4 stroke-[2.5]" />
           <span>MSRUAS Academic Data Protection</span>
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-black text-ink-950 tracking-tight">
+        <h1 className="font-sans text-3xl sm:text-4xl font-black text-black tracking-tight">
           Campus Marketplace Privacy Policy
         </h1>
-        <p className="text-xs text-ink-600">
+        <p className="text-xs font-mono font-bold text-ink-600">
           Last revised: Academic Term &bull; Applies to all @msruas.ac.in registered students.
         </p>
       </div>
 
-      <div className="bg-paper-100 border border-ink-200 rounded-notice p-6 sm:p-8 shadow-card space-y-6 text-xs sm:text-sm text-ink-800 leading-relaxed font-sans">
+      <div className="bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal space-y-6 text-xs sm:text-sm text-ink-900 leading-relaxed font-sans">
         
         <section className="space-y-2">
-          <h2 className="font-serif text-lg font-bold text-ink-950">
+          <h2 className="font-sans text-lg font-black text-black">
             1. Institutional Scope &amp; Purpose
           </h2>
           <p>
@@ -40,10 +40,10 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-serif text-lg font-bold text-ink-950">
+          <h2 className="font-sans text-lg font-black text-black">
             2. Information We Collect
           </h2>
-          <ul className="list-disc list-inside space-y-1.5 text-ink-700">
+          <ul className="list-disc list-inside space-y-1.5 font-mono text-xs text-ink-800">
             <li>
               <strong>Verified Institutional Email:</strong> Registration is restricted strictly to email addresses terminating in <code>@msruas.ac.in</code> (and departmental subdomains).
             </li>
@@ -63,13 +63,13 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-serif text-lg font-bold text-ink-950">
+          <h2 className="font-sans text-lg font-black text-black">
             3. Cookies &amp; Local Storage Usage
           </h2>
           <p>
             Campus Marketplace adheres to minimal data retention principles. We utilize:
           </p>
-          <ul className="list-disc list-inside space-y-1.5 text-ink-700">
+          <ul className="list-disc list-inside space-y-1.5 font-mono text-xs text-ink-800">
             <li>
               <strong>Essential Authentication Tokens:</strong> Firebase Auth session tokens to keep verified students securely authenticated.
             </li>
@@ -83,7 +83,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-serif text-lg font-bold text-ink-950">
+          <h2 className="font-sans text-lg font-black text-black">
             4. Inactivity Timeout &amp; Account Protection
           </h2>
           <p>
@@ -92,7 +92,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-serif text-lg font-bold text-ink-950">
+          <h2 className="font-sans text-lg font-black text-black">
             5. Safe Campus Meetup Zones &amp; CCTV Disclosure
           </h2>
           <p>
@@ -101,7 +101,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-serif text-lg font-bold text-ink-950">
+          <h2 className="font-sans text-lg font-black text-black">
             6. Moderation, Reporting &amp; Inquiries
           </h2>
           <p>
