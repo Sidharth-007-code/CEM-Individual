@@ -91,8 +91,8 @@ export interface RankedListingResult {
  * Evaluates listings using token similarity, synonym expansion, and NLP intent parsing.
  */
 export function rankListingsAI(rawQuery: string, listings: Listing[]): RankedListingResult[] {
-  if (!rawQuery.trim()) {
-    return listings.map((l) => ({ listing: l, relevanceScore: 1, matchReasons: ["Notice Board Feed"] }));
+  if (!rawQuery || typeof rawQuery !== "string" || !rawQuery.trim()) {
+    return (listings || []).map((l) => ({ listing: l, relevanceScore: 1, matchReasons: ["Notice Board Feed"] }));
   }
 
   const intent = parseSearchIntentAI(rawQuery);
