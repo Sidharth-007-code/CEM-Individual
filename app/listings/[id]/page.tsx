@@ -12,6 +12,7 @@ import { validateListingAI, getSimilarListingsAI } from "@/lib/ai";
 import { useAuth } from "@/context/AuthContext";
 import { ReportModal } from "@/components/listings/ReportModal";
 import { ListingCard } from "@/components/listings/ListingCard";
+import { getProductImageSet } from "@/lib/demoImages";
 import {
   Phone,
   MessageSquare,
@@ -217,7 +218,15 @@ export default function ListingDetailPage() {
 
   const isSold = listing.status === "sold";
   const isSeller = user?.uid === listing.sellerId;
-  const displayImages = images.length > 0 ? images.map((i) => i.dataUrl) : [listing.thumbnail || ""];
+  
+  // Resolve multiple gallery images: subcollection -> listing.images array -> fallback demo image set
+  const fallbackImages: string[] = getProductImageSet(listing.id + " " + listing.title).images.map((i) => i.dataUrl);
+  const displayImages: string[] =
+    images.length > 0
+      ? images.map((i) => i.dataUrl)
+      : (listing as any).images && (listing as any).images.length > 0
+      ? ((listing as any).images as string[])
+      : fallbackImages;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -302,7 +311,7 @@ export default function ListingDetailPage() {
           {/* Thumbnails row */}
           {displayImages.length > 1 && (
             <div className="flex space-x-2.5 overflow-x-auto pb-1">
-              {displayImages.map((src, i) => (
+              {displayImages.map((src: string, i: number) => (
                 <button
                   key={i}
                   onClick={() => setActiveImgIndex(i)}

@@ -127,7 +127,7 @@ export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
         </div>
 
         {/* Condition Filter & Sort Dropdowns */}
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-start">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
           <select
             value={selectedCondition}
             onChange={(e) => setSelectedCondition(e.target.value)}

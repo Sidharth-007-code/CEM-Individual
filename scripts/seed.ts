@@ -8,6 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as admin from "firebase-admin";
 import { validateListingAI } from "../lib/ai";
+import { getProductImageSet } from "../lib/demoImages";
 
 // Parse .env.local if present
 const envPath = path.resolve(process.cwd(), ".env.local");
@@ -466,7 +467,7 @@ async function seed() {
   ];
 
   for (const item of listingsData) {
-    const thumb = createPlaceholderImage(item.title);
+    const imgSet = getProductImageSet(item.id + " " + item.title);
     const listingRef = db.collection("listings").doc(item.id);
 
     // Compute AI validation evaluation
@@ -483,24 +484,24 @@ async function seed() {
       ...item,
       aiValidation: aiRes,
       aiTags: aiRes.suggestedTags,
-      thumbnail: thumb,
+      thumbnail: imgSet.thumbnail,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Subcollection images
-    for (let i = 1; i <= 3; i++) {
-      const imgRef = listingRef.collection("images").doc(`img_${i}`);
+    // Subcollection images (3 distinct product angles)
+    for (const img of imgSet.images) {
+      const imgRef = listingRef.collection("images").doc(img.id);
       await imgRef.set({
-        id: `img_${i}`,
-        dataUrl: thumb,
-        sizeKb: 65 + i * 10,
-        name: `photo_${i}.jpg`,
+        id: img.id,
+        dataUrl: img.dataUrl,
+        sizeKb: img.sizeKb,
+        name: img.name,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
     }
 
-    console.log(`  ✓ Listing created: ${item.title} (${item.status})`);
+    console.log(`  ✓ Listing created with 3 distinct images: ${item.title} (${item.status})`);
   }
 
   // 3. Seed Sample Orders

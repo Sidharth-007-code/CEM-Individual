@@ -46,12 +46,12 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16 sm:h-20">
           
           {/* Logo & Masthead */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 shrink-0">
             <Logo size="md" href="/" />
 
             {/* Quick Switch for Verifier/Admin if user has privileges */}
             {(role === "verifier" || role === "admin") && (
-              <div className="hidden md:flex items-center pl-3 border-l-2 border-black/20 space-x-2 text-xs">
+              <div className="hidden 2xl:flex items-center pl-3 border-l-2 border-black/20 space-x-2 text-xs">
                 <Link
                   href="/verifier"
                   className={`px-3 py-1 rounded-xl border-2 border-black font-sans font-black text-xs transition-all ${
@@ -81,7 +81,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop Central Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1.5">
+          <nav className="hidden xl:flex items-center space-x-1.5 shrink-0">
             <Link
               href="/browse"
               className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
@@ -243,7 +243,7 @@ export function Navbar() {
             {/* Mobile menu trigger */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-black border-2 border-black rounded-xl bg-white shadow-[2px_2px_0px_#000]"
+              className="xl:hidden p-2 text-black border-2 border-black rounded-xl bg-white shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px]"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -254,7 +254,7 @@ export function Navbar() {
 
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t-2 border-black bg-white px-4 pt-3 pb-5 space-y-3">
+        <div className="xl:hidden border-t-2 border-black bg-white px-4 pt-3 pb-5 space-y-3">
           {user && (
             <div className="flex items-center justify-between pb-3 border-b-2 border-black/10">
               <span className="text-xs font-mono font-bold text-ink-600">Active Campus Mode:</span>

@@ -9,6 +9,7 @@ import {
 import { db } from "@/lib/firebase";
 import { validateListingAI } from "@/lib/ai";
 import { ListingCategory, ListingCondition } from "@/types/listing";
+import { getProductImageSet } from "@/lib/demoImages";
 
 export interface PresentationDemoItem {
   id: string;
@@ -22,22 +23,8 @@ export interface PresentationDemoItem {
   price: number;
   status: "available";
   thumbnail: string;
+  images: string[];
   isPresentationDemo: boolean;
-}
-
-// Helper to generate clean SVG base64 illustrations for demo items
-function makeDemoSvg(bg: string, label: string, iconSymbol: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
-    <rect width="400" height="300" fill="${bg}" />
-    <rect x="20" y="20" width="360" height="260" rx="16" fill="none" stroke="#000000" stroke-width="4" stroke-dasharray="8 8" opacity="0.4" />
-    <circle cx="200" cy="130" r="55" fill="#FFFFFF" stroke="#000000" stroke-width="4" />
-    <text x="200" y="145" font-family="system-ui, sans-serif" font-size="44" text-anchor="middle">${iconSymbol}</text>
-    <rect x="60" y="215" width="280" height="40" rx="10" fill="#000000" />
-    <text x="200" y="240" font-family="system-ui, sans-serif" font-size="14" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">${label.toUpperCase()}</text>
-    <rect x="290" y="35" width="80" height="24" rx="6" fill="#FFD027" stroke="#000000" stroke-width="2" />
-    <text x="330" y="51" font-family="monospace" font-size="10" font-weight="bold" fill="#000000" text-anchor="middle">DEMO GEAR</text>
-  </svg>`;
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
 
 export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
@@ -52,7 +39,8 @@ export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
     condition: "like_new",
     price: 1200,
     status: "available",
-    thumbnail: makeDemoSvg("#FFD027", "Game Zone Controller", "🎮"),
+    thumbnail: getProductImageSet("gamepad").thumbnail,
+    images: getProductImageSet("gamepad").images.map((i) => i.dataUrl),
     isPresentationDemo: true,
   },
   {
@@ -66,7 +54,8 @@ export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
     condition: "like_new",
     price: 850,
     status: "available",
-    thumbnail: makeDemoSvg("#DDD6FE", "Casio fx-991EX", "🔢"),
+    thumbnail: getProductImageSet("calc").thumbnail,
+    images: getProductImageSet("calc").images.map((i) => i.dataUrl),
     isPresentationDemo: true,
   },
   {
@@ -80,7 +69,8 @@ export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
     condition: "good",
     price: 450,
     status: "available",
-    thumbnail: makeDemoSvg("#86EFAC", "B.S. Grewal Math", "📚"),
+    thumbnail: getProductImageSet("math").thumbnail,
+    images: getProductImageSet("math").images.map((i) => i.dataUrl),
     isPresentationDemo: true,
   },
   {
@@ -94,7 +84,8 @@ export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
     condition: "good",
     price: 1400,
     status: "available",
-    thumbnail: makeDemoSvg("#FDA4AF", "A3 Drafting Board", "📐"),
+    thumbnail: getProductImageSet("drafter").thumbnail,
+    images: getProductImageSet("drafter").images.map((i) => i.dataUrl),
     isPresentationDemo: true,
   },
   {
@@ -108,7 +99,8 @@ export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
     condition: "like_new",
     price: 350,
     status: "available",
-    thumbnail: makeDemoSvg("#E0F2FE", "Lab Coat & Goggles", "🥼"),
+    thumbnail: getProductImageSet("labcoat").thumbnail,
+    images: getProductImageSet("labcoat").images.map((i) => i.dataUrl),
     isPresentationDemo: true,
   },
   {
@@ -122,7 +114,8 @@ export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
     condition: "good",
     price: 550,
     status: "available",
-    thumbnail: makeDemoSvg("#FDE68A", "Electric Kettle", "☕"),
+    thumbnail: getProductImageSet("kettle").thumbnail,
+    images: getProductImageSet("kettle").images.map((i) => i.dataUrl),
     isPresentationDemo: true,
   },
   {
@@ -136,7 +129,8 @@ export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
     condition: "fair",
     price: 3200,
     status: "available",
-    thumbnail: makeDemoSvg("#C7D2FE", "Campus Bicycle", "🚲"),
+    thumbnail: getProductImageSet("cycle").thumbnail,
+    images: getProductImageSet("cycle").images.map((i) => i.dataUrl),
     isPresentationDemo: true,
   },
   {
@@ -150,13 +144,14 @@ export const PRESENTATION_DEMO_PRODUCTS: PresentationDemoItem[] = [
     condition: "like_new",
     price: 4500,
     status: "available",
-    thumbnail: makeDemoSvg("#FBCFE8", "Study Headphones", "🎧"),
+    thumbnail: getProductImageSet("headphones").thumbnail,
+    images: getProductImageSet("headphones").images.map((i) => i.dataUrl),
     isPresentationDemo: true,
   },
 ];
 
 /**
- * Seeds or restores the 8 presentation demo products into Firestore.
+ * Seeds or restores the 8 presentation demo products into Firestore with matching multiple gallery images.
  */
 export async function populatePresentationDemoProducts(): Promise<{ count: number; success: boolean; error?: string }> {
   try {
@@ -185,6 +180,23 @@ export async function populatePresentationDemoProducts(): Promise<{ count: numbe
         },
         { merge: true }
       );
+
+      // Populate 3 distinct gallery images in the subcollection
+      const imgSet = getProductImageSet(item.id);
+      for (const img of imgSet.images) {
+        const subDocRef = doc(db, `listings/${item.id}/images`, img.id);
+        batch.set(
+          subDocRef,
+          {
+            id: img.id,
+            name: img.name,
+            dataUrl: img.dataUrl,
+            sizeKb: img.sizeKb,
+            createdAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
     }
 
     await batch.commit();
@@ -196,7 +208,7 @@ export async function populatePresentationDemoProducts(): Promise<{ count: numbe
 }
 
 /**
- * Deletes all presentation demo products from Firestore.
+ * Deletes all presentation demo products from Firestore and clears their subcollections.
  */
 export async function deleteAllPresentationDemoProducts(): Promise<{ deletedCount: number; success: boolean; error?: string }> {
   try {
@@ -213,9 +225,14 @@ export async function deleteAllPresentationDemoProducts(): Promise<{ deletedCoun
     }
 
     const batch = writeBatch(db);
-    demoDocs.forEach((d) => {
+    for (const d of demoDocs) {
+      // Clear subcollection images
+      const subSnap = await getDocs(collection(db, `listings/${d.id}/images`));
+      subSnap.forEach((imgDoc) => {
+        batch.delete(imgDoc.ref);
+      });
       batch.delete(d.ref);
-    });
+    }
 
     await batch.commit();
     return { deletedCount: demoDocs.length, success: true };
