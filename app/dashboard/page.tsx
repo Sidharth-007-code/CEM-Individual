@@ -21,6 +21,7 @@ import {
   ShoppingBag,
   Sparkles,
   ShieldCheck,
+  ShieldAlert,
   Save,
   RefreshCw,
   GraduationCap,
@@ -31,7 +32,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, role, refreshProfile } = useAuth();
 
   // Active tab state: Clean horizontal tabs, no nested duplicate sidebar
   const [activeTab, setActiveTab] = useState<"overview" | "listings" | "orders" | "settings">("overview");
@@ -177,6 +178,84 @@ export default function DashboardPage() {
     if (listingFilter === "sold") return item.status === "sold";
     return true;
   });
+
+  // ────────────────── ROLE-SPECIFIC PORTAL ROUTING ──────────────────
+  if (role === "admin") {
+    return (
+      <RouteGuard allowedRoles={["admin"]}>
+        <div className="max-w-4xl mx-auto space-y-6 my-6">
+          <div className="bg-black text-white border-3 border-black rounded-3xl p-8 sm:p-10 shadow-[8px_8px_0px_#FFD027] space-y-5 bg-grid-pattern relative overflow-hidden">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brutal-yellow text-black border-2 border-white rounded-full font-mono font-black text-xs">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>OFFICE OF THE DEAN OF STUDENT AFFAIRS</span>
+            </div>
+            <div className="space-y-1.5">
+              <h1 className="font-sans font-black text-3xl sm:text-4xl text-white tracking-tight">
+                Dean Executive Governance Center
+              </h1>
+              <p className="text-xs font-mono font-bold text-ink-300">
+                Logged in as <strong className="text-white">{profile?.name || "Dean of Student Affairs"}</strong> ({profile?.email}) &bull; MSRUAS Institutional Administration
+              </p>
+            </div>
+            <p className="text-xs font-mono text-ink-200 leading-relaxed max-w-xl">
+              Student marketplace governance, user suspension controls, grievance mediation, and audit trails are managed inside the dedicated Dean Executive Console.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-3">
+              <Link
+                href="/admin"
+                className="px-6 py-3 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-sm rounded-2xl border-2 border-white shadow-[3px_3px_0px_#FFFFFF] active:translate-x-[1px] active:translate-y-[1px] transition-all flex items-center space-x-2"
+              >
+                <ShieldAlert className="w-4 h-4 text-black" />
+                <span>Launch Dean Executive Console &rarr;</span>
+              </Link>
+              <Link
+                href="/verifier"
+                className="px-5 py-3 bg-white hover:bg-paper-100 text-black font-mono font-bold text-xs rounded-2xl border-2 border-white shadow-[3px_3px_0px_#FFFFFF] flex items-center space-x-1.5"
+              >
+                <ShieldCheck className="w-4 h-4 text-black" />
+                <span>Verifier Queue</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </RouteGuard>
+    );
+  }
+
+  if (role === "verifier") {
+    return (
+      <RouteGuard allowedRoles={["verifier", "admin"]}>
+        <div className="max-w-4xl mx-auto space-y-6 my-6">
+          <div className="bg-verifier-900 text-white border-3 border-black rounded-3xl p-8 sm:p-10 shadow-[8px_8px_0px_#000] space-y-5 bg-grid-pattern relative overflow-hidden">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brutal-green text-black border-2 border-black rounded-full font-mono font-black text-xs">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>STUDENT COUNCIL QUALITY DESK</span>
+            </div>
+            <div className="space-y-1.5">
+              <h1 className="font-sans font-black text-3xl sm:text-4xl text-white tracking-tight">
+                Quality Verifier Workstation
+              </h1>
+              <p className="text-xs font-mono font-bold text-ink-200">
+                Logged in as <strong className="text-white">{profile?.name || "Verifier"}</strong> &bull; Student Quality Representative
+              </p>
+            </div>
+            <p className="text-xs font-mono text-ink-100 leading-relaxed max-w-xl">
+              Inspect pending student textbook listings, review AI vision genuineness scans, check syllabus pricing guidelines, and approve items to the campus notice board.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-3">
+              <Link
+                href="/verifier"
+                className="px-6 py-3 bg-brutal-green hover:bg-brutal-green-dark text-black font-sans font-black text-sm rounded-2xl border-2 border-black shadow-[3px_3px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition-all flex items-center space-x-2"
+              >
+                <ShieldCheck className="w-4 h-4 text-black" />
+                <span>Open Verification Desk &rarr;</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </RouteGuard>
+    );
+  }
 
   return (
     <RouteGuard requireAuth={true}>

@@ -94,7 +94,49 @@ export function Navbar() {
               Notice Board
             </Link>
 
-            {user && (
+            {user && role === "admin" && (
+              <>
+                <Link
+                  href="/admin"
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
+                    pathname.startsWith("/admin")
+                      ? "bg-black text-white shadow-[2px_2px_0px_#FFD027]"
+                      : "bg-white text-black border-black hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                  }`}
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 inline mr-1 text-brutal-yellow" />
+                  Dean Executive Console
+                </Link>
+
+                <Link
+                  href="/verifier"
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
+                    pathname.startsWith("/verifier")
+                      ? "bg-brutal-green text-black shadow-[2px_2px_0px_#000]"
+                      : "bg-transparent border-transparent hover:border-black hover:bg-paper-100 text-ink-800"
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 inline mr-1 text-black" />
+                  Verifier Desk
+                </Link>
+              </>
+            )}
+
+            {user && role === "verifier" && (
+              <Link
+                href="/verifier"
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-black transition-all ${
+                  pathname.startsWith("/verifier")
+                    ? "bg-brutal-green text-black shadow-[2px_2px_0px_#000]"
+                    : "bg-white text-black border-black hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 inline mr-1 text-black" />
+                Verifier Quality Desk
+              </Link>
+            )}
+
+            {user && role === "student" && (
               <>
                 <Link
                   href="/dashboard"
@@ -152,40 +194,58 @@ export function Navbar() {
           <div className="flex items-center space-x-2 sm:space-x-3 shrink-0 flex-nowrap">
             {user ? (
               <>
-                {/* Buy / Sell Mode Toggle for Student */}
-                <div className="hidden sm:flex items-center bg-white p-0.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000] shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setStudentMode("buy")}
-                    className={`px-2.5 sm:px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
-                      studentMode === "buy"
-                        ? "bg-black text-white shadow-sm"
-                        : "text-ink-600 hover:text-black"
-                    }`}
-                  >
-                    BUY
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStudentMode("sell")}
-                    className={`px-2.5 sm:px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
-                      studentMode === "sell"
-                        ? "bg-brutal-yellow text-black shadow-sm"
-                        : "text-ink-600 hover:text-black"
-                    }`}
-                  >
-                    SELL
-                  </button>
-                </div>
+                {/* Role Specific Badges */}
+                {role === "admin" && (
+                  <span className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1 bg-black text-white rounded-xl border-2 border-black font-mono font-black text-xs shadow-[2px_2px_0px_#FFD027]">
+                    <ShieldAlert className="w-3.5 h-3.5 text-brutal-yellow stroke-[2.5]" />
+                    <span>Dean of Student Affairs</span>
+                  </span>
+                )}
 
-                {/* Sell CTA button with Neo-Brutalist Yellow Button */}
-                <Link
-                  href="/listings/new"
-                  className="hidden md:inline-flex items-center px-3.5 py-1.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black tracking-wide rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all shrink-0"
-                >
-                  <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
-                  POST ITEM
-                </Link>
+                {role === "verifier" && (
+                  <span className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1 bg-brutal-green text-black rounded-xl border-2 border-black font-mono font-black text-xs shadow-[2px_2px_0px_#000]">
+                    <ShieldCheck className="w-3.5 h-3.5 text-black stroke-[2.5]" />
+                    <span>Quality Verifier Desk</span>
+                  </span>
+                )}
+
+                {/* Buy / Sell Mode Toggle strictly for Students */}
+                {role === "student" && (
+                  <>
+                    <div className="hidden sm:flex items-center bg-white p-0.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000] shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setStudentMode("buy")}
+                        className={`px-2.5 sm:px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
+                          studentMode === "buy"
+                            ? "bg-black text-white shadow-sm"
+                            : "text-ink-600 hover:text-black"
+                        }`}
+                      >
+                        BUY
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStudentMode("sell")}
+                        className={`px-2.5 sm:px-3 py-1 text-xs font-mono font-black rounded-lg transition-all ${
+                          studentMode === "sell"
+                            ? "bg-brutal-yellow text-black shadow-sm"
+                            : "text-ink-600 hover:text-black"
+                        }`}
+                      >
+                        SELL
+                      </button>
+                    </div>
+
+                    <Link
+                      href="/listings/new"
+                      className="hidden md:inline-flex items-center px-3.5 py-1.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black tracking-wide rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all shrink-0"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
+                      POST ITEM
+                    </Link>
+                  </>
+                )}
 
                 {/* Notifications Bell */}
                 <div className="shrink-0">
@@ -255,7 +315,7 @@ export function Navbar() {
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
         <div className="xl:hidden border-t-2 border-black bg-white px-4 pt-3 pb-5 space-y-3">
-          {user && (
+          {user && role === "student" && (
             <div className="flex items-center justify-between pb-3 border-b-2 border-black/10">
               <span className="text-xs font-mono font-bold text-ink-600">Active Campus Mode:</span>
               <div className="flex items-center bg-paper-100 p-0.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
@@ -289,7 +349,55 @@ export function Navbar() {
             >
               Browse Notice Board
             </Link>
-            {user && (
+
+            {user && role === "admin" && (
+              <>
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl text-white bg-black border-2 border-black font-black shadow-[2px_2px_0px_#FFD027]"
+                >
+                  Dean Executive Console
+                </Link>
+                <Link
+                  href="/verifier"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl text-black bg-brutal-green border-2 border-black font-black"
+                >
+                  Verifier Quality Queue
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl text-black hover:bg-paper-100 flex items-center justify-between"
+                >
+                  <span>Dean Profile &amp; Settings</span>
+                  <span className="text-[10px] font-mono text-ink-500 font-bold uppercase">Account</span>
+                </Link>
+              </>
+            )}
+
+            {user && role === "verifier" && (
+              <>
+                <Link
+                  href="/verifier"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl text-black bg-brutal-green border-2 border-black font-black shadow-[2px_2px_0px_#000]"
+                >
+                  Verifier Quality Desk
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-xl text-black hover:bg-paper-100 flex items-center justify-between"
+                >
+                  <span>Verifier Profile</span>
+                  <span className="text-[10px] font-mono text-ink-500 font-bold uppercase">Account</span>
+                </Link>
+              </>
+            )}
+
+            {user && role === "student" && (
               <>
                 <Link
                   href="/listings/new"
@@ -334,24 +442,6 @@ export function Navbar() {
                   <span>My Profile &amp; Avatar</span>
                   <span className="text-[10px] font-mono text-brutal-purple-dark font-black uppercase">Settings</span>
                 </Link>
-                {(role === "verifier" || role === "admin") && (
-                  <Link
-                    href="/verifier"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-2 rounded-xl text-verifier-900 bg-verifier-100 border-2 border-black font-black"
-                  >
-                    Verifier Quality Queue
-                  </Link>
-                )}
-                {role === "admin" && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-2 rounded-xl text-admin-900 bg-admin-100 border-2 border-black font-black"
-                  >
-                    Admin Moderation &amp; Presentation Data
-                  </Link>
-                )}
               </>
             )}
           </div>

@@ -4,19 +4,35 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { Home, Search, PlusCircle, Package, User } from "lucide-react";
+import { Home, Search, PlusCircle, Package, User, ShieldAlert, ShieldCheck, History } from "lucide-react";
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
 
-  const navItems = [
+  let navItems = [
     { label: "Board", href: "/", icon: Home },
     { label: "Browse", href: "/browse", icon: Search },
     { label: "Post", href: user ? "/listings/new" : "/login", icon: PlusCircle, isCta: true },
     { label: "Orders", href: user ? "/orders" : "/login", icon: Package },
     { label: "Profile", href: user ? "/profile" : "/login", icon: User },
   ];
+
+  if (user && role === "admin") {
+    navItems = [
+      { label: "Board", href: "/", icon: Home },
+      { label: "Console", href: "/admin", icon: ShieldAlert, isCta: true },
+      { label: "Verifier", href: "/verifier", icon: ShieldCheck },
+      { label: "Profile", href: "/profile", icon: User },
+    ];
+  } else if (user && role === "verifier") {
+    navItems = [
+      { label: "Board", href: "/", icon: Home },
+      { label: "Browse", href: "/browse", icon: Search },
+      { label: "Queue", href: "/verifier", icon: ShieldCheck, isCta: true },
+      { label: "Profile", href: "/profile", icon: User },
+    ];
+  }
 
   return (
     <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-t-2 border-black px-2 py-1.5 shadow-[0_-2px_0px_#000]">
