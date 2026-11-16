@@ -261,19 +261,7 @@ sequenceDiagram
 
 ---
 
-## 🔐 Demonstration Accounts Matrix
 
-The system includes pre-seeded university accounts for evaluation. On the **`/login`** page, click any demo account button to **autofill credentials instantly**:
-
-| Role | Official University Email | Password | Display Name | Access Scope & Responsibilities |
-| :--- | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@msruas.ac.in` | `CampusAdmin@2024` | Dean of Student Affairs | Full administrative console (`/admin`), dispute resolution, user suspension, and immutable audit log review. |
-| **Quality Verifier** | `verifier@msruas.ac.in` | `CampusVerifier@2024` | Student Council Verifier | Quality desk (`/verifier`), AI authenticity review, syllabus verification, item approvals and rejections. |
-| **Student (Seller)** | `aarav.sharma@msruas.ac.in` | `StudentPass@2024` | Aarav Sharma (CSE 4th Yr) | Active seller listings: Casio fx-991EX, B.S. Grewal mathematics, multimeter, and lab equipment. |
-| **Student (Buyer)** | `priya.patel@msruas.ac.in` | `StudentPass@2024` | Priya Patel (ECE 3rd Yr) | Active buyer orders: Browses notice board, initiates buyer chat, creates orders, tracks handovers. |
-| **Student (General)** | `rohit.kumar@msruas.ac.in` | `StudentPass@2024` | Rohit Kumar (Mech 2nd Yr) | General student: Bicycle listings, wishlist management, item reporting, and profile configuration. |
-
----
 
 ## ⚡ Developer Quick Start
 
