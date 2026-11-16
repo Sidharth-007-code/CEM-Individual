@@ -55,18 +55,12 @@ function LoginForm() {
     }
   };
 
-  const setDemoCredentials = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError(null);
-  };
-
   return (
     <div className="max-w-md mx-auto my-8 space-y-6">
       {/* ────────────────── NEO-BRUTALIST "WELCOME BACK!" CARD ────────────────── */}
       <div className="bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal-lg relative overflow-hidden bg-grid-pattern">
         
-        {/* Yellow Top-Left Decorative Tab with Interlocking Logo (from Reference Visual) */}
+        {/* Yellow Top-Left Decorative Tab with Interlocking Logo */}
         <div className="absolute top-0 left-0 bg-brutal-yellow border-r-2 border-b-2 border-black rounded-br-2xl px-4 py-2.5 shadow-[2px_2px_0px_#000]">
           <Logo size="sm" withText={false} badgeOnly={true} href="" />
         </div>
@@ -102,7 +96,7 @@ function LoginForm() {
           {/* Email Field with Neo-brutalist border */}
           <div>
             <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
-              Email Address
+              University Email Address
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-black absolute left-3.5 top-3.5" />
@@ -115,13 +109,18 @@ function LoginForm() {
                 className="w-full pl-10 pr-3 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-sm font-sans font-medium text-black placeholder-ink-400 focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
               />
             </div>
+            <p className="text-[11px] font-mono text-ink-500 mt-1">
+              Restricted to verified @msruas.ac.in credentials.
+            </p>
           </div>
 
           {/* Password Field with Show/Hide Eye Toggle */}
           <div>
-            <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider">
+                Password
+              </label>
+            </div>
             <div className="relative">
               <Lock className="w-4 h-4 text-black absolute left-3.5 top-3.5" />
               <input
@@ -160,50 +159,7 @@ function LoginForm() {
           </button>
         </form>
 
-        {/* Or Divider from Reference Visual */}
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-black/20" />
-          </div>
-          <div className="relative flex justify-center text-[10px] font-mono font-bold uppercase">
-            <span className="bg-white px-3 text-ink-600">or continue with</span>
-          </div>
-        </div>
-
-        {/* Social Authentication Pills (G, Apple, GitHub from Reference Visual) */}
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("aarav.sharma@msruas.ac.in", "StudentPass@2024")}
-            className="py-2 px-3 border-2 border-black rounded-xl bg-white hover:bg-paper-100 shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center font-black font-sans text-xs text-black"
-            title="Google Sign In (Auto-fill Demo)"
-          >
-            <span className="font-serif text-sm mr-1 text-black font-black">G</span>
-            <span className="text-[10px]">Google</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("priya.patel@msruas.ac.in", "StudentPass@2024")}
-            className="py-2 px-3 border-2 border-black rounded-xl bg-white hover:bg-paper-100 shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center font-black font-sans text-xs text-black"
-            title="Apple Sign In (Auto-fill Demo)"
-          >
-            <span className="text-sm mr-1"></span>
-            <span className="text-[10px]">Apple</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("admin@msruas.ac.in", "CampusAdmin@2024")}
-            className="py-2 px-3 border-2 border-black rounded-xl bg-white hover:bg-paper-100 shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center font-black font-sans text-xs text-black"
-            title="GitHub Sign In (Auto-fill Admin)"
-          >
-            <span className="font-mono text-sm mr-1 font-bold">⌘</span>
-            <span className="text-[10px]">GitHub</span>
-          </button>
-        </div>
-
-        <div className="mt-5 pt-4 border-t-2 border-black/10 text-center text-xs text-ink-700 font-medium">
+        <div className="mt-6 pt-5 border-t-2 border-black/10 text-center text-xs text-ink-700 font-medium">
           First time on Campus Marketplace?{" "}
           <Link href="/register" className="font-sans font-black text-black underline underline-offset-4 hover:text-brutal-purple-dark">
             Verify student email &amp; register
@@ -211,67 +167,21 @@ function LoginForm() {
         </div>
       </div>
 
-      {/* ────────────────── DEMO CREDENTIALS QUICK SWITCHER ────────────────── */}
-      <div className="p-5 bg-white border-2 border-black rounded-3xl shadow-brutal space-y-3">
-        <div className="flex items-center justify-between border-b border-black/10 pb-2">
-          <span className="text-xs font-mono font-black text-black uppercase tracking-wider flex items-center">
-            <span className="w-2.5 h-2.5 rounded-full bg-brutal-yellow border border-black mr-2 animate-pulse" />
-            Quick Demo Accounts (1-Click Fill)
-          </span>
-          <span className="text-[10px] font-mono font-bold text-ink-600 bg-paper-100 px-2 py-0.5 rounded border border-black/20">
-            RUAS Net
-          </span>
+      {/* Institutional Security Notice & Help Desk */}
+      <div className="p-4 bg-paper-50 border-2 border-black rounded-2xl shadow-brutal text-center space-y-1.5">
+        <div className="flex items-center justify-center space-x-1.5 text-xs font-mono font-bold text-black">
+          <ShieldCheck className="w-4 h-4 text-verifier-700" />
+          <span>M.S. Ramaiah University of Applied Sciences</span>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("aarav.sharma@msruas.ac.in", "StudentPass@2024")}
-            className="p-2.5 text-left bg-white hover:bg-brutal-yellow/20 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition"
+        <p className="text-[11px] font-mono text-ink-600">
+          Need support with your account or credentials? Contact:{" "}
+          <a
+            href="mailto:campus.marketplace.ruas@gmail.com"
+            className="font-bold text-black underline hover:text-brutal-purple-dark"
           >
-            <div className="font-black text-black">Student (Seller)</div>
-            <div className="text-[11px] font-mono text-ink-600 truncate">aarav.sharma@msruas.ac.in</div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("priya.patel@msruas.ac.in", "StudentPass@2024")}
-            className="p-2.5 text-left bg-white hover:bg-brutal-yellow/20 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition"
-          >
-            <div className="font-black text-black">Student (Buyer)</div>
-            <div className="text-[11px] font-mono text-ink-600 truncate">priya.patel@msruas.ac.in</div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("verifier@msruas.ac.in", "CampusVerifier@2024")}
-            className="p-2.5 text-left bg-verifier-50 hover:bg-verifier-100 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition"
-          >
-            <div className="font-black text-verifier-900">Verifier Desk</div>
-            <div className="text-[11px] font-mono text-verifier-700 truncate">verifier@msruas.ac.in</div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("admin@msruas.ac.in", "CampusAdmin@2024")}
-            className="p-2.5 text-left bg-admin-50 hover:bg-admin-100 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition"
-          >
-            <div className="font-black text-admin-900">Administrator</div>
-            <div className="text-[11px] font-mono text-admin-700 truncate">admin@msruas.ac.in</div>
-          </button>
-        </div>
-
-        <div className="pt-3 border-t border-black/10 text-center">
-          <p className="text-[11px] font-mono text-ink-600">
-            Need support with your account or login? Contact:{" "}
-            <a
-              href="mailto:campus.marketplace.ruas@gmail.com"
-              className="font-bold text-black underline hover:text-brutal-purple-dark"
-            >
-              campus.marketplace.ruas@gmail.com
-            </a>
-          </p>
-        </div>
+            campus.marketplace.ruas@gmail.com
+          </a>
+        </p>
       </div>
     </div>
   );
