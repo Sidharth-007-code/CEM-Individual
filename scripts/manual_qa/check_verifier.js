@@ -1,0 +1,20 @@
+const { chromium } = require('playwright');
+(async () => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.goto('https://campus-e-marketplace.vercel.app/login', { waitUntil: 'load' });
+  await page.waitForTimeout(2000);
+  await page.fill('input[type="email"]', 'verifier@msruas.ac.in');
+  await page.fill('input[type="password"]', 'CampusVerifier@2024');
+  await page.click('button[type="submit"]');
+  await page.waitForTimeout(3000);
+  await page.goto('https://campus-e-marketplace.vercel.app/verifier', { waitUntil: 'load' });
+  await page.waitForTimeout(4000);
+  const titles = await page.$$eval('h4', els => els.map(e => e.innerText.trim()));
+  console.log('H4 Titles in verifier:', titles);
+  const tabText = await page.$eval('button:has-text("Pending Verification")', el => el.innerText.trim()).catch(() => 'NOT FOUND');
+  console.log('Pending tab text:', tabText);
+  await page.screenshot({ path: 'docs/screenshots/manual/tc06.png', fullPage: true });
+  console.log('Saved tc06.png');
+  await browser.close();
+})();
