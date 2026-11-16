@@ -155,13 +155,18 @@ service cloud.firestore {
 
       match /tracking/{trackId} {
         allow read: if isAuthenticated() && (
-          get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
-          get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid ||
+          (exists(/databases/$(database)/documents/orders/$(orderId)) &&
+            (get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
+             get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid)) ||
           isAdmin()
         );
         allow create: if isActiveUser() && (
-          get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
-          get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid ||
+          (existsAfter(/databases/$(database)/documents/orders/$(orderId)) &&
+            (getAfter(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
+             getAfter(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid)) ||
+          (exists(/databases/$(database)/documents/orders/$(orderId)) &&
+            (get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
+             get(/databases/$(database)/documents/orders/$(orderId)).data.sellerId == request.auth.uid)) ||
           isAdmin()
         );
       }
@@ -170,7 +175,8 @@ service cloud.firestore {
     // Returns
     match /returns/{returnId} {
       allow read: if isAuthenticated() && (
-        resource.data.buyerId == request.auth.uid ||
+        resource == null ||
+        (resource != null && resource.data.buyerId == request.auth.uid) ||
         isAdmin()
       );
       allow create: if isActiveUser() && request.resource.data.buyerId == request.auth.uid;
@@ -183,7 +189,8 @@ service cloud.firestore {
     // Reports (listingId_userId ensures one report per user per listing)
     match /reports/{reportId} {
       allow read: if isAuthenticated() && (
-        resource.data.reporterId == request.auth.uid ||
+        resource == null ||
+        (resource != null && resource.data.reporterId == request.auth.uid) ||
         isAdmin()
       );
       allow create: if isActiveUser() &&

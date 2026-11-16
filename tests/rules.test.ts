@@ -301,9 +301,10 @@ describe("Firestore Security Rules Tests (CSC203B Verification)", () => {
     });
     await assertFails(badBatch.commit());
 
-    // Correct price (500) with atomic listing sold transition succeeds
+    // Correct price (500) with atomic listing sold transition and tracking subcollection succeeds
     const goodBatch = aliceDb.batch();
-    goodBatch.set(aliceDb.collection("orders").doc("order_legit_price"), {
+    const newOrderRef = aliceDb.collection("orders").doc("order_legit_price");
+    goodBatch.set(newOrderRef, {
       id: "order_legit_price",
       listingId: "listing_calc",
       buyerId: "student_alice",
@@ -313,6 +314,11 @@ describe("Firestore Security Rules Tests (CSC203B Verification)", () => {
     });
     goodBatch.update(aliceDb.collection("listings").doc("listing_calc"), {
       status: "sold",
+    });
+    goodBatch.set(newOrderRef.collection("tracking").doc("trk_init"), {
+      status: "created",
+      note: "Initial order created with tracking",
+      at: new Date(),
     });
     await assertSucceeds(goodBatch.commit());
   });
