@@ -261,8 +261,6 @@ sequenceDiagram
 
 ---
 
-
-
 ## ⚡ Developer Quick Start
 
 ### Prerequisites
