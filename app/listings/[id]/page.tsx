@@ -152,6 +152,11 @@ export default function ListingDetailPage() {
       return;
     }
 
+    if (!listing.sellerId) {
+      alert("Seller information is missing from this listing.");
+      return;
+    }
+
     if (user.uid === listing.sellerId) {
       alert("You cannot start a conversation with yourself as the seller.");
       return;
@@ -183,6 +188,7 @@ export default function ListingDetailPage() {
 
       router.push(`/messages/${conversationId}`);
     } catch (err: any) {
+      console.error("[handleStartChat error]:", err);
       alert("Failed to start chat: " + err.message);
     } finally {
       setStartingChat(false);

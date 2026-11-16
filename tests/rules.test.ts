@@ -417,32 +417,71 @@ describe("Firestore Security Rules Tests (CSC203B Verification)", () => {
     );
   });
 
-  // 11. TC-09: Conversation messages visible only to participants
-  it("TC-09: conversation messages visible only to participants", async () => {
+  // 11. TC-09: Conversation messages visible only to participants & full chat initiation flow
+  it("TC-09: conversation messages visible only to participants and allows initial buyer-seller setup", async () => {
     const aliceDb = testEnv.authenticatedContext("student_alice").firestore();
     const bobDb = testEnv.authenticatedContext("student_bob").firestore();
     const suspendedDb = testEnv.authenticatedContext("student_suspended").firestore();
 
-    // Alice sending message in conv_alice_bob succeeds
+    // 1. Initial existence check on a new conversation document succeeds without null evaluation error
+    const newConvRef = aliceDb.collection("conversations").doc("new_conv_listing123_alice");
+    const snapBefore = await assertSucceeds(newConvRef.get());
+    // Document should not exist yet
+    if (snapBefore.exists) {
+      throw new Error("Expected conversation not to exist before creation");
+    }
+
+    // 2. Buyer Alice initiates brand new conversation with Seller Bob
     await assertSucceeds(
-      aliceDb.collection("conversations/conv_alice_bob/messages").doc("msg_1").set({
+      newConvRef.set({
+        id: "new_conv_listing123_alice",
+        listingId: "listing123",
+        listingTitle: "Casio Calculator",
+        participantIds: ["student_alice", "student_bob"],
+        participantNames: { student_alice: "Alice", student_bob: "Bob" },
+        lastMessage: "Conversation initiated",
+        updatedAt: new Date(),
+      })
+    );
+
+    // 3. Both Alice (buyer) and Bob (seller) can read the conversation document
+    await assertSucceeds(newConvRef.get());
+    await assertSucceeds(bobDb.collection("conversations").doc("new_conv_listing123_alice").get());
+
+    // 4. Alice sends message to Bob
+    await assertSucceeds(
+      newConvRef.collection("messages").doc("msg_buyer_1").set({
         senderId: "student_alice",
-        text: "Hello Bob!",
+        senderName: "Alice",
+        text: "Hi Bob, is this calculator still available?",
         createdAt: new Date(),
       })
     );
 
-    // Bob reading conversation succeeds
+    // 5. Bob sends reply to Alice
     await assertSucceeds(
-      bobDb.collection("conversations").doc("conv_alice_bob").get()
+      bobDb.collection("conversations/new_conv_listing123_alice/messages").doc("msg_seller_1").set({
+        senderId: "student_bob",
+        senderName: "Bob",
+        text: "Yes Alice, available. Can meet at Library at 4pm.",
+        createdAt: new Date(),
+      })
     );
 
-    // Non-participant (Suspended Sam) cannot read or write to the conversation
+    // 6. Alice updates parent conversation lastMessage
+    await assertSucceeds(
+      newConvRef.update({
+        lastMessage: "Yes Alice, available. Can meet at Library at 4pm.",
+        updatedAt: new Date(),
+      })
+    );
+
+    // 7. Non-participant (Suspended Sam) cannot read or write to the conversation
     await assertFails(
-      suspendedDb.collection("conversations").doc("conv_alice_bob").get()
+      suspendedDb.collection("conversations").doc("new_conv_listing123_alice").get()
     );
     await assertFails(
-      suspendedDb.collection("conversations/conv_alice_bob/messages").doc("msg_2").set({
+      suspendedDb.collection("conversations/new_conv_listing123_alice/messages").doc("msg_intruder").set({
         senderId: "student_suspended",
         text: "Intruder message",
       })
