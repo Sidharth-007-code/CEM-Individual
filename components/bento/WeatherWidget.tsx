@@ -1,37 +1,65 @@
+"use client";
+
 import React from "react";
-import { MapPin, Sun, Cloud } from "lucide-react";
+import { MapPin, Sun, Cloud, Droplets, Wind } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 export function WeatherWidget() {
   return (
-    <div className="bg-brutal-blue border-2 border-black rounded-3xl p-5 shadow-brutal text-white flex flex-col justify-between relative overflow-hidden h-full min-h-[160px] group hover:-translate-y-1 transition-transform">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-1.5 font-bold text-sm tracking-wide bg-black/15 px-2.5 py-1 rounded-full border border-black/20 backdrop-blur-sm">
-          <MapPin className="w-3.5 h-3.5 text-white" />
-          <span>Bengaluru</span>
-        </div>
-        <div className="w-3 h-3 rounded-full bg-white animate-ping opacity-75" />
-      </div>
+    <Card variant="elevated" padding="md" className="h-full min-h-[160px] relative overflow-hidden">
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-modern-primary/5 via-modern-primary/3 to-modern-surface" />
 
-      <div className="my-2 flex items-center justify-between">
-        <div>
-          <div className="text-4xl sm:text-5xl font-black font-sans tracking-tight text-white drop-shadow-[2px_2px_0px_#000]">
-            24°C
+      <CardHeader
+        title="Bengaluru Weather"
+        subtitle="MSRUAS Campus Conditions (demo data)"
+        className="relative z-10 border-b border-modern-border/20 pb-3"
+        action={
+          <Badge variant="secondary" size="xs">
+            Demo
+          </Badge>
+        }
+      />
+
+      <CardContent className="relative z-10 flex flex-col justify-between h-full pt-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="relative w-16 h-16">
+              <Sun className="w-10 h-10 text-modern-warm absolute -top-1 -right-1 animate-spin-slow" aria-hidden="true" />
+              <Cloud className="w-12 h-12 text-modern-text-primary/30 absolute bottom-0 left-0" aria-hidden="true" />
+            </div>
+            <div>
+              <div className="font-sans font-bold text-4xl sm:text-5xl text-modern-text-primary drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+                24°C
+              </div>
+              <p className="text-sm font-medium text-modern-text-secondary mt-0.5">Partly Cloudy &bull; MSRUAS Campus</p>
+            </div>
           </div>
-          <p className="text-xs font-bold text-white/90 mt-0.5">Partly Cloudy &bull; MSRUAS</p>
         </div>
 
-        {/* Sun and Cloud Graphic */}
-        <div className="relative w-14 h-14 shrink-0">
-          <Sun className="w-9 h-9 text-brutal-yellow absolute -top-1 -right-1 animate-spin-slow" />
-          <Cloud className="w-11 h-11 text-white fill-white absolute bottom-0 left-0 drop-shadow-[2px_2px_0px_#000000]" />
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm font-medium text-modern-text-secondary border-t border-modern-border/50 pt-3">
+          <div className="flex items-center space-x-2">
+            <MapPin className="w-4 h-4 text-modern-text-tertiary" aria-hidden="true" />
+            <span>Bengaluru</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1.5">
+              <Droplets className="w-3.5 h-3.5 text-modern-text-tertiary" aria-hidden="true" />
+              <span className="text-modern-text-secondary">65%</span>
+            </div>
+            <div className="flex items-center space-x-1.5">
+              <Wind className="w-3.5 h-3.5 text-modern-text-tertiary" aria-hidden="true" />
+              <span className="text-modern-text-secondary">12 km/h</span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="flex justify-between items-center text-[11px] font-mono font-bold text-white/80 border-t border-black/15 pt-2">
-        <span>Campus High: 28°</span>
-        <span>Low: 20°</span>
-      </div>
-    </div>
+        <div className="flex justify-between items-center text-xs font-mono text-modern-text-tertiary border-t border-modern-border/50 pt-2">
+          <span>High: 28°</span>
+          <span>Low: 20°</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
-

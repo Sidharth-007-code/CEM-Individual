@@ -6,6 +6,10 @@ import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from "fire
 import { db } from "@/lib/firebase";
 import { MAX_REPORTS_BEFORE_HIDE } from "@/lib/constants";
 import { Flag, X, AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Input";
+import { Badge } from "@/components/ui/Badge";
 
 interface ReportModalProps {
   listingId: string;
@@ -21,8 +25,6 @@ export function ReportModal({ listingId, listingTitle, isOpen, onClose }: Report
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,105 +97,82 @@ export function ReportModal({ listingId, listingTitle, isOpen, onClose }: Report
     }
   };
 
+  if (!isOpen) return null;
+
+  const reasonOptions = [
+    { value: "Misleading or fraudulent price", label: "Misleading or fraudulent price" },
+    { value: "Prohibited or dangerous item", label: "Prohibited or dangerous item" },
+    { value: "Inappropriate or offensive content", label: "Inappropriate or offensive content" },
+    { value: "Counterfeit or unauthorized item", label: "Counterfeit or unauthorized item" },
+    { value: "Item already sold / seller unresponsive", label: "Item already sold / seller unresponsive" },
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white border-2 border-black rounded-3xl max-w-md w-full p-6 shadow-brutal space-y-4">
-        
-        <div className="flex justify-between items-start border-b-2 border-black/10 pb-3">
-          <div className="flex items-center space-x-2 text-black">
-            <Flag className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="font-sans font-black text-lg text-black">
-              Report Campus Listing
-            </h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-black hover:bg-paper-200 p-1.5 rounded-xl border border-black"
-          >
-            <X className="w-4 h-4 stroke-[2.5]" />
-          </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Report Campus Listing"
+      size="md"
+      description={`Reporting: ${listingTitle}`}
+      closeOnOverlayClick={!loading}
+      closeOnEscape={!loading}
+    >
+      {error && (
+        <div className="mb-4 p-3 bg-modern-danger-light border border-modern-danger/30 text-modern-danger text-sm font-mono font-medium rounded-xl flex items-start space-x-2 shadow-modern-sm" role="alert">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 stroke-[2.5]" aria-hidden="true" />
+          <span>{error}</span>
         </div>
+      )}
 
-        <p className="text-xs font-mono text-ink-700">
-          Reporting: <strong className="text-black">{listingTitle}</strong>
-        </p>
-
-        {error && (
-          <div className="p-3 bg-admin-50 border-2 border-black text-admin-900 text-xs font-mono font-bold rounded-xl flex items-start space-x-2 shadow-[2px_2px_0px_#000]">
-            <AlertTriangle className="w-4 h-4 text-admin-600 flex-shrink-0 mt-0.5" />
-            <span>{error}</span>
+      {success ? (
+        <div className="text-center space-y-4">
+          <div className="w-14 h-14 bg-modern-success-light rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-8 h-8 text-modern-success stroke-[2.5]" aria-hidden="true" />
           </div>
-        )}
-
-        {success ? (
-          <div className="p-6 text-center space-y-2">
-            <CheckCircle2 className="w-8 h-8 text-black stroke-[2.5] mx-auto" />
-            <p className="font-sans font-black text-base text-black">
-              Report Submitted for Moderation
-            </p>
-            <p className="text-xs font-mono text-ink-600">
-              Thank you for keeping Campus Marketplace safe and trustworthy.
-            </p>
+          <p className="font-sans font-semibold text-base text-modern-text-primary">
+            Report Submitted for Moderation
+          </p>
+          <p className="text-sm font-mono text-modern-text-tertiary">
+            Thank you for keeping Campus Marketplace safe and trustworthy.
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-sans font-semibold text-modern-text-primary uppercase tracking-wider mb-1.5">
+              Violation Reason
+            </label>
+            <Select
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              options={reasonOptions}
+              className="w-full"
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-sans font-black text-black uppercase tracking-wider mb-1">
-                Violation Reason
-              </label>
-              <select
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
-              >
-                <option>Misleading or fraudulent price</option>
-                <option>Prohibited or dangerous item</option>
-                <option>Inappropriate or offensive content</option>
-                <option>Counterfeit or unauthorized item</option>
-                <option>Item already sold / seller unresponsive</option>
-              </select>
-            </div>
 
-            <div>
-              <label className="block text-xs font-sans font-black text-black uppercase tracking-wider mb-1">
-                Additional Details (Optional)
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Explain the issue for the university administrative review team..."
-                value={customNote}
-                onChange={(e) => setCustomNote(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-sans font-semibold text-modern-text-primary uppercase tracking-wider mb-1.5">
+              Additional Details (Optional)
+            </label>
+            <textarea
+              rows={3}
+              placeholder="Explain the issue for the university administrative review team..."
+              value={customNote}
+              onChange={(e) => setCustomNote(e.target.value)}
+              className="w-full px-4 py-3 bg-modern-surface border border-modern-border rounded-xl text-sm font-medium text-modern-text-primary placeholder:text-modern-text-tertiary focus:outline-none focus:ring-2 focus:ring-offset-0 focus:border-modern-primary focus:ring-modern-primary/40 disabled:opacity-50 disabled:cursor-not-allowed resize-y min-h-[80px]"
+            />
+          </div>
 
-            <div className="flex justify-end space-x-2 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-3.5 py-2 text-xs font-mono font-bold text-ink-700 hover:text-black"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2.5 bg-admin-600 hover:bg-admin-700 text-white text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition flex items-center space-x-1.5 disabled:opacity-50"
-              >
-                {loading ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Submitting...</span>
-                  </>
-                ) : (
-                  <span>Submit Flag to Admin</span>
-                )}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-2">
+            <Button variant="ghost" type="button" onClick={onClose} disabled={loading} className="w-full sm:w-auto">
+              Cancel
+            </Button>
+            <Button variant="danger" type="submit" isLoading={loading} className="w-full sm:w-auto" leftIcon={loading ? undefined : <Flag className="w-3.5 h-3.5" />}>
+              {loading ? "Submitting..." : "Submit Flag to Admin"}
+            </Button>
+          </div>
+        </form>
+      )}
+    </Modal>
   );
 }
-

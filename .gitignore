@@ -79,3 +79,6 @@ scripts/update-images.js
 *.swp
 *.swo
 *~
+
+# Local Firebase emulator backups
+/emulator-data/

@@ -35,7 +35,7 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-t-2 border-black px-2 py-1.5 shadow-[0_-2px_0px_#000]">
+    <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-modern-surface/95 backdrop-blur-md border-t border-modern-border px-2 py-1.5 shadow-modern-lg">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -48,10 +48,10 @@ export function BottomNav() {
                 href={item.href}
                 className="flex flex-col items-center justify-center -mt-5"
               >
-                <div className="w-12 h-12 rounded-2xl bg-brutal-yellow text-black border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all">
+                <div className="w-12 h-12 rounded-2xl bg-modern-warm text-modern-warm-text border border-modern-warm/30 flex items-center justify-center shadow-modern-md active:scale-[0.98] transition-all">
                   <Icon className="w-6 h-6 stroke-[2.5]" />
                 </div>
-                <span className="text-[10px] font-mono font-black text-black mt-0.5">
+                <span className="text-[10px] font-mono font-semibold text-modern-text-primary mt-0.5">
                   {item.label}
                 </span>
               </Link>
@@ -64,8 +64,8 @@ export function BottomNav() {
               href={item.href}
               className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all ${
                 isActive
-                  ? "bg-brutal-yellow/60 border border-black text-black font-black shadow-[1px_1px_0px_#000]"
-                  : "text-ink-700 hover:text-black font-semibold"
+                  ? "bg-modern-primary/10 text-modern-primary font-semibold"
+                  : "text-modern-text-tertiary hover:text-modern-primary hover:bg-modern-primary-light font-medium"
               }`}
             >
               <Icon className="w-4 h-4" />

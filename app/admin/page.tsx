@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
+import { Badge, Button, Card, Input } from "@/components/ui";
 import {
   collection,
   query,
@@ -323,16 +324,16 @@ export default function DeanAdminConsolePage() {
       <div className="space-y-6 max-w-7xl mx-auto">
         
         {/* ────────────────── DEAN EXECUTIVE MASTHEAD ────────────────── */}
-        <div className="bg-black text-white border-3 border-black rounded-3xl p-6 sm:p-8 shadow-[6px_6px_0px_#FFD027] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-grid-pattern relative overflow-hidden">
+        <Card variant="elevated" padding="md" className="!bg-modern-primary text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brutal-yellow text-black border-2 border-white rounded-full font-mono font-black text-xs shadow-[2px_2px_0px_#FFF]">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-modern-warm text-modern-text-primary border border-white rounded-full font-mono font-semibold text-xs shadow-modern-sm">
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>OFFICE OF THE DEAN OF STUDENT AFFAIRS</span>
             </div>
-            <h1 className="font-sans font-black text-2xl sm:text-4xl text-white tracking-tight">
+            <h1 className="font-sans font-semibold text-2xl sm:text-4xl text-white tracking-tight">
               Executive Governance Console
             </h1>
-            <p className="text-xs font-mono font-bold text-ink-300">
+            <p className="text-xs font-mono font-bold text-modern-text-secondary">
               M.S. Ramaiah University of Applied Sciences &bull; Student Protection, Verification &amp; Audit Oversight
             </p>
           </div>
@@ -340,39 +341,35 @@ export default function DeanAdminConsolePage() {
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-bold">
             <Link
               href="/verifier"
-              className="px-3.5 py-1.5 bg-brutal-green text-black rounded-xl border-2 border-white shadow-[2px_2px_0px_#FFF] hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] transition-all flex items-center space-x-1.5"
+              className="px-3.5 py-1.5 bg-modern-success-light text-modern-text-primary rounded-xl border border-white shadow-modern-sm    transition-all flex items-center space-x-1.5"
             >
-              <ShieldCheck className="w-4 h-4 text-black stroke-[2.5]" />
+              <ShieldCheck className="w-4 h-4 text-modern-text-primary stroke-[2.5]" />
               <span>Verifier Queue ({pendingListings.length})</span>
             </Link>
-            <span className="px-3 py-1.5 bg-admin-100 text-admin-900 rounded-xl border-2 border-white shadow-[2px_2px_0px_#FFF]">
+            <Badge variant="secondary" size="md" className="!bg-modern-error-light !text-modern-error !border-white">
               {openReports.length} Open Grievances
-            </span>
+            </Badge>
           </div>
-        </div>
+        </Card>
 
         {/* Feedback Alert Toast */}
         {feedbackMsg && (
-          <div
-            className={`p-4 border-2 border-black rounded-2xl text-xs font-bold shadow-brutal flex items-center justify-between ${
-              feedbackMsg.type === "success" ? "bg-brutal-green text-black" : "bg-brutal-pink text-black"
-            }`}
-          >
+          <div className={`p-4 border rounded-2xl text-sm flex items-center justify-between ${feedbackMsg.type === "success" ? "bg-modern-success-light border-modern-success/30 text-modern-success" : "bg-modern-error-light border-modern-error/30 text-modern-error"}`} role={feedbackMsg.type === "error" ? "alert" : "status"}>
             <span>{feedbackMsg.text}</span>
-            <button type="button" onClick={() => setFeedbackMsg(null)} className="text-black font-mono font-black ml-4">
+            <Button type="button" onClick={() => setFeedbackMsg(null)} variant="ghost" size="sm" aria-label="Dismiss feedback" className="ml-4">
               &times;
-            </button>
+            </Button>
           </div>
         )}
 
         {/* ────────────────── DEAN GOVERNANCE NAVIGATION TABS ────────────────── */}
-        <div className="flex space-x-2 border-b-2 border-black pb-3 overflow-x-auto text-xs font-sans font-black scrollbar-none">
+        <div className="flex space-x-2 border-b-2 border-modern-border pb-3 overflow-x-auto text-xs font-sans font-semibold scrollbar-none">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2.5 rounded-xl border-2 border-black transition-all flex items-center space-x-1.5 shrink-0 ${
+            className={`px-4 py-2.5 rounded-xl border border-modern-border transition-all flex items-center space-x-1.5 shrink-0 ${
               activeTab === "overview"
-                ? "bg-brutal-yellow text-black shadow-[3px_3px_0px_#000] -translate-y-0.5"
-                : "bg-white text-ink-700 hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                ? "bg-modern-warm text-modern-text-primary shadow-modern-sm -translate-y-0.5"
+                : "bg-white text-modern-text-secondary hover:bg-modern-surface-hover shadow-modern-sm"
             }`}
           >
             <Building className="w-4 h-4" />
@@ -381,10 +378,10 @@ export default function DeanAdminConsolePage() {
 
           <button
             onClick={() => setActiveTab("users")}
-            className={`px-4 py-2.5 rounded-xl border-2 border-black transition-all flex items-center space-x-1.5 shrink-0 ${
+            className={`px-4 py-2.5 rounded-xl border border-modern-border transition-all flex items-center space-x-1.5 shrink-0 ${
               activeTab === "users"
-                ? "bg-brutal-yellow text-black shadow-[3px_3px_0px_#000] -translate-y-0.5"
-                : "bg-white text-ink-700 hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                ? "bg-modern-warm text-modern-text-primary shadow-modern-sm -translate-y-0.5"
+                : "bg-white text-modern-text-secondary hover:bg-modern-surface-hover shadow-modern-sm"
             }`}
           >
             <Users className="w-4 h-4" />
@@ -393,10 +390,10 @@ export default function DeanAdminConsolePage() {
 
           <button
             onClick={() => setActiveTab("reports")}
-            className={`px-4 py-2.5 rounded-xl border-2 border-black transition-all flex items-center space-x-1.5 shrink-0 ${
+            className={`px-4 py-2.5 rounded-xl border border-modern-border transition-all flex items-center space-x-1.5 shrink-0 ${
               activeTab === "reports"
-                ? "bg-brutal-yellow text-black shadow-[3px_3px_0px_#000] -translate-y-0.5"
-                : "bg-white text-ink-700 hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                ? "bg-modern-warm text-modern-text-primary shadow-modern-sm -translate-y-0.5"
+                : "bg-white text-modern-text-secondary hover:bg-modern-surface-hover shadow-modern-sm"
             }`}
           >
             <Flag className="w-4 h-4" />
@@ -405,10 +402,10 @@ export default function DeanAdminConsolePage() {
 
           <button
             onClick={() => setActiveTab("hidden")}
-            className={`px-4 py-2.5 rounded-xl border-2 border-black transition-all flex items-center space-x-1.5 shrink-0 ${
+            className={`px-4 py-2.5 rounded-xl border border-modern-border transition-all flex items-center space-x-1.5 shrink-0 ${
               activeTab === "hidden"
-                ? "bg-brutal-yellow text-black shadow-[3px_3px_0px_#000] -translate-y-0.5"
-                : "bg-white text-ink-700 hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                ? "bg-modern-warm text-modern-text-primary shadow-modern-sm -translate-y-0.5"
+                : "bg-white text-modern-text-secondary hover:bg-modern-surface-hover shadow-modern-sm"
             }`}
           >
             <EyeOff className="w-4 h-4" />
@@ -417,10 +414,10 @@ export default function DeanAdminConsolePage() {
 
           <button
             onClick={() => setActiveTab("audit")}
-            className={`px-4 py-2.5 rounded-xl border-2 border-black transition-all flex items-center space-x-1.5 shrink-0 ${
+            className={`px-4 py-2.5 rounded-xl border border-modern-border transition-all flex items-center space-x-1.5 shrink-0 ${
               activeTab === "audit"
-                ? "bg-brutal-yellow text-black shadow-[3px_3px_0px_#000] -translate-y-0.5"
-                : "bg-white text-ink-700 hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                ? "bg-modern-warm text-modern-text-primary shadow-modern-sm -translate-y-0.5"
+                : "bg-white text-modern-text-secondary hover:bg-modern-surface-hover shadow-modern-sm"
             }`}
           >
             <History className="w-4 h-4" />
@@ -429,10 +426,10 @@ export default function DeanAdminConsolePage() {
 
           <button
             onClick={() => setActiveTab("demo")}
-            className={`px-4 py-2.5 rounded-xl border-2 border-black transition-all flex items-center space-x-1.5 shrink-0 ${
+            className={`px-4 py-2.5 rounded-xl border border-modern-border transition-all flex items-center space-x-1.5 shrink-0 ${
               activeTab === "demo"
-                ? "bg-brutal-yellow text-black shadow-[3px_3px_0px_#000] -translate-y-0.5"
-                : "bg-white text-ink-700 hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                ? "bg-modern-warm text-modern-text-primary shadow-modern-sm -translate-y-0.5"
+                : "bg-white text-modern-text-secondary hover:bg-modern-surface-hover shadow-modern-sm"
             }`}
           >
             <Database className="w-4 h-4" />
@@ -447,126 +444,126 @@ export default function DeanAdminConsolePage() {
             {/* KPI Cards Bento */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               
-              <div className="bg-white border-2 border-black rounded-3xl p-5 shadow-brutal flex flex-col justify-between">
+              <div className="bg-white border border-modern-border rounded-2xl p-5 shadow-modern-sm flex flex-col justify-between">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[11px] font-mono font-bold text-ink-600 uppercase">Enrolled Students</span>
-                    <div className="text-3xl sm:text-4xl font-sans font-black text-black mt-1">
+                    <span className="text-[11px] font-mono font-bold text-modern-text-tertiary uppercase">Enrolled Students</span>
+                    <div className="text-3xl sm:text-4xl font-sans font-semibold text-modern-text-primary mt-1">
                       {usersList.length}
                     </div>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-brutal-yellow border-2 border-black shadow-[1.5px_1.5px_0px_#000] flex items-center justify-center">
-                    <GraduationCap className="w-5 h-5 text-black" />
+                  <div className="w-10 h-10 rounded-xl bg-modern-warm border border-modern-border shadow-modern-sm flex items-center justify-center">
+                    <GraduationCap className="w-5 h-5 text-modern-text-primary" />
                   </div>
                 </div>
-                <div className="text-[11px] font-mono text-ink-600 mt-3">
-                  <strong className="text-black">{usersList.length - suspendedList.length}</strong> active &bull; <strong className="text-admin-700">{suspendedList.length}</strong> suspended
+                <div className="text-[11px] font-mono text-modern-text-tertiary mt-3">
+                  <strong className="text-modern-text-primary">{usersList.length - suspendedList.length}</strong> active &bull; <strong className="text-modern-error">{suspendedList.length}</strong> suspended
                 </div>
               </div>
 
-              <div className="bg-brutal-green border-2 border-black rounded-3xl p-5 shadow-brutal flex flex-col justify-between">
+              <div className="bg-modern-success-light border border-modern-border rounded-2xl p-5 shadow-modern-sm flex flex-col justify-between">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[11px] font-mono font-bold text-black uppercase">Live Study Items</span>
-                    <div className="text-3xl sm:text-4xl font-sans font-black text-black mt-1">
+                    <span className="text-[11px] font-mono font-bold text-modern-text-primary uppercase">Live Study Items</span>
+                    <div className="text-3xl sm:text-4xl font-sans font-semibold text-modern-text-primary mt-1">
                       {availableListings.length}
                     </div>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-black text-white border-2 border-black shadow-[1.5px_1.5px_0px_#FFF] flex items-center justify-center">
-                    <Package className="w-5 h-5 text-brutal-green" />
+                  <div className="w-10 h-10 rounded-xl bg-modern-primary text-white border border-modern-border shadow-modern-sm flex items-center justify-center">
+                    <Package className="w-5 h-5 text-modern-success" />
                   </div>
                 </div>
-                <div className="text-[11px] font-mono text-black font-bold mt-3">
+                <div className="text-[11px] font-mono text-modern-text-primary font-bold mt-3">
                   {pendingListings.length} in verification queue
                 </div>
               </div>
 
-              <div className="bg-brutal-purple-light border-2 border-black rounded-3xl p-5 shadow-brutal flex flex-col justify-between">
+              <div className="bg-modern-primary-light border border-modern-border rounded-2xl p-5 shadow-modern-sm flex flex-col justify-between">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[11px] font-mono font-bold text-brutal-purple-dark uppercase">Peer Handover Volume</span>
-                    <div className="text-3xl sm:text-4xl font-sans font-black text-black mt-1">
+                    <span className="text-[11px] font-mono font-bold text-modern-primary uppercase">Peer Handover Volume</span>
+                    <div className="text-3xl sm:text-4xl font-sans font-semibold text-modern-text-primary mt-1">
                       ₹{totalVolume.toLocaleString("en-IN")}
                     </div>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-brutal-purple text-white border-2 border-black shadow-[1.5px_1.5px_0px_#000] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-modern-primary text-white border border-modern-border shadow-modern-sm flex items-center justify-center">
                     <TrendingUp className="w-5 h-5" />
                   </div>
                 </div>
-                <div className="text-[11px] font-mono text-ink-700 mt-3">
+                <div className="text-[11px] font-mono text-modern-text-secondary mt-3">
                   {orders.length} campus transactions completed
                 </div>
               </div>
 
-              <div className="bg-white border-2 border-black rounded-3xl p-5 shadow-brutal flex flex-col justify-between">
+              <div className="bg-white border border-modern-border rounded-2xl p-5 shadow-modern-sm flex flex-col justify-between">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[11px] font-mono font-bold text-ink-600 uppercase">Quality Verifiers</span>
-                    <div className="text-3xl sm:text-4xl font-sans font-black text-black mt-1">
+                    <span className="text-[11px] font-mono font-bold text-modern-text-tertiary uppercase">Quality Verifiers</span>
+                    <div className="text-3xl sm:text-4xl font-sans font-semibold text-modern-text-primary mt-1">
                       {verifiersList.length}
                     </div>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-brutal-green border-2 border-black shadow-[1.5px_1.5px_0px_#000] flex items-center justify-center">
-                    <ShieldCheck className="w-5 h-5 text-black" />
+                  <div className="w-10 h-10 rounded-xl bg-modern-success-light border border-modern-border shadow-modern-sm flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-modern-text-primary" />
                   </div>
                 </div>
-                <div className="text-[11px] font-mono text-ink-600 mt-3">
+                <div className="text-[11px] font-mono text-modern-text-tertiary mt-3">
                   Student council verification representatives
                 </div>
               </div>
             </div>
 
             {/* Quick Executive Action Hub */}
-            <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
-              <div className="flex justify-between items-center border-b-2 border-black/10 pb-3">
-                <h3 className="font-sans font-black text-base text-black flex items-center space-x-2">
-                  <Building className="w-4 h-4 text-black" />
+            <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-4">
+              <div className="flex justify-between items-center border-b-2 border-modern-border/70 pb-3">
+                <h3 className="font-sans font-semibold text-base text-modern-text-primary flex items-center space-x-2">
+                  <Building className="w-4 h-4 text-modern-text-primary" />
                   <span>Executive Administrative Actions</span>
                 </h3>
-                <span className="text-xs font-mono font-bold text-ink-500">MSRUAS Dean Portal</span>
+                <span className="text-xs font-mono font-bold text-modern-text-tertiary">MSRUAS Dean Portal</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <button
                   type="button"
                   onClick={() => setActiveTab("users")}
-                  className="p-4 bg-paper-50 hover:bg-brutal-yellow border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000] text-left transition space-y-1"
+                  className="p-4 bg-modern-bg hover:bg-modern-warm-light border border-modern-border rounded-2xl shadow-modern-sm text-left transition space-y-1"
                 >
-                  <strong className="block font-sans font-black text-sm text-black">Manage Student Identities</strong>
-                  <p className="text-xs text-ink-600 font-medium">Search students, inspect locked academic credentials, or suspend accounts.</p>
+                  <strong className="block font-sans font-semibold text-sm text-modern-text-primary">Manage Student Identities</strong>
+                  <p className="text-xs text-modern-text-tertiary font-medium">Search students, inspect locked academic credentials, or suspend accounts.</p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveTab("reports")}
-                  className="p-4 bg-paper-50 hover:bg-brutal-yellow border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000] text-left transition space-y-1"
+                  className="p-4 bg-modern-bg hover:bg-modern-warm-light border border-modern-border rounded-2xl shadow-modern-sm text-left transition space-y-1"
                 >
-                  <strong className="block font-sans font-black text-sm text-black">Resolve Student Grievances</strong>
-                  <p className="text-xs text-ink-600 font-medium">Moderate reported items, scam allegations, and take down counterfeit items.</p>
+                  <strong className="block font-sans font-semibold text-sm text-modern-text-primary">Resolve Student Grievances</strong>
+                  <p className="text-xs text-modern-text-tertiary font-medium">Moderate reported items, scam allegations, and take down counterfeit items.</p>
                 </button>
 
                 <Link
                   href="/verifier"
-                  className="p-4 bg-paper-50 hover:bg-brutal-green border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000] text-left transition space-y-1 block"
+                  className="p-4 bg-modern-bg hover:bg-modern-success-light border border-modern-border rounded-2xl shadow-modern-sm text-left transition space-y-1 block"
                 >
-                  <strong className="block font-sans font-black text-sm text-black">Launch Verifier Queue</strong>
-                  <p className="text-xs text-ink-600 font-medium">Inspect {pendingListings.length} pending submissions awaiting quality checks.</p>
+                  <strong className="block font-sans font-semibold text-sm text-modern-text-primary">Launch Verifier Queue</strong>
+                  <p className="text-xs text-modern-text-tertiary font-medium">Inspect {pendingListings.length} pending submissions awaiting quality checks.</p>
                 </Link>
               </div>
             </div>
 
             {/* Department Breakdown Grid */}
-            <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
-              <h3 className="font-sans font-black text-base text-black">
+            <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-4">
+              <h3 className="font-sans font-semibold text-base text-modern-text-primary">
                 Institutional Department Representation
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
                 {["Computer Science & Engineering", "Electronics & Communication", "Mechanical & Aerospace", "Biotechnology & Sciences"].map((dept) => {
                   const count = usersList.filter((u) => (u.course || "").toLowerCase().includes(dept.toLowerCase().slice(0, 10))).length;
                   return (
-                    <div key={dept} className="p-3 bg-paper-50 border-2 border-black rounded-xl">
-                      <span className="text-[10px] text-ink-500 uppercase block font-bold">{dept.split("&")[0]}</span>
-                      <strong className="text-black font-sans text-lg block mt-0.5">{count || 1} Student(s)</strong>
+                    <div key={dept} className="p-3 bg-modern-bg border border-modern-border rounded-xl">
+                      <span className="text-[10px] text-modern-text-tertiary uppercase block font-bold">{dept.split("&")[0]}</span>
+                      <strong className="text-modern-text-primary font-sans text-lg block mt-0.5">{count || 1} Student(s)</strong>
                     </div>
                   );
                 })}
@@ -577,13 +574,13 @@ export default function DeanAdminConsolePage() {
 
         {/* ────────────────── 2. STUDENT DIRECTORY & CREDENTIALS OVERSIGHT ────────────────── */}
         {activeTab === "users" && (
-          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-5">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-black/10 pb-4">
+          <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-5">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-modern-border/70 pb-4">
               <div>
-                <h3 className="font-sans font-black text-lg text-black">
+                <h3 className="font-sans font-semibold text-lg text-modern-text-primary">
                   Student Identity &amp; Credential Directory
                 </h3>
-                <p className="text-xs font-medium text-ink-600">
+                <p className="text-xs font-medium text-modern-text-tertiary">
                   Inspect locked academic credentials, suspend accounts, and manage verifier staff permissions.
                 </p>
               </div>
@@ -593,8 +590,8 @@ export default function DeanAdminConsolePage() {
                 <button
                   type="button"
                   onClick={() => setUserRoleFilter("all")}
-                  className={`px-3 py-1 rounded-xl border-2 border-black transition ${
-                    userRoleFilter === "all" ? "bg-black text-white shadow-[1.5px_1.5px_0px_#000]" : "bg-white text-black hover:bg-paper-100"
+                  className={`px-3 py-1 rounded-xl border border-modern-border transition ${
+                    userRoleFilter === "all" ? "bg-modern-primary text-white shadow-modern-sm" : "bg-white text-modern-text-primary hover:bg-modern-surface-hover"
                   }`}
                 >
                   All ({usersList.length})
@@ -602,8 +599,8 @@ export default function DeanAdminConsolePage() {
                 <button
                   type="button"
                   onClick={() => setUserRoleFilter("verifier")}
-                  className={`px-3 py-1 rounded-xl border-2 border-black transition ${
-                    userRoleFilter === "verifier" ? "bg-brutal-green text-black shadow-[1.5px_1.5px_0px_#000]" : "bg-white text-black hover:bg-paper-100"
+                  className={`px-3 py-1 rounded-xl border border-modern-border transition ${
+                    userRoleFilter === "verifier" ? "bg-modern-success-light text-modern-text-primary shadow-modern-sm" : "bg-white text-modern-text-primary hover:bg-modern-surface-hover"
                   }`}
                 >
                   Verifiers ({verifiersList.length})
@@ -611,8 +608,8 @@ export default function DeanAdminConsolePage() {
                 <button
                   type="button"
                   onClick={() => setUserRoleFilter("suspended")}
-                  className={`px-3 py-1 rounded-xl border-2 border-black transition ${
-                    userRoleFilter === "suspended" ? "bg-brutal-pink text-black shadow-[1.5px_1.5px_0px_#000]" : "bg-white text-black hover:bg-paper-100"
+                  className={`px-3 py-1 rounded-xl border border-modern-border transition ${
+                    userRoleFilter === "suspended" ? "bg-modern-error-light text-modern-text-primary shadow-modern-sm" : "bg-white text-modern-text-primary hover:bg-modern-surface-hover"
                   }`}
                 >
                   Suspended ({suspendedList.length})
@@ -622,20 +619,20 @@ export default function DeanAdminConsolePage() {
 
             {/* Search Input */}
             <div className="relative">
-              <Search className="w-4 h-4 text-ink-500 absolute left-3.5 top-3" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search students by full name, university email (@msruas.ac.in), or department..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000]"
+                leftIcon={<Search className="w-4 h-4" />}
+                className="text-sm"
               />
             </div>
 
             {/* User List Table */}
-            <div className="overflow-x-auto border-2 border-black rounded-2xl">
+            <div className="overflow-x-auto border border-modern-border rounded-2xl">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-paper-100 border-b-2 border-black text-ink-800 font-bold uppercase">
+                <thead className="bg-modern-surface-hover border-b-2 border-modern-border text-modern-text-secondary font-bold uppercase">
                   <tr>
                     <th className="p-3.5">Student Details</th>
                     <th className="p-3.5">Academic Credentials</th>
@@ -644,41 +641,33 @@ export default function DeanAdminConsolePage() {
                     <th className="p-3.5 text-right">Dean Governance Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y-2 divide-black/10">
+                <tbody className="divide-y-2 divide-modern-border/70">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-ink-500 font-bold">
+                      <td colSpan={5} className="p-8 text-center text-modern-text-tertiary font-bold">
                         No students found matching your search.
                       </td>
                     </tr>
                   ) : (
                     filteredUsers.map((u) => (
-                      <tr key={u.uid} className="hover:bg-paper-50 transition">
+                      <tr key={u.uid} className="hover:bg-modern-bg transition">
                         <td className="p-3.5">
-                          <strong className="block font-sans font-black text-black">{u.name || "Student"}</strong>
-                          <span className="text-ink-600 block">{u.email}</span>
+                          <strong className="block font-sans font-semibold text-modern-text-primary">{u.name || "Student"}</strong>
+                          <span className="text-modern-text-tertiary block">{u.email}</span>
                         </td>
                         <td className="p-3.5 space-y-0.5">
-                          <span className="font-sans font-bold text-black block">{u.course || "General Engineering"}</span>
-                          <span className="text-ink-600 block">{u.year || "1st Year"} &bull; {u.campus || "Bengaluru"}</span>
+                          <span className="font-sans font-bold text-modern-text-primary block">{u.course || "General Engineering"}</span>
+                          <span className="text-modern-text-tertiary block">{u.year || "1st Year"} &bull; {u.campus || "Bengaluru"}</span>
                         </td>
                         <td className="p-3.5">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black border border-black uppercase ${
-                            u.role === "admin"
-                              ? "bg-black text-white"
-                              : u.role === "verifier"
-                              ? "bg-brutal-green text-black"
-                              : "bg-paper-200 text-black"
-                          }`}>
+                          <Badge variant={u.role === "admin" ? "admin" : u.role === "verifier" ? "verifier" : "secondary"} size="xs">
                             {u.role}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="p-3.5">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black border border-black uppercase ${
-                            u.status === "active" ? "bg-brutal-green text-black" : "bg-brutal-pink text-black"
-                          }`}>
+                          <Badge variant={u.status === "active" ? "success" : "secondary"} size="xs" className={u.status === "active" ? "" : "!bg-modern-error-light !text-modern-error !border-modern-error/30"}>
                             {u.status || "active"}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="p-3.5 text-right space-x-2">
                           {u.role !== "admin" && (
@@ -687,7 +676,7 @@ export default function DeanAdminConsolePage() {
                                 type="button"
                                 disabled={actionLoading}
                                 onClick={() => handleRoleToggle(u)}
-                                className="px-2.5 py-1 bg-white hover:bg-brutal-yellow text-black font-black text-[10px] rounded-lg border border-black shadow-[1px_1px_0px_#000] active:translate-x-[1px] active:translate-y-[1px]"
+                                className="px-2.5 py-1 bg-white hover:bg-modern-warm-light text-modern-text-primary font-semibold text-[10px] rounded-lg border border-modern-border shadow-modern-sm  "
                                 title="Toggle Verifier Staff Role"
                               >
                                 {u.role === "student" ? "Promote to Verifier" : "Demote to Student"}
@@ -697,10 +686,10 @@ export default function DeanAdminConsolePage() {
                                 type="button"
                                 disabled={actionLoading}
                                 onClick={() => handleUserStatusToggle(u)}
-                                className={`px-2.5 py-1 font-black text-[10px] rounded-lg border border-black shadow-[1px_1px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] ${
+                                className={`px-2.5 py-1 font-semibold text-[10px] rounded-lg border border-modern-border shadow-modern-sm   ${
                                   u.status === "active"
-                                    ? "bg-admin-100 hover:bg-brutal-pink text-admin-900"
-                                    : "bg-brutal-green text-black"
+                                    ? "bg-modern-error-light hover:bg-modern-error-light text-modern-error"
+                                    : "bg-modern-success-light text-modern-text-primary"
                                 }`}
                               >
                                 {u.status === "active" ? "Suspend Account" : "Reinstate Account"}
@@ -719,13 +708,13 @@ export default function DeanAdminConsolePage() {
 
         {/* ────────────────── 3. STUDENT GRIEVANCE & MODERATION QUEUE ────────────────── */}
         {activeTab === "reports" && (
-          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-5">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-black/10 pb-4">
+          <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-5">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-modern-border/70 pb-4">
               <div>
-                <h3 className="font-sans font-black text-lg text-black">
+                <h3 className="font-sans font-semibold text-lg text-modern-text-primary">
                   Student Grievances &amp; Scam Moderation
                 </h3>
-                <p className="text-xs font-medium text-ink-600">
+                <p className="text-xs font-medium text-modern-text-tertiary">
                   Review student reports on fraudulent pricing, counterfeit products, or peer dispute escalations.
                 </p>
               </div>
@@ -734,8 +723,8 @@ export default function DeanAdminConsolePage() {
                 <button
                   type="button"
                   onClick={() => setReportFilter("open")}
-                  className={`px-3 py-1 rounded-xl border-2 border-black transition ${
-                    reportFilter === "open" ? "bg-black text-white shadow-[1.5px_1.5px_0px_#000]" : "bg-white text-black hover:bg-paper-100"
+                  className={`px-3 py-1 rounded-xl border border-modern-border transition ${
+                    reportFilter === "open" ? "bg-modern-primary text-white shadow-modern-sm" : "bg-white text-modern-text-primary hover:bg-modern-surface-hover"
                   }`}
                 >
                   Open ({openReports.length})
@@ -743,8 +732,8 @@ export default function DeanAdminConsolePage() {
                 <button
                   type="button"
                   onClick={() => setReportFilter("all")}
-                  className={`px-3 py-1 rounded-xl border-2 border-black transition ${
-                    reportFilter === "all" ? "bg-black text-white shadow-[1.5px_1.5px_0px_#000]" : "bg-white text-black hover:bg-paper-100"
+                  className={`px-3 py-1 rounded-xl border border-modern-border transition ${
+                    reportFilter === "all" ? "bg-modern-primary text-white shadow-modern-sm" : "bg-white text-modern-text-primary hover:bg-modern-surface-hover"
                   }`}
                 >
                   All Reports ({reports.length})
@@ -754,27 +743,25 @@ export default function DeanAdminConsolePage() {
 
             {filteredReports.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <CheckCircle className="w-10 h-10 text-brutal-green mx-auto" />
-                <h4 className="font-sans font-black text-base text-black">No Grievances in this Filter</h4>
-                <p className="text-xs text-ink-600 font-medium">All student transactions and listings are operating smoothly.</p>
+                <CheckCircle className="w-10 h-10 text-modern-success mx-auto" />
+                <h4 className="font-sans font-semibold text-base text-modern-text-primary">No Grievances in this Filter</h4>
+                <p className="text-xs text-modern-text-tertiary font-medium">All student transactions and listings are operating smoothly.</p>
               </div>
             ) : (
-              <div className="divide-y-2 divide-black/10">
+              <div className="divide-y-2 divide-modern-border/70">
                 {filteredReports.map((report) => (
                   <div key={report.id} className="py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
-                        <span className="font-sans font-black text-sm text-black">Report #{report.id.slice(0, 8)}</span>
-                        <span className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded-md border border-black uppercase ${
-                          report.status === "open" ? "bg-brutal-pink text-black" : "bg-brutal-green text-black"
-                        }`}>
+                        <span className="font-sans font-semibold text-sm text-modern-text-primary">Report #{report.id.slice(0, 8)}</span>
+                        <Badge variant={report.status === "open" ? "secondary" : "success"} size="xs" className={report.status === "open" ? "!bg-modern-error-light !text-modern-error !border-modern-error/30" : ""}>
                           {report.status}
-                        </span>
+                        </Badge>
                       </div>
-                      <p className="text-xs font-mono text-ink-800">
+                      <p className="text-xs font-mono text-modern-text-secondary">
                         <strong>Reason:</strong> {report.reason}
                       </p>
-                      <p className="text-[11px] font-mono text-ink-600">
+                      <p className="text-[11px] font-mono text-modern-text-tertiary">
                         Listing ID: {report.listingId} &bull; Reported by Student: {report.reporterId}
                       </p>
                     </div>
@@ -782,7 +769,7 @@ export default function DeanAdminConsolePage() {
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
                       <Link
                         href={`/listings/${report.listingId}`}
-                        className="px-3 py-1.5 bg-white hover:bg-paper-100 text-black font-mono font-bold text-xs rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000] flex items-center space-x-1"
+                        className="px-3 py-1.5 bg-white hover:bg-modern-surface-hover text-modern-text-primary font-mono font-bold text-xs rounded-xl border border-modern-border shadow-modern-sm flex items-center space-x-1"
                       >
                         <span>View Item</span>
                         <ExternalLink className="w-3 h-3" />
@@ -794,7 +781,7 @@ export default function DeanAdminConsolePage() {
                             type="button"
                             disabled={actionLoading}
                             onClick={() => handleReportAction(report, "resolved", false)}
-                            className="px-3 py-1.5 bg-admin-100 hover:bg-brutal-pink text-black font-mono font-bold text-xs rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000]"
+                            className="px-3 py-1.5 bg-modern-error-light hover:bg-modern-error-light text-modern-text-primary font-mono font-bold text-xs rounded-xl border border-modern-border shadow-modern-sm"
                           >
                             Take Down Listing
                           </button>
@@ -803,7 +790,7 @@ export default function DeanAdminConsolePage() {
                             type="button"
                             disabled={actionLoading}
                             onClick={() => handleReportAction(report, "dismissed", true)}
-                            className="px-3 py-1.5 bg-white hover:bg-paper-100 text-black font-mono font-bold text-xs rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000]"
+                            className="px-3 py-1.5 bg-white hover:bg-modern-surface-hover text-modern-text-primary font-mono font-bold text-xs rounded-xl border border-modern-border shadow-modern-sm"
                           >
                             Dismiss Report
                           </button>
@@ -819,37 +806,37 @@ export default function DeanAdminConsolePage() {
 
         {/* ────────────────── 4. AUTO-HIDDEN CATALOG & PURGE ────────────────── */}
         {activeTab === "hidden" && (
-          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-5">
-            <div className="border-b-2 border-black/10 pb-4">
-              <h3 className="font-sans font-black text-lg text-black">
+          <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-5">
+            <div className="border-b-2 border-modern-border/70 pb-4">
+              <h3 className="font-sans font-semibold text-lg text-modern-text-primary">
                 Auto-Hidden &amp; Flagged Listings Catalog
               </h3>
-              <p className="text-xs font-medium text-ink-600">
+              <p className="text-xs font-medium text-modern-text-tertiary">
                 Items automatically taken down due to 3+ user reports, counterfeit warnings, or dean intervention.
               </p>
             </div>
 
             {hiddenListings.length === 0 ? (
               <div className="p-12 text-center space-y-3">
-                <CheckCircle className="w-10 h-10 text-brutal-green mx-auto" />
-                <h4 className="font-sans font-black text-base text-black">No Hidden Listings</h4>
-                <p className="text-xs text-ink-600 font-medium">All campus listings are compliant and visible.</p>
+                <CheckCircle className="w-10 h-10 text-modern-success mx-auto" />
+                <h4 className="font-sans font-semibold text-base text-modern-text-primary">No Hidden Listings</h4>
+                <p className="text-xs text-modern-text-tertiary font-medium">All campus listings are compliant and visible.</p>
               </div>
             ) : (
-              <div className="divide-y-2 divide-black/10">
+              <div className="divide-y-2 divide-modern-border/70">
                 {hiddenListings.map((listing) => (
                   <div key={listing.id} className="py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
-                        <strong className="font-sans font-black text-sm text-black">{listing.title}</strong>
-                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-brutal-pink text-black border border-black uppercase">
+                        <strong className="font-sans font-semibold text-sm text-modern-text-primary">{listing.title}</strong>
+                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-modern-error-light text-modern-text-primary border border-modern-border uppercase">
                           Hidden
                         </span>
                       </div>
-                      <p className="text-xs font-mono text-ink-600">
+                      <p className="text-xs font-mono text-modern-text-tertiary">
                         ₹{listing.price} &bull; {listing.category} &bull; Reports: {listing.reportCount || 0}
                       </p>
-                      <p className="text-[11px] font-mono text-ink-500">
+                      <p className="text-[11px] font-mono text-modern-text-tertiary">
                         Seller: {listing.sellerName} ({listing.sellerPhone || "No contact"})
                       </p>
                     </div>
@@ -859,7 +846,7 @@ export default function DeanAdminConsolePage() {
                         type="button"
                         disabled={actionLoading}
                         onClick={() => handleListingModeration(listing.id, "restore")}
-                        className="px-3 py-1.5 bg-brutal-green hover:bg-brutal-green-dark text-black font-mono font-bold text-xs rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000]"
+                        className="px-3 py-1.5 bg-modern-success-light hover:bg-modern-success text-modern-text-primary font-mono font-bold text-xs rounded-xl border border-modern-border shadow-modern-sm"
                       >
                         Restore to Board
                       </button>
@@ -868,7 +855,7 @@ export default function DeanAdminConsolePage() {
                         type="button"
                         disabled={actionLoading}
                         onClick={() => handleListingModeration(listing.id, "remove")}
-                        className="px-3 py-1.5 bg-admin-600 hover:bg-admin-700 text-white font-mono font-bold text-xs rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000]"
+                        className="px-3 py-1.5 bg-modern-error hover:bg-modern-error text-white font-mono font-bold text-xs rounded-xl border border-modern-border shadow-modern-sm"
                       >
                         Permanently Purge
                       </button>
@@ -882,19 +869,19 @@ export default function DeanAdminConsolePage() {
 
         {/* ────────────────── 5. IMMUTABLE DEAN AUDIT LEDGER ────────────────── */}
         {activeTab === "audit" && (
-          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-5">
-            <div className="border-b-2 border-black/10 pb-4">
-              <h3 className="font-sans font-black text-lg text-black">
+          <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-5">
+            <div className="border-b-2 border-modern-border/70 pb-4">
+              <h3 className="font-sans font-semibold text-lg text-modern-text-primary">
                 Immutable Governance &amp; Moderation Audit Ledger
               </h3>
-              <p className="text-xs font-medium text-ink-600">
+              <p className="text-xs font-medium text-modern-text-tertiary">
                 Cryptographically tracked administrative actions, user status modifications, and listing purges.
               </p>
             </div>
 
-            <div className="overflow-x-auto border-2 border-black rounded-2xl">
+            <div className="overflow-x-auto border border-modern-border rounded-2xl">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-paper-100 border-b-2 border-black text-ink-800 font-bold uppercase">
+                <thead className="bg-modern-surface-hover border-b-2 border-modern-border text-modern-text-secondary font-bold uppercase">
                   <tr>
                     <th className="p-3.5">Timestamp</th>
                     <th className="p-3.5">Actor (Admin Email)</th>
@@ -903,27 +890,27 @@ export default function DeanAdminConsolePage() {
                     <th className="p-3.5">Details</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y-2 divide-black/10">
+                <tbody className="divide-y-2 divide-modern-border/70">
                   {auditLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-ink-500 font-bold">
+                      <td colSpan={5} className="p-8 text-center text-modern-text-tertiary font-bold">
                         No audit events recorded yet.
                       </td>
                     </tr>
                   ) : (
                     auditLogs.map((log) => (
-                      <tr key={log.id} className="hover:bg-paper-50 transition">
-                        <td className="p-3.5 whitespace-nowrap text-ink-600">
+                      <tr key={log.id} className="hover:bg-modern-bg transition">
+                        <td className="p-3.5 whitespace-nowrap text-modern-text-tertiary">
                           {log.at?.toDate ? log.at.toDate().toLocaleString() : "Recently"}
                         </td>
-                        <td className="p-3.5 font-bold text-black">{log.actorEmail}</td>
+                        <td className="p-3.5 font-bold text-modern-text-primary">{log.actorEmail}</td>
                         <td className="p-3.5">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-black border border-black bg-paper-200 text-black">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold border border-modern-border bg-modern-surface-hover text-modern-text-primary">
                             {log.action}
                           </span>
                         </td>
-                        <td className="p-3.5 text-ink-700 font-mono">{log.targetId}</td>
-                        <td className="p-3.5 text-[11px] text-ink-500 max-w-[200px] truncate">
+                        <td className="p-3.5 text-modern-text-secondary font-mono">{log.targetId}</td>
+                        <td className="p-3.5 text-[11px] text-modern-text-tertiary max-w-[200px] truncate">
                           {JSON.stringify(log.details || {})}
                         </td>
                       </tr>
@@ -937,49 +924,49 @@ export default function DeanAdminConsolePage() {
 
         {/* ────────────────── 6. PRESENTATION & DEMO DATA CONTROLS ────────────────── */}
         {activeTab === "demo" && (
-          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-6">
-            <div className="border-b-2 border-black/10 pb-4">
-              <h3 className="font-sans font-black text-lg text-black">
+          <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-6">
+            <div className="border-b-2 border-modern-border/70 pb-4">
+              <h3 className="font-sans font-semibold text-lg text-modern-text-primary">
                 Presentation &amp; Evaluation Controls
               </h3>
-              <p className="text-xs font-medium text-ink-600">
+              <p className="text-xs font-medium text-modern-text-tertiary">
                 Seed or purge demonstration listings for examiner walkthroughs and live presentations.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="p-5 bg-paper-50 border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000] space-y-3">
-                <div className="flex items-center space-x-2 font-sans font-black text-sm text-black">
-                  <Sparkles className="w-5 h-5 text-black" />
+              <div className="p-5 bg-modern-bg border border-modern-border rounded-2xl shadow-modern-sm space-y-3">
+                <div className="flex items-center space-x-2 font-sans font-semibold text-sm text-modern-text-primary">
+                  <Sparkles className="w-5 h-5 text-modern-text-primary" />
                   <span>Seed Presentation Demo Gear</span>
                 </div>
-                <p className="text-xs font-medium text-ink-700 leading-relaxed">
+                <p className="text-xs font-medium text-modern-text-secondary leading-relaxed">
                   Generates verified university listings equipped with commercial-grade photorealistic photography and pre-validated syllabus checks.
                 </p>
                 <button
                   type="button"
                   onClick={handlePopulateDemoData}
                   disabled={actionLoading}
-                  className="px-4 py-2 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition-all flex items-center space-x-1.5 disabled:opacity-50"
+                  className="px-4 py-2 bg-modern-warm hover:bg-modern-warm-hover text-modern-text-primary font-sans font-semibold text-xs rounded-xl border border-modern-border shadow-modern-sm   transition-all flex items-center space-x-1.5 disabled:opacity-50"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Seed Demo Products (8)</span>
                 </button>
               </div>
 
-              <div className="p-5 bg-paper-50 border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000] space-y-3">
-                <div className="flex items-center space-x-2 font-sans font-black text-sm text-black">
-                  <Trash2 className="w-5 h-5 text-admin-600" />
+              <div className="p-5 bg-modern-bg border border-modern-border rounded-2xl shadow-modern-sm space-y-3">
+                <div className="flex items-center space-x-2 font-sans font-semibold text-sm text-modern-text-primary">
+                  <Trash2 className="w-5 h-5 text-modern-error" />
                   <span>Purge Presentation Demo Data</span>
                 </div>
-                <p className="text-xs font-medium text-ink-700 leading-relaxed">
+                <p className="text-xs font-medium text-modern-text-secondary leading-relaxed">
                   Safely clears all mock demo items marked with <code>isPresentationDemo: true</code>, leaving authentic student peer listings intact.
                 </p>
                 <button
                   type="button"
                   onClick={handleBulkDeleteDemoData}
                   disabled={actionLoading || demoListings.length === 0}
-                  className="px-4 py-2 bg-admin-600 hover:bg-admin-700 text-white font-sans font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition-all flex items-center space-x-1.5 disabled:opacity-50"
+                  className="px-4 py-2 bg-modern-error hover:bg-modern-error text-white font-sans font-semibold text-xs rounded-xl border border-modern-border shadow-modern-sm   transition-all flex items-center space-x-1.5 disabled:opacity-50"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-white" />
                   <span>Delete Demo Items ({demoListings.length})</span>

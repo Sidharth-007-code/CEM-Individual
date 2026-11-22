@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ALLOWED_EMAIL_DOMAIN, OTP_RESEND_COOLDOWN_SECONDS } from "@/lib/constants";
 import { ShieldCheck, Mail, Lock, User, Phone, BookOpen, AlertCircle, ArrowRight, RefreshCw, CheckCircle2 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
+import { Button, Card, Input } from "@/components/ui";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -151,19 +152,15 @@ export default function RegisterPage() {
   return (
     <div className="max-w-md mx-auto my-8 space-y-6">
       {/* ────────────────── NEO-BRUTALIST REGISTRATION CARD ────────────────── */}
-      <div className="bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal-lg relative overflow-hidden bg-grid-pattern">
-        
-        {/* Yellow Top-Left Decorative Tab with Interlocking Logo */}
-        <div className="absolute top-0 left-0 bg-brutal-yellow border-r-2 border-b-2 border-black rounded-br-2xl px-4 py-2.5 shadow-[2px_2px_0px_#000]">
-          <Logo size="sm" withText={false} badgeOnly={true} href="" />
-        </div>
+      <Card variant="elevated" padding="lg" className="relative overflow-hidden">
 
         {/* Center Header */}
-        <div className="text-center space-y-1.5 pt-6 mb-6">
-          <h1 className="font-sans font-black text-3xl text-black tracking-tight">
+        <div className="text-center space-y-3 mb-6">
+          <Logo size="md" className="justify-center" />
+          <h1 className="font-sans font-semibold text-2xl sm:text-3xl text-modern-text-primary tracking-tight">
             {step === 1 ? "Student Registration" : "Enter Verification Code"}
           </h1>
-          <p className="text-xs font-semibold text-ink-600">
+          <p className="text-xs font-semibold text-modern-text-tertiary">
             {step === 1
               ? `Restricted to verified M.S. Ramaiah University students (@${ALLOWED_EMAIL_DOMAIN}).`
               : `We dispatched a 6-digit cryptographic code to ${email.trim()}.`}
@@ -172,16 +169,16 @@ export default function RegisterPage() {
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-5 p-3.5 bg-brutal-pink border-2 border-black rounded-2xl text-xs text-black flex items-start space-x-2.5 shadow-[2px_2px_0px_#000]">
-            <AlertCircle className="w-4 h-4 text-black flex-shrink-0 mt-0.5" />
+          <div role="alert" className="mb-5 p-3.5 bg-modern-error-light border border-modern-error/20 rounded-2xl text-xs text-modern-text-primary flex items-start space-x-2.5 shadow-modern-sm">
+            <AlertCircle className="w-4 h-4 text-modern-error flex-shrink-0 mt-0.5" />
             <span className="font-bold">{error}</span>
           </div>
         )}
 
         {/* Success Alert */}
         {successMsg && (
-          <div className="mb-5 p-3.5 bg-brutal-mint border-2 border-black rounded-2xl text-xs text-black flex items-start space-x-2.5 shadow-[2px_2px_0px_#000]">
-            <CheckCircle2 className="w-4 h-4 text-black flex-shrink-0 mt-0.5" />
+          <div role="status" className="mb-5 p-3.5 bg-modern-success-light border border-modern-success/20 rounded-2xl text-xs text-modern-text-primary flex items-start space-x-2.5 shadow-modern-sm">
+            <CheckCircle2 className="w-4 h-4 text-modern-success flex-shrink-0 mt-0.5" />
             <span className="font-bold">{successMsg}</span>
           </div>
         )}
@@ -190,68 +187,68 @@ export default function RegisterPage() {
         {step === 1 ? (
           <form onSubmit={handleRequestOtp} className="space-y-4">
             <div>
-              <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                 Full Name
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-black absolute left-3.5 top-3.5" />
-                <input
+                <User className="w-4 h-4 text-modern-text-primary absolute left-3.5 top-3.5" />
+                <Input
                   type="text"
                   required
                   placeholder="e.g. Rahul Sharma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-sm font-sans font-medium text-black placeholder-ink-400 focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
+                  className="w-full pl-10 pr-3 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-sm font-sans font-medium text-modern-text-primary placeholder:text-modern-text-tertiary focus:outline-none focus:bg-white focus:shadow-modern-sm transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                 University Email ({ALLOWED_EMAIL_DOMAIN})
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-black absolute left-3.5 top-3.5" />
-                <input
+                <Mail className="w-4 h-4 text-modern-text-primary absolute left-3.5 top-3.5" />
+                <Input
                   type="email"
                   required
                   placeholder={`student.roll@${ALLOWED_EMAIL_DOMAIN}`}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-sm font-sans font-medium text-black placeholder-ink-400 focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
+                  className="w-full pl-10 pr-3 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-sm font-sans font-medium text-modern-text-primary placeholder:text-modern-text-tertiary focus:outline-none focus:bg-white focus:shadow-modern-sm transition"
                 />
               </div>
-              <p className="text-[10px] font-mono font-bold text-ink-600 mt-1">
+              <p className="text-[10px] font-mono font-bold text-modern-text-tertiary mt-1">
                 Must end in @{ALLOWED_EMAIL_DOMAIN} or @student.{ALLOWED_EMAIL_DOMAIN}.
               </p>
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+              <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-black absolute left-3.5 top-3.5" />
-                <input
+                <Lock className="w-4 h-4 text-modern-text-primary absolute left-3.5 top-3.5" />
+                <Input
                   type="password"
                   required
                   placeholder="Minimum 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-sm font-sans font-medium text-black placeholder-ink-400 focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
+                  className="w-full pl-10 pr-3 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-sm font-sans font-medium text-modern-text-primary placeholder:text-modern-text-tertiary focus:outline-none focus:bg-white focus:shadow-modern-sm transition"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                   Academic Year
                 </label>
                 <select
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-sans font-bold text-black focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
+                  className="w-full px-3 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-sans font-bold text-modern-text-primary focus:outline-none focus:bg-white focus:shadow-modern-sm transition"
                 >
                   <option>1st Year (Freshman)</option>
                   <option>2nd Year (Sophomore)</option>
@@ -262,18 +259,18 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                   Course
                 </label>
                 <div className="relative">
-                  <BookOpen className="w-3.5 h-3.5 text-black absolute left-3 top-3.5" />
-                  <input
+                  <BookOpen className="w-3.5 h-3.5 text-modern-text-primary absolute left-3 top-3.5" />
+                  <Input
                     type="text"
                     required
                     placeholder="e.g. B.Tech CSE"
                     value={course}
                     onChange={(e) => setCourse(e.target.value)}
-                    className="w-full pl-9 pr-2 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-sans font-medium text-black focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
+                    className="w-full pl-9 pr-2 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-sans font-medium text-modern-text-primary focus:outline-none focus:bg-white focus:shadow-modern-sm transition"
                   />
                 </div>
               </div>
@@ -281,40 +278,41 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                   Phone (Contact)
                 </label>
                 <div className="relative">
-                  <Phone className="w-3.5 h-3.5 text-black absolute left-3 top-3.5" />
-                  <input
+                  <Phone className="w-3.5 h-3.5 text-modern-text-primary absolute left-3 top-3.5" />
+                  <Input
                     type="tel"
                     required
                     placeholder="9876543210"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-9 pr-2 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-sans font-medium text-black focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
+                    className="w-full pl-9 pr-2 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-sans font-medium text-modern-text-primary focus:outline-none focus:bg-white focus:shadow-modern-sm transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                   Personal Email (Backup)
                 </label>
-                <input
+                <Input
                   type="email"
                   placeholder="name@gmail.com"
                   value={personalEmail}
                   onChange={(e) => setPersonalEmail(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-sans font-medium text-black focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
+                  className="w-full px-3 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-sans font-medium text-modern-text-primary focus:outline-none focus:bg-white focus:shadow-modern-sm transition"
                 />
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="w-full mt-4 py-3 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-sm tracking-wide rounded-xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+              fullWidth
+              className="mt-4 py-3"
             >
               {loading ? (
                 <>
@@ -327,34 +325,35 @@ export default function RegisterPage() {
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
-            </button>
+            </Button>
           </form>
         ) : (
           /* Step 2: OTP Verification */
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div>
-              <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1 text-center">
+              <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1 text-center">
                 6-Digit Verification Code
               </label>
-              <input
+              <Input
                 type="text"
                 required
                 maxLength={6}
                 placeholder="123456"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                className="w-full py-3 px-4 text-center font-mono text-3xl tracking-[0.4em] font-black bg-paper-50 border-2 border-black rounded-xl text-black focus:outline-none focus:bg-white focus:shadow-[2px_2px_0px_#000] transition"
+                className="w-full py-3 px-4 text-center font-mono text-3xl tracking-[0.4em] font-semibold bg-modern-surface-hover border border-modern-border rounded-xl text-modern-text-primary focus:outline-none focus:bg-white focus:shadow-modern-sm transition"
                 autoFocus
               />
-              <p className="text-[11px] font-mono text-ink-600 mt-2 text-center">
+              <p className="text-[11px] font-mono text-modern-text-tertiary mt-2 text-center">
                 Dispatched to your student inbox (or dev console locally).
               </p>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading || otp.length !== 6}
-              className="w-full py-3 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-sm tracking-wide rounded-xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+              fullWidth
+              className="py-3"
             >
               {loading ? (
                 <>
@@ -367,13 +366,13 @@ export default function RegisterPage() {
                   <span>Confirm Code &amp; Finish Setup</span>
                 </>
               )}
-            </button>
+            </Button>
 
             <div className="flex items-center justify-between text-xs font-sans font-bold pt-2">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="text-black hover:underline"
+                className="text-modern-text-primary hover:underline"
               >
                 &larr; Edit Details
               </button>
@@ -382,7 +381,7 @@ export default function RegisterPage() {
                 type="button"
                 disabled={cooldown > 0 || loading}
                 onClick={handleRequestOtp}
-                className="text-black hover:underline disabled:text-ink-400"
+                className="text-modern-text-primary hover:underline disabled:text-modern-text-tertiary"
               >
                 {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend Code"}
               </button>
@@ -391,13 +390,13 @@ export default function RegisterPage() {
         )}
 
         {/* Footer Link */}
-        <div className="mt-6 pt-5 border-t-2 border-black/10 text-center text-xs text-ink-700 font-medium">
+        <div className="mt-6 pt-5 border-t border-modern-border/70 text-center text-xs text-modern-text-secondary font-medium">
           Already verified?{" "}
-          <Link href="/login" className="font-sans font-black text-black underline underline-offset-4 hover:text-brutal-purple-dark">
+          <Link href="/login" className="font-sans font-semibold text-modern-text-primary underline underline-offset-4 hover:text-modern-primary">
             Sign in to your account
           </Link>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

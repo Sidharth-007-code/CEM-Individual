@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
+import { Badge, Button, Card, Input, Select, Textarea } from "@/components/ui";
 import {
   collection,
   query,
@@ -47,7 +48,7 @@ import {
 type VerifierTab = "pending" | "needs_changes" | "cleared";
 
 export default function VerifierQueuePage() {
-  const { user } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [allListings, setAllListings] = useState<Listing[]>([]);
   const [activeTab, setActiveTab] = useState<VerifierTab>("pending");
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
@@ -65,6 +66,20 @@ export default function VerifierQueuePage() {
 
   // Subscribe to all listings so verifiers can inspect queue, returns, and historical approvals
   useEffect(() => {
+    const profileMatchesUser = Boolean(user && profile && profile.uid === user.uid);
+    const authorizedVerifier = Boolean(
+      profileMatchesUser &&
+        profile?.status === "active" &&
+        (profile.role === "verifier" || profile.role === "admin")
+    );
+
+    if (authLoading || !user || !profileMatchesUser || !authorizedVerifier) {
+      setAllListings([]);
+      setSelectedListing(null);
+      setSubcollectionImages([]);
+      return;
+    }
+
     const listingsRef = collection(db, "listings");
     const unsubscribe = onSnapshot(
       listingsRef,
@@ -81,7 +96,7 @@ export default function VerifierQueuePage() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [authLoading, user, profile]);
 
   // Filter listings by tab and search
   const pendingListings = useMemo(
@@ -95,7 +110,7 @@ export default function VerifierQueuePage() {
   );
 
   const clearedListings = useMemo(
-    () => allListings.filter((l) => l.status === "available" || l.status === "rejected"),
+    () => allListings.filter((l) => l.status === "available" || l.status === "rejected" || l.status === "sold"),
     [allListings]
   );
 
@@ -125,7 +140,12 @@ export default function VerifierQueuePage() {
   // Ensure an item is selected when switching tabs or when active list changes
   useEffect(() => {
     if (activeTabListings.length > 0) {
-      if (!selectedListing || !activeTabListings.find((l) => l.id === selectedListing.id)) {
+      const refreshedSelection = selectedListing
+        ? activeTabListings.find((l) => l.id === selectedListing.id)
+        : undefined;
+      if (refreshedSelection && refreshedSelection !== selectedListing) {
+        setSelectedListing(refreshedSelection);
+      } else if (!refreshedSelection) {
         setSelectedListing(activeTabListings[0]);
         setActiveAngleIndex(0);
         setActionNote("");
@@ -353,21 +373,21 @@ export default function VerifierQueuePage() {
     <RouteGuard allowedRoles={["verifier", "admin"]}>
       <div className="space-y-6 max-w-7xl mx-auto pb-12">
         {/* Header Banner - Neo-Brutalist Layout */}
-        <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-grid-pattern">
+        <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ">
           <div className="flex items-center space-x-3.5">
-            <span className="w-12 h-12 rounded-2xl bg-brutal-green text-black border-2 border-black shadow-[3px_3px_0px_#000] flex items-center justify-center font-bold text-lg flex-shrink-0">
+            <span className="w-12 h-12 rounded-2xl bg-modern-success-light text-modern-text-primary border border-modern-border shadow-modern-sm flex items-center justify-center font-bold text-lg flex-shrink-0">
               <ShieldCheck className="w-7 h-7 stroke-[2.5]" />
             </span>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="font-sans text-2xl sm:text-3xl font-black text-black tracking-tight">
+                <h1 className="font-sans text-2xl sm:text-3xl font-semibold text-modern-text-primary tracking-tight">
                   Quality Verifier Workstation
                 </h1>
-                <span className="hidden sm:inline-block px-2.5 py-0.5 bg-brutal-yellow text-black text-[10px] font-mono font-black rounded-md border border-black shadow-[1px_1px_0px_#000]">
+                <span className="hidden sm:inline-block px-2.5 py-0.5 bg-modern-warm text-modern-text-primary text-[10px] font-mono font-semibold rounded-md border border-modern-border shadow-modern-sm">
                   OFFICIAL DESK
                 </span>
               </div>
-              <p className="text-xs font-mono font-bold text-ink-600 mt-0.5">
+              <p className="text-xs font-mono font-bold text-modern-text-tertiary mt-0.5">
                 MSRUAS Campus Human Quality, Authenticity &amp; Syllabus Review Gate
               </p>
             </div>
@@ -375,17 +395,18 @@ export default function VerifierQueuePage() {
 
           {/* Quick Actions & Pending Counter */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <button
+            <Button
               onClick={handleBatchApproveCleared}
               disabled={batchProcessing || pendingListings.length === 0}
-              className="px-4 py-2 bg-brutal-green hover:bg-brutal-green-dark text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center space-x-1.5 disabled:opacity-50"
+              variant="success"
+              size="sm"
+              leftIcon={<CheckCheck className="w-4 h-4" />}
               title="Batch approve pending items cleared by AI vision and safety check"
             >
-              <CheckCheck className="w-4 h-4 stroke-[2.5]" />
               <span>{batchProcessing ? "Clearing..." : "Batch Approve AI-Cleared"}</span>
-            </button>
+            </Button>
 
-            <span className="px-3.5 py-2 bg-brutal-yellow text-black text-xs font-mono font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000]">
+            <span className="px-3.5 py-2 bg-modern-warm text-modern-text-primary text-xs font-mono font-semibold rounded-xl border border-modern-border shadow-modern-sm">
               {pendingListings.length} In Queue
             </span>
           </div>
@@ -393,47 +414,47 @@ export default function VerifierQueuePage() {
 
         {/* Verifier KPI Strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-brutal flex items-center justify-between">
+          <div className="p-4 bg-white border border-modern-border rounded-2xl shadow-modern-sm flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-mono font-bold text-ink-600 uppercase">Pending Review</p>
-              <p className="text-2xl font-black text-black font-sans mt-0.5">{pendingListings.length}</p>
+              <p className="text-[11px] font-mono font-bold text-modern-text-tertiary uppercase">Pending Review</p>
+              <p className="text-2xl font-semibold text-modern-text-primary font-sans mt-0.5">{pendingListings.length}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-brutal-yellow border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000]">
-              <Clock className="w-5 h-5 text-black stroke-[2.5]" />
+            <div className="w-10 h-10 rounded-xl bg-modern-warm border border-modern-border flex items-center justify-center shadow-modern-sm">
+              <Clock className="w-5 h-5 text-modern-text-primary stroke-[2.5]" />
             </div>
           </div>
 
-          <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-brutal flex items-center justify-between">
+          <div className="p-4 bg-white border border-modern-border rounded-2xl shadow-modern-sm flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-mono font-bold text-ink-600 uppercase">Needs Changes</p>
-              <p className="text-2xl font-black text-black font-sans mt-0.5">{needsChangesListings.length}</p>
+              <p className="text-[11px] font-mono font-bold text-modern-text-tertiary uppercase">Needs Changes</p>
+              <p className="text-2xl font-semibold text-modern-text-primary font-sans mt-0.5">{needsChangesListings.length}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-brutal-purple-light border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000]">
-              <HelpCircle className="w-5 h-5 text-black stroke-[2.5]" />
+            <div className="w-10 h-10 rounded-xl bg-modern-primary-light border border-modern-border flex items-center justify-center shadow-modern-sm">
+              <HelpCircle className="w-5 h-5 text-modern-text-primary stroke-[2.5]" />
             </div>
           </div>
 
-          <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-brutal flex items-center justify-between">
+          <div className="p-4 bg-white border border-modern-border rounded-2xl shadow-modern-sm flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-mono font-bold text-ink-600 uppercase">Live On Board</p>
-              <p className="text-2xl font-black text-black font-sans mt-0.5">
+              <p className="text-[11px] font-mono font-bold text-modern-text-tertiary uppercase">Live On Board</p>
+              <p className="text-2xl font-semibold text-modern-text-primary font-sans mt-0.5">
                 {allListings.filter((l) => l.status === "available").length}
               </p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-brutal-green border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000]">
-              <CheckCircle className="w-5 h-5 text-black stroke-[2.5]" />
+            <div className="w-10 h-10 rounded-xl bg-modern-success-light border border-modern-border flex items-center justify-center shadow-modern-sm">
+              <CheckCircle className="w-5 h-5 text-modern-text-primary stroke-[2.5]" />
             </div>
           </div>
 
-          <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-brutal flex items-center justify-between">
+          <div className="p-4 bg-white border border-modern-border rounded-2xl shadow-modern-sm flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-mono font-bold text-ink-600 uppercase">Guarded / Rejected</p>
-              <p className="text-2xl font-black text-black font-sans mt-0.5">
+              <p className="text-[11px] font-mono font-bold text-modern-text-tertiary uppercase">Guarded / Rejected</p>
+              <p className="text-2xl font-semibold text-modern-text-primary font-sans mt-0.5">
                 {allListings.filter((l) => l.status === "rejected").length}
               </p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-brutal-pink border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#000]">
-              <XCircle className="w-5 h-5 text-black stroke-[2.5]" />
+            <div className="w-10 h-10 rounded-xl bg-modern-error-light border border-modern-border flex items-center justify-center shadow-modern-sm">
+              <XCircle className="w-5 h-5 text-modern-text-primary stroke-[2.5]" />
             </div>
           </div>
         </div>
@@ -441,27 +462,27 @@ export default function VerifierQueuePage() {
         {/* Feedback Alert */}
         {feedbackMsg && (
           <div
-            className={`p-4 border-2 border-black rounded-2xl font-bold text-xs shadow-[2px_2px_0px_#000] flex items-center justify-between ${
-              feedbackMsg.type === "success" ? "bg-brutal-green text-black" : "bg-brutal-pink text-black"
+            className={`p-4 border border-modern-border rounded-2xl font-bold text-xs shadow-modern-sm flex items-center justify-between ${
+              feedbackMsg.type === "success" ? "bg-modern-success-light text-modern-text-primary" : "bg-modern-error-light text-modern-text-primary"
             }`}
           >
             <span>{feedbackMsg.text}</span>
-            <button onClick={() => setFeedbackMsg(null)} className="font-mono text-xs font-black underline">
+            <button onClick={() => setFeedbackMsg(null)} className="font-mono text-xs font-semibold underline">
               Dismiss
             </button>
           </div>
         )}
 
         {/* Triage Tabs & Queue Filter Header */}
-        <div className="bg-white border-2 border-black rounded-3xl p-4 shadow-brutal flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="bg-white border border-modern-border rounded-2xl p-4 shadow-modern-sm flex flex-col md:flex-row justify-between items-center gap-4">
           {/* Tabs */}
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <button
               onClick={() => setActiveTab("pending")}
-              className={`px-4 py-2 rounded-xl text-xs font-mono font-black border-2 border-black transition shadow-[2px_2px_0px_#000] ${
+              className={`px-4 py-2 rounded-xl text-xs font-mono font-semibold border border-modern-border transition shadow-modern-sm ${
                 activeTab === "pending"
-                  ? "bg-brutal-yellow text-black scale-[1.02]"
-                  : "bg-paper-100 text-black hover:bg-paper-200"
+                  ? "bg-modern-warm text-modern-text-primary scale-[1.02]"
+                  : "bg-modern-surface-hover text-modern-text-primary hover:bg-modern-surface-hover"
               }`}
             >
               Pending Verification ({pendingListings.length})
@@ -469,10 +490,10 @@ export default function VerifierQueuePage() {
 
             <button
               onClick={() => setActiveTab("needs_changes")}
-              className={`px-4 py-2 rounded-xl text-xs font-mono font-black border-2 border-black transition shadow-[2px_2px_0px_#000] ${
+              className={`px-4 py-2 rounded-xl text-xs font-mono font-semibold border border-modern-border transition shadow-modern-sm ${
                 activeTab === "needs_changes"
-                  ? "bg-brutal-yellow text-black scale-[1.02]"
-                  : "bg-paper-100 text-black hover:bg-paper-200"
+                  ? "bg-modern-warm text-modern-text-primary scale-[1.02]"
+                  : "bg-modern-surface-hover text-modern-text-primary hover:bg-modern-surface-hover"
               }`}
             >
               Needs Changes ({needsChangesListings.length})
@@ -480,10 +501,10 @@ export default function VerifierQueuePage() {
 
             <button
               onClick={() => setActiveTab("cleared")}
-              className={`px-4 py-2 rounded-xl text-xs font-mono font-black border-2 border-black transition shadow-[2px_2px_0px_#000] ${
+              className={`px-4 py-2 rounded-xl text-xs font-mono font-semibold border border-modern-border transition shadow-modern-sm ${
                 activeTab === "cleared"
-                  ? "bg-brutal-yellow text-black scale-[1.02]"
-                  : "bg-paper-100 text-black hover:bg-paper-200"
+                  ? "bg-modern-warm text-modern-text-primary scale-[1.02]"
+                  : "bg-modern-surface-hover text-modern-text-primary hover:bg-modern-surface-hover"
               }`}
             >
               Cleared History ({clearedListings.length})
@@ -493,51 +514,52 @@ export default function VerifierQueuePage() {
           {/* Search & Filter */}
           <div className="flex items-center space-x-2.5 w-full md:w-auto">
             <div className="relative flex-1 sm:w-64">
-              <Search className="w-4 h-4 text-ink-400 absolute left-3 top-2.5" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search title, seller, category..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-medium text-black focus:outline-none focus:bg-white shadow-[1px_1px_0px_#000]"
+                leftIcon={<Search className="w-4 h-4" />}
+                className="text-sm"
               />
             </div>
 
-            <select
+            <Select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 py-1.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none shadow-[1px_1px_0px_#000]"
-            >
-              <option value="ALL">All Categories</option>
-              <option value="Textbooks & Notes">Textbooks</option>
-              <option value="Electronics & Calculators">Electronics</option>
-              <option value="Hostel & Room Essentials">Hostel Gear</option>
-              <option value="Lab Equipment & Uniforms">Lab Equipment</option>
-              <option value="Stationery & Drafting">Drafting</option>
-              <option value="Bicycles & Mobility">Bicycles</option>
-              <option value="Miscellaneous">Miscellaneous</option>
-            </select>
+              options={[
+                { value: "ALL", label: "All Categories" },
+                { value: "Textbooks & Notes", label: "Textbooks" },
+                { value: "Electronics & Calculators", label: "Electronics" },
+                { value: "Hostel & Room Essentials", label: "Hostel Gear" },
+                { value: "Lab Equipment & Uniforms", label: "Lab Equipment" },
+                { value: "Stationery & Drafting", label: "Drafting" },
+                { value: "Bicycles & Mobility", label: "Bicycles" },
+                { value: "Miscellaneous", label: "Miscellaneous" },
+              ]}
+              className="min-w-36 text-sm"
+            />
           </div>
         </div>
 
         {/* Main Workstation Queue Layout (5 Cols List + 7 Cols Inspection) */}
         {activeTabListings.length === 0 ? (
-          <div className="bg-white border-2 border-black rounded-3xl p-12 text-center space-y-3 shadow-brutal">
-            <div className="w-14 h-14 bg-brutal-green border-2 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[3px_3px_0px_#000]">
-              <CheckCircle className="w-7 h-7 text-black stroke-[2.5]" />
+          <div className="bg-white border border-modern-border rounded-2xl p-12 text-center space-y-3 shadow-modern-sm">
+            <div className="w-14 h-14 bg-modern-success-light border border-modern-border rounded-2xl flex items-center justify-center mx-auto shadow-modern-sm">
+              <CheckCircle className="w-7 h-7 text-modern-text-primary stroke-[2.5]" />
             </div>
-            <h3 className="font-sans text-xl font-black text-black">
+            <h3 className="font-sans text-xl font-semibold text-modern-text-primary">
               No Listings in {activeTab.toUpperCase().replace("_", " ")}
             </h3>
-            <p className="text-xs font-semibold text-ink-600 max-w-sm mx-auto">
+            <p className="text-xs font-semibold text-modern-text-tertiary max-w-sm mx-auto">
               There are currently no submissions matching your active filter. Campus notice board records are in sync.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left Queue List (5 Cols) */}
-            <div className="lg:col-span-5 bg-white border-2 border-black rounded-3xl overflow-hidden shadow-brutal flex flex-col">
-              <div className="p-4 border-b-2 border-black/10 bg-paper-100 flex justify-between items-center text-xs font-mono font-black text-black">
+            <Card variant="default" padding="none" className="lg:col-span-5 overflow-hidden flex flex-col">
+              <div className="p-4 border-b-2 border-modern-border/70 bg-modern-surface-hover flex justify-between items-center text-xs font-mono font-semibold text-modern-text-primary">
                 <span className="flex items-center space-x-1.5">
                   <Layers className="w-4 h-4" />
                   <span>Queue Items</span>
@@ -545,7 +567,7 @@ export default function VerifierQueuePage() {
                 <span>{activeTabListings.length} listings</span>
               </div>
 
-              <div className="divide-y-2 divide-black/10 overflow-y-auto max-h-[720px]">
+              <div className="divide-y-2 divide-modern-border/70 overflow-y-auto max-h-[720px]">
                 {activeTabListings.map((listing) => {
                   const isSelected = selectedListing?.id === listing.id;
                   const aiEval =
@@ -569,8 +591,8 @@ export default function VerifierQueuePage() {
                       }}
                       className={`w-full p-4 text-left flex items-start space-x-3.5 transition ${
                         isSelected
-                          ? "bg-brutal-yellow/30 border-l-4 border-black"
-                          : "hover:bg-paper-50"
+                          ? "bg-modern-warm-light border-l-4 border-modern-border"
+                          : "hover:bg-modern-bg"
                       }`}
                     >
                       {listing.thumbnail ? (
@@ -578,47 +600,41 @@ export default function VerifierQueuePage() {
                         <img
                           src={listing.thumbnail}
                           alt=""
-                          className="w-16 h-16 rounded-xl object-cover border-2 border-black shadow-[2px_2px_0px_#000] flex-shrink-0"
+                          className="w-16 h-16 rounded-xl object-cover border border-modern-border shadow-modern-sm flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-xl bg-paper-200 border-2 border-black flex items-center justify-center text-black flex-shrink-0 text-xs font-mono font-bold">
+                        <div className="w-16 h-16 rounded-xl bg-modern-surface-hover border border-modern-border flex items-center justify-center text-modern-text-primary flex-shrink-0 text-xs font-mono font-bold">
                           No Pic
                         </div>
                       )}
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <h4 className="font-sans font-black text-xs text-black truncate">
+                          <h4 className="font-sans font-semibold text-xs text-modern-text-primary truncate">
                             {listing.title}
                           </h4>
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black border border-black flex-shrink-0 ${
-                              listing.status === "available"
-                                ? "bg-brutal-green text-black"
-                                : listing.status === "pending"
-                                ? "bg-brutal-yellow text-black"
-                                : listing.status === "needs_changes"
-                                ? "bg-brutal-purple-light text-black"
-                                : "bg-brutal-pink text-black"
-                            }`}
+                          <Badge
+                            variant={listing.status === "available" ? "success" : listing.status === "pending" ? "warning" : listing.status === "needs_changes" ? "primary" : "secondary"}
+                            size="xs"
+                            className="flex-shrink-0"
                           >
                             {listing.status.toUpperCase().replace("_", " ")}
-                          </span>
+                          </Badge>
                         </div>
 
-                        <div className="flex items-center space-x-2 text-[11px] font-mono font-bold text-ink-700 mt-1">
-                          <span className="text-black font-black">₹{listing.price}</span>
+                        <div className="flex items-center space-x-2 text-[11px] font-mono font-bold text-modern-text-secondary mt-1">
+                          <span className="text-modern-text-primary font-semibold">₹{listing.price}</span>
                           <span>&bull;</span>
                           <span className="truncate">{listing.category}</span>
                         </div>
 
-                        <div className="flex items-center justify-between mt-2 pt-1 border-t border-black/5 text-[10px] font-mono">
-                          <span className="text-ink-600 truncate">
+                        <div className="flex items-center justify-between mt-2 pt-1 border-t border-modern-border/50 text-[10px] font-mono">
+                          <span className="text-modern-text-tertiary truncate">
                             By: {listing.sellerName || "Student"}
                           </span>
                           <span
-                            className={`font-black ${
-                              aiEval.overallPassed ? "text-verifier-800" : "text-admin-800"
+                            className={`font-semibold ${
+                              aiEval.overallPassed ? "text-modern-success" : "text-modern-error"
                             }`}
                           >
                             AI: {aiEval.overallPassed ? "Clear ✅" : "Review ⚠️"}
@@ -629,68 +645,86 @@ export default function VerifierQueuePage() {
                   );
                 })}
               </div>
-            </div>
+            </Card>
 
             {/* Right Inspection & Decision Canvas (7 Cols) */}
             <div className="lg:col-span-7 space-y-4">
               {selectedListing ? (
-                <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-5">
+                <Card variant="default" padding="md" className="space-y-5">
                   {/* Top Bar: Title & Category & Price */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-black/10 pb-4 gap-3">
+                  <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-modern-border/70 pb-4 gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="px-2.5 py-1 text-[10px] font-mono font-black uppercase bg-brutal-purple-light text-brutal-purple-dark rounded-lg border border-black shadow-[1px_1px_0px_#000]">
+                        <span className="px-2.5 py-1 text-[10px] font-mono font-semibold uppercase bg-modern-primary-light text-modern-primary rounded-lg border border-modern-border shadow-modern-sm">
                           {selectedListing.category}
                         </span>
-                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-paper-100 text-black rounded-lg border border-black">
+                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-modern-surface-hover text-modern-text-primary rounded-lg border border-modern-border">
                           Condition: {selectedListing.condition.toUpperCase()}
                         </span>
                         <span
-                          className={`px-2 py-0.5 text-[10px] font-mono font-black rounded-lg border border-black ${
+                          className={`px-2 py-0.5 text-[10px] font-mono font-semibold rounded-lg border border-modern-border ${
                             selectedListing.status === "available"
-                              ? "bg-brutal-green text-black"
+                              ? "bg-modern-success-light text-modern-text-primary"
+                              : selectedListing.status === "sold"
+                              ? "bg-modern-surface-hover text-modern-text-secondary"
                               : selectedListing.status === "pending"
-                              ? "bg-brutal-yellow text-black"
+                              ? "bg-modern-warm text-modern-text-primary"
                               : selectedListing.status === "needs_changes"
-                              ? "bg-brutal-purple-light text-black"
-                              : "bg-brutal-pink text-black"
+                              ? "bg-modern-primary-light text-modern-text-primary"
+                              : "bg-modern-error-light text-modern-text-primary"
                           }`}
                         >
                           Status: {selectedListing.status.toUpperCase()}
                         </span>
                       </div>
 
-                      <h2 className="font-sans text-xl sm:text-2xl font-black text-black mt-2">
+                      <h2 className="font-sans text-xl sm:text-2xl font-semibold text-modern-text-primary mt-2">
                         {selectedListing.title}
                       </h2>
 
-                      <p className="text-xs font-mono text-ink-600 mt-0.5">
-                        Seller: <strong className="text-black">{selectedListing.sellerName || "Student"}</strong> &bull; Contact: {selectedListing.sellerPhone || "None provided"}
+                      <p className="text-xs font-mono text-modern-text-tertiary mt-0.5">
+                        Seller: <strong className="text-modern-text-primary">{selectedListing.sellerName || "Student"}</strong> &bull; Contact: {selectedListing.sellerPhone || "None provided"}
                       </p>
                     </div>
 
                     <div className="text-left sm:text-right flex-shrink-0">
-                      <div className="font-sans text-3xl font-black text-black">
+                      <div className="font-sans text-3xl font-semibold text-modern-text-primary">
                         ₹{selectedListing.price}
                       </div>
-                      <span className="text-[10px] text-ink-600 font-mono font-bold">Asking Price</span>
+                      <span className="text-[10px] text-modern-text-tertiary font-mono font-bold">Asking Price</span>
                     </div>
                   </div>
+
+                  {selectedListing.status === "sold" && (
+                    <div className="rounded-xl border border-modern-border bg-modern-bg p-4 space-y-2">
+                      <p className="text-xs font-sans font-semibold text-modern-text-primary">
+                        Approved listing — now sold
+                      </p>
+                      <p className="text-xs text-modern-text-secondary">
+                        Verifier note: {selectedListing.verifierNote || "No verifier note was recorded."}
+                      </p>
+                      {selectedListing.verifierId && (
+                        <p className="text-[11px] font-mono text-modern-text-tertiary">
+                          Verifier account ID: {selectedListing.verifierId}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Multi-Angle Proof Photo Gallery with High-Res Zoom */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-mono font-black text-black uppercase tracking-wider flex items-center space-x-1.5">
-                        <Camera className="w-4 h-4 text-black" />
+                      <label className="text-xs font-mono font-semibold text-modern-text-primary uppercase tracking-wider flex items-center space-x-1.5">
+                        <Camera className="w-4 h-4 text-modern-text-primary" />
                         <span>Multi-Angle Proof Photo Gallery ({proofPhotos.length} Shots)</span>
                       </label>
-                      <span className="text-[11px] font-mono text-ink-600">
+                      <span className="text-[11px] font-mono text-modern-text-tertiary">
                         {activeImage?.viewName || "Angle Inspection"}
                       </span>
                     </div>
 
                     {/* Main Inspection View */}
-                    <div className="relative group rounded-2xl overflow-hidden border-2 border-black shadow-brutal bg-paper-100 h-64 sm:h-80 flex items-center justify-center">
+                    <div className="relative group rounded-2xl overflow-hidden border border-modern-border shadow-modern-sm bg-modern-surface-hover h-64 sm:h-80 flex items-center justify-center">
                       {activeImage ? (
                         <>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -701,14 +735,14 @@ export default function VerifierQueuePage() {
                           />
                           <button
                             onClick={() => setZoomImageUrl(activeImage.dataUrl)}
-                            className="absolute bottom-3 right-3 px-3 py-1.5 bg-black text-white text-xs font-mono font-bold rounded-xl border border-white flex items-center space-x-1.5 shadow-md hover:bg-ink-800 transition"
+                            className="absolute bottom-3 right-3 px-3 py-1.5 bg-modern-primary text-white text-xs font-mono font-bold rounded-xl border border-white flex items-center space-x-1.5 shadow-md hover:bg-modern-primary-hover transition"
                           >
                             <ZoomIn className="w-4 h-4" />
                             <span>Zoom Full Res</span>
                           </button>
                         </>
                       ) : (
-                        <div className="text-xs font-mono font-bold text-ink-500">
+                        <div className="text-xs font-mono font-bold text-modern-text-tertiary">
                           No Proof Photograph Uploaded
                         </div>
                       )}
@@ -721,17 +755,17 @@ export default function VerifierQueuePage() {
                           <button
                             key={img.id || idx}
                             onClick={() => setActiveAngleIndex(idx)}
-                            className={`p-1.5 rounded-xl border-2 text-left transition flex flex-col items-center ${
+                            className={`p-1.5 rounded-xl border text-left transition flex flex-col items-center ${
                               activeAngleIndex === idx
-                                ? "border-black bg-brutal-yellow/40 shadow-[2px_2px_0px_#000]"
-                                : "border-black/30 hover:border-black bg-white"
+                                ? "border-modern-border bg-modern-warm-light shadow-modern-sm"
+                                : "border-modern-border/70 hover:border-modern-border bg-white"
                             }`}
                           >
-                            <div className="w-full h-16 rounded-lg overflow-hidden bg-paper-100 border border-black/20">
+                            <div className="w-full h-16 rounded-lg overflow-hidden bg-modern-surface-hover border border-modern-border/70">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={img.dataUrl} alt="" className="w-full h-full object-cover" />
                             </div>
-                            <span className="text-[9px] font-mono font-bold text-black mt-1 truncate w-full text-center">
+                            <span className="text-[9px] font-mono font-bold text-modern-text-primary mt-1 truncate w-full text-center">
                               {img.viewName || `Angle ${idx + 1}`}
                             </span>
                           </button>
@@ -742,11 +776,11 @@ export default function VerifierQueuePage() {
 
                   {/* Student Description */}
                   <div>
-                    <label className="block text-xs font-mono font-black text-black uppercase tracking-wider mb-1 flex items-center space-x-1.5">
+                    <label className="block text-xs font-mono font-semibold text-modern-text-primary uppercase tracking-wider mb-1 flex items-center space-x-1.5">
                       <FileText className="w-3.5 h-3.5" />
                       <span>Student Item Description</span>
                     </label>
-                    <p className="text-xs font-semibold text-black bg-paper-50 p-3.5 rounded-xl border-2 border-black leading-relaxed whitespace-pre-wrap">
+                    <p className="text-xs font-semibold text-modern-text-primary bg-modern-bg p-3.5 rounded-xl border border-modern-border leading-relaxed whitespace-pre-wrap">
                       {selectedListing.description}
                     </p>
                   </div>
@@ -770,17 +804,17 @@ export default function VerifierQueuePage() {
                       selectedListing.price <= aiEval.priceEval.estimatedMax;
 
                     return (
-                      <div className="bg-paper-50 border-2 border-black rounded-2xl p-4 text-xs space-y-3.5 shadow-[2px_2px_0px_#000]">
-                        <div className="flex flex-wrap items-center justify-between border-b border-black/15 pb-2 gap-2">
-                          <span className="font-sans font-black text-black flex items-center space-x-1.5">
-                            <Sparkles className="w-4 h-4 text-brutal-purple" />
+                      <div className="bg-modern-bg border border-modern-border rounded-2xl p-4 text-xs space-y-3.5 shadow-modern-sm">
+                        <div className="flex flex-wrap items-center justify-between border-b border-modern-border/70 pb-2 gap-2">
+                          <span className="font-sans font-semibold text-modern-text-primary flex items-center space-x-1.5">
+                            <Sparkles className="w-4 h-4 text-modern-primary" />
                             <span>AI Vision &amp; Quality Co-Pilot</span>
                           </span>
                           <span
-                            className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-black border border-black ${
+                            className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold border border-modern-border ${
                               aiEval.overallPassed
-                                ? "bg-brutal-green text-black"
-                                : "bg-brutal-pink text-black"
+                                ? "bg-modern-success-light text-modern-text-primary"
+                                : "bg-modern-error-light text-modern-text-primary"
                             }`}
                           >
                             AI Advice: {aiEval.verifierAdvice.recommendedAction} ({aiEval.verifierAdvice.confidenceScore}% conf)
@@ -789,34 +823,34 @@ export default function VerifierQueuePage() {
 
                         {/* 3 Metric Summary Boxes */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                          <div className="p-2.5 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000]">
-                            <span className="text-[10px] text-ink-600 font-mono block">Safety &amp; Compliance</span>
+                          <div className="p-2.5 bg-white rounded-xl border border-modern-border shadow-modern-sm">
+                            <span className="text-[10px] text-modern-text-tertiary font-mono block">Safety &amp; Compliance</span>
                             <span
-                              className={`font-black text-xs ${
-                                aiEval.safetyCheck.status === "CLEARED" ? "text-verifier-800" : "text-admin-800"
+                              className={`font-semibold text-xs ${
+                                aiEval.safetyCheck.status === "CLEARED" ? "text-modern-success" : "text-modern-error"
                               }`}
                             >
                               {aiEval.safetyCheck.status === "CLEARED" ? "Cleared (Safe) ✅" : "Flagged ⚠️"}
                             </span>
                           </div>
 
-                          <div className="p-2.5 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000]">
-                            <span className="text-[10px] text-ink-600 font-mono block">Syllabus Fair Range</span>
-                            <span className="font-black text-xs text-black block">
+                          <div className="p-2.5 bg-white rounded-xl border border-modern-border shadow-modern-sm">
+                            <span className="text-[10px] text-modern-text-tertiary font-mono block">Syllabus Fair Range</span>
+                            <span className="font-semibold text-xs text-modern-text-primary block">
                               ₹{aiEval.priceEval.estimatedMin} - ₹{aiEval.priceEval.estimatedMax}
                             </span>
                             <span
                               className={`text-[9px] font-mono font-bold ${
-                                isPriceFair ? "text-verifier-800" : "text-admin-800"
+                                isPriceFair ? "text-modern-success" : "text-modern-error"
                               }`}
                             >
                               {isPriceFair ? "Fair Valuation" : selectedListing.price > aiEval.priceEval.estimatedMax ? "Above Range ⚠️" : "Below Range"}
                             </span>
                           </div>
 
-                          <div className="p-2.5 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000]">
-                            <span className="text-[10px] text-ink-600 font-mono block">Quality Grade</span>
-                            <span className="font-black text-xs text-black">
+                          <div className="p-2.5 bg-white rounded-xl border border-modern-border shadow-modern-sm">
+                            <span className="text-[10px] text-modern-text-tertiary font-mono block">Quality Grade</span>
+                            <span className="font-semibold text-xs text-modern-text-primary">
                               Grade {aiEval.qualityCheck.grade} ({aiEval.qualityCheck.qualityScore}/100)
                             </span>
                           </div>
@@ -824,40 +858,40 @@ export default function VerifierQueuePage() {
 
                         {/* AI Vision & Photo Authenticity */}
                         {aiEval.imageAnalysis && (
-                          <div className="p-3 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000] space-y-1.5">
+                          <div className="p-3 bg-white rounded-xl border border-modern-border shadow-modern-sm space-y-1.5">
                             <div className="flex items-center justify-between">
-                              <span className="font-mono font-bold text-ink-600 uppercase text-[10px]">
+                              <span className="font-mono font-bold text-modern-text-tertiary uppercase text-[10px]">
                                 AI Vision &amp; Photo Authenticity
                               </span>
                               <span
-                                className={`px-2 py-0.5 rounded text-[9px] font-mono font-black border border-black ${
-                                  aiEval.imageAnalysis.isGenuine ? "bg-brutal-green text-black" : "bg-brutal-pink text-black"
+                                className={`px-2 py-0.5 rounded text-[9px] font-mono font-semibold border border-modern-border ${
+                                  aiEval.imageAnalysis.isGenuine ? "bg-modern-success-light text-modern-text-primary" : "bg-modern-error-light text-modern-text-primary"
                                 }`}
                               >
                                 {aiEval.imageAnalysis.isGenuine ? "Genuine Student Photo" : "Review Photo"}
                               </span>
                             </div>
                             <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
-                              <span className="text-black font-bold">
+                              <span className="text-modern-text-primary font-bold">
                                 Detected: {aiEval.imageAnalysis.detectedVisualItem}
                               </span>
                               <span>&bull;</span>
                               <span
                                 className={
-                                  aiEval.imageAnalysis.isMatch ? "text-verifier-800 font-bold" : "text-admin-800 font-bold"
+                                  aiEval.imageAnalysis.isMatch ? "text-modern-success font-bold" : "text-modern-error font-bold"
                                 }
                               >
                                 {aiEval.imageAnalysis.matchStatus.replace("_", " ")} ({aiEval.imageAnalysis.matchConfidence}%)
                               </span>
                             </div>
-                            <p className="text-[10px] text-ink-600 font-mono">
+                            <p className="text-[10px] text-modern-text-tertiary font-mono">
                               {aiEval.imageAnalysis.matchExplanation}
                             </p>
                           </div>
                         )}
 
                         {aiEval.verifierAdvice.summaryBulletPoints.length > 0 && (
-                          <ul className="list-disc list-inside text-ink-700 text-[11px] space-y-1 font-medium bg-white p-3 rounded-xl border border-black">
+                          <ul className="list-disc list-inside text-modern-text-secondary text-[11px] space-y-1 font-medium bg-white p-3 rounded-xl border border-modern-border">
                             {aiEval.verifierAdvice.summaryBulletPoints.map((pt, i) => (
                               <li key={i}>{pt}</li>
                             ))}
@@ -868,12 +902,12 @@ export default function VerifierQueuePage() {
                   })()}
 
                   {/* Fast Action Preset Remarks */}
-                  <div className="space-y-2 border-t-2 border-black/10 pt-4">
+                  <div className="space-y-2 border-t-2 border-modern-border/70 pt-4">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-mono font-black text-black uppercase tracking-wider">
+                      <label className="text-xs font-mono font-semibold text-modern-text-primary uppercase tracking-wider">
                         Fast-Action Preset Remarks (Click to Append)
                       </label>
-                      <span className="text-[10px] font-mono text-ink-500">One-click feedback</span>
+                      <span className="text-[10px] font-mono text-modern-text-tertiary">One-click feedback</span>
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -884,7 +918,7 @@ export default function VerifierQueuePage() {
                             "Verified genuine RUAS syllabus edition. Condition and binding verified intact."
                           )
                         }
-                        className="px-2.5 py-1 bg-white hover:bg-brutal-green/30 text-black text-[11px] font-mono font-bold rounded-lg border border-black shadow-[1px_1px_0px_#000] transition"
+                        className="px-2.5 py-1 bg-white hover:bg-modern-success-light/30 text-modern-text-primary text-[11px] font-mono font-bold rounded-lg border border-modern-border shadow-modern-sm transition"
                       >
                         ✓ Genuine Syllabus Edition
                       </button>
@@ -896,7 +930,7 @@ export default function VerifierQueuePage() {
                             "Asking price conforms to university fair market depreciation guidelines."
                           )
                         }
-                        className="px-2.5 py-1 bg-white hover:bg-brutal-green/30 text-black text-[11px] font-mono font-bold rounded-lg border border-black shadow-[1px_1px_0px_#000] transition"
+                        className="px-2.5 py-1 bg-white hover:bg-modern-success-light/30 text-modern-text-primary text-[11px] font-mono font-bold rounded-lg border border-modern-border shadow-modern-sm transition"
                       >
                         ✓ Fair Resale Price
                       </button>
@@ -908,7 +942,7 @@ export default function VerifierQueuePage() {
                             "Proof photos are blurry or poorly lit. Please upload clearer photos of title page, spine, and model stamp."
                           )
                         }
-                        className="px-2.5 py-1 bg-white hover:bg-brutal-yellow/50 text-black text-[11px] font-mono font-bold rounded-lg border border-black shadow-[1px_1px_0px_#000] transition"
+                        className="px-2.5 py-1 bg-white hover:bg-modern-warm-light text-modern-text-primary text-[11px] font-mono font-bold rounded-lg border border-modern-border shadow-modern-sm transition"
                       >
                         📷 Low Quality Photo
                       </button>
@@ -920,7 +954,7 @@ export default function VerifierQueuePage() {
                             "Listing price exceeds fair campus resale value. Please lower price to align with syllabus guidelines."
                           )
                         }
-                        className="px-2.5 py-1 bg-white hover:bg-brutal-yellow/50 text-black text-[11px] font-mono font-bold rounded-lg border border-black shadow-[1px_1px_0px_#000] transition"
+                        className="px-2.5 py-1 bg-white hover:bg-modern-warm-light text-modern-text-primary text-[11px] font-mono font-bold rounded-lg border border-modern-border shadow-modern-sm transition"
                       >
                         💰 Overpriced
                       </button>
@@ -932,7 +966,7 @@ export default function VerifierQueuePage() {
                             "This item does not comply with RUAS academic gear and campus living guidelines."
                           )
                         }
-                        className="px-2.5 py-1 bg-white hover:bg-brutal-pink/30 text-black text-[11px] font-mono font-bold rounded-lg border border-black shadow-[1px_1px_0px_#000] transition"
+                        className="px-2.5 py-1 bg-white hover:bg-modern-error-light/30 text-modern-text-primary text-[11px] font-mono font-bold rounded-lg border border-modern-border shadow-modern-sm transition"
                       >
                         🚫 Non-Academic Item
                       </button>
@@ -944,57 +978,66 @@ export default function VerifierQueuePage() {
                             "Please specify course code, branch, semester, and condition details (e.g. edition year, accessories included)."
                           )
                         }
-                        className="px-2.5 py-1 bg-white hover:bg-paper-200 text-black text-[11px] font-mono font-bold rounded-lg border border-black shadow-[1px_1px_0px_#000] transition"
+                        className="px-2.5 py-1 bg-white hover:bg-modern-surface-hover text-modern-text-primary text-[11px] font-mono font-bold rounded-lg border border-modern-border shadow-modern-sm transition"
                       >
                         📝 Incomplete Description
                       </button>
                     </div>
                   </div>
 
-                  {/* Custom Remark & Decision Controls */}
-                  <div className="space-y-3 pt-2">
-                    <label className="block text-xs font-mono font-black text-black uppercase tracking-wider">
+                  {/* Keep sold history entries read-only; approval controls remain for other statuses. */}
+                  {selectedListing.status !== "sold" && (
+                    <div className="space-y-3 pt-2">
+                    <label className="block text-xs font-mono font-semibold text-modern-text-primary uppercase tracking-wider">
                       Official Verifier Remark / Student Feedback Note
                     </label>
-                    <textarea
+                    <Textarea
                       rows={2}
                       placeholder="Enter verification feedback or select from the preset remark buttons above..."
                       value={actionNote}
                       onChange={(e) => setActionNote(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-medium text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000]"
+                      className="text-sm"
                     />
 
                     {/* Decision Action Buttons */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                      <button
+                      <Button
                         onClick={() => handleDecision(selectedListing.id, "available")}
                         disabled={processingId === selectedListing.id}
-                        className="py-3 px-4 bg-brutal-green hover:bg-brutal-green-dark text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                        variant="success"
+                        size="md"
+                        fullWidth
+                        leftIcon={<CheckCircle className="w-4 h-4" />}
                       >
-                        <CheckCircle className="w-4 h-4 stroke-[2.5]" />
                         <span>Approve &amp; Publish</span>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         onClick={() => handleDecision(selectedListing.id, "needs_changes")}
                         disabled={processingId === selectedListing.id}
-                        className="py-3 px-4 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                        variant="warm"
+                        size="md"
+                        fullWidth
+                        leftIcon={<HelpCircle className="w-4 h-4" />}
                       >
-                        <HelpCircle className="w-4 h-4 stroke-[2.5]" />
                         <span>Request Changes</span>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         onClick={() => handleDecision(selectedListing.id, "rejected")}
                         disabled={processingId === selectedListing.id}
-                        className="py-3 px-4 bg-brutal-pink hover:bg-brutal-pink-dark text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                        variant="secondary"
+                        size="md"
+                        fullWidth
+                        className="!bg-modern-error-light !text-modern-error !border-modern-error/30 hover:!bg-modern-error-light"
+                        leftIcon={<XCircle className="w-4 h-4" />}
                       >
-                        <XCircle className="w-4 h-4 stroke-[2.5]" />
                         <span>Reject Listing</span>
-                      </button>
+                      </Button>
                     </div>
-                  </div>
-                </div>
+                    </div>
+                  )}
+                </Card>
               ) : null}
             </div>
           </div>
@@ -1002,24 +1045,24 @@ export default function VerifierQueuePage() {
 
         {/* High-Resolution Photo Zoom Modal */}
         {zoomImageUrl && (
-          <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4">
-            <div className="relative max-w-4xl w-full bg-white border-4 border-black rounded-3xl p-4 shadow-brutal flex flex-col space-y-3">
-              <div className="flex justify-between items-center border-b-2 border-black pb-2">
+          <div className="fixed inset-0 z-50 bg-modern-primary/85 flex items-center justify-center p-4">
+            <div className="relative max-w-4xl w-full bg-white border border-modern-border rounded-2xl p-4 shadow-modern-sm flex flex-col space-y-3">
+              <div className="flex justify-between items-center border-b-2 border-modern-border pb-2">
                 <div className="flex items-center space-x-2">
-                  <ShieldCheck className="w-5 h-5 text-black" />
-                  <span className="font-sans font-black text-sm text-black">
+                  <ShieldCheck className="w-5 h-5 text-modern-text-primary" />
+                  <span className="font-sans font-semibold text-sm text-modern-text-primary">
                     High-Resolution Proof Photo Inspector
                   </span>
                 </div>
                 <button
                   onClick={() => setZoomImageUrl(null)}
-                  className="p-1.5 rounded-lg border-2 border-black bg-brutal-pink hover:bg-brutal-pink-dark text-black transition"
+                  className="p-1.5 rounded-lg border border-modern-border bg-modern-error-light hover:bg-modern-error-light text-modern-text-primary transition"
                 >
                   <X className="w-5 h-5 stroke-[2.5]" />
                 </button>
               </div>
 
-              <div className="max-h-[75vh] overflow-auto flex items-center justify-center bg-paper-100 rounded-2xl border-2 border-black p-2">
+              <div className="max-h-[75vh] overflow-auto flex items-center justify-center bg-modern-surface-hover rounded-2xl border border-modern-border p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={zoomImageUrl}
@@ -1028,11 +1071,11 @@ export default function VerifierQueuePage() {
                 />
               </div>
 
-              <div className="flex justify-between items-center text-xs font-mono font-bold text-ink-600">
+              <div className="flex justify-between items-center text-xs font-mono font-bold text-modern-text-tertiary">
                 <span>Inspecting: {selectedListing?.title}</span>
                 <button
                   onClick={() => setZoomImageUrl(null)}
-                  className="px-4 py-1.5 bg-black text-white rounded-xl font-sans font-black hover:bg-ink-800"
+                  className="px-4 py-1.5 bg-modern-primary text-white rounded-xl font-sans font-semibold hover:bg-modern-primary-hover"
                 >
                   Close Inspector
                 </button>

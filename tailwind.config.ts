@@ -9,6 +9,51 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // ===== NEW: Modern design system colors (light mode) =====
+        modern: {
+          // Brand
+          primary: "#172554",        // Navy — primary actions, headings
+          "primary-hover": "#1e3a8a",
+          "primary-light": "#dbeafe",
+          accent: "#2563EB",         // Blue — secondary actions, links
+          "accent-hover": "#1d4ed8",
+          "accent-light": "#eff6ff",
+          warm: "#F59E0B",           // Amber — highlights, CTAs, badges
+          "warm-hover": "#d97706",
+          "warm-light": "#fffbeb",
+          "warm-text": "#172554",    // Navy text on amber for contrast
+
+          // Surfaces
+          bg: "#F8FAFC",             // Page background
+          surface: "#FFFFFF",        // Cards, modals, inputs
+          "surface-hover": "#f1f5f9",
+
+          // Borders & Dividers
+          border: "#e2e8f0",         // Default borders
+          "border-strong": "#cbd5e1",
+
+          // Text
+          "text-primary": "#0f172a",   // Slate 950
+          "text-secondary": "#334155", // Slate 700
+          "text-tertiary": "#64748b",  // Slate 500
+          "text-inverse": "#ffffff",
+
+          // Semantic
+          success: "#059669",        // Emerald 600
+          "success-light": "#ecfdf5",
+          warning: "#d97706",        // Amber 600
+          "warning-light": "#fffbeb",
+          error: "#dc2626",          // Red 600
+          "error-light": "#fef2f2",
+          info: "#2563eb",           // Blue 600
+          "info-light": "#eff6ff",
+
+          // Role accents (kept for verifier/admin)
+          verifier: "#059669",
+          admin: "#dc2626",
+        },
+
+        // ===== EXISTING: Neo-brutalist colors (preserved for backward compat) =====
         brutal: {
           bg: "#FDFBF7",
           dark: "#09090B",
@@ -92,11 +137,17 @@ const config: Config = {
         card: "0 1px 3px rgba(15, 30, 54, 0.06), 0 1px 2px rgba(15, 30, 54, 0.04)",
         "card-hover": "0 8px 24px -4px rgba(15, 30, 54, 0.12), 0 2px 6px -1px rgba(15, 30, 54, 0.06)",
         float: "0 14px 34px -6px rgba(15, 30, 54, 0.18)",
-        // Neo-Brutalist 3D hard offset drop shadows
+        // Neo-Brutalist 3D hard offset drop shadows (preserved for backward compat)
         "brutal-sm": "2px 2px 0px 0px #000000",
         brutal: "4px 4px 0px 0px #000000",
         "brutal-lg": "6px 6px 0px 0px #000000",
         "brutal-xl": "8px 8px 0px 0px #000000",
+        // Modern layered shadows
+        "modern-xs": "0 1px 2px rgba(15,23,42,0.05)",
+        "modern-sm": "0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04)",
+        "modern-md": "0 4px 12px rgba(15,23,42,0.08), 0 2px 4px rgba(15,23,42,0.04)",
+        "modern-lg": "0 12px 24px rgba(15,23,42,0.1), 0 4px 8px rgba(15,23,42,0.05)",
+        "modern-focus": "0 0 0 3px rgba(37,99,235,0.3)",
       },
       borderRadius: {
         notice: "6px",
@@ -104,6 +155,14 @@ const config: Config = {
         brutal: "16px",
         "brutal-lg": "24px",
         "brutal-xl": "32px",
+        // Modern radius scale
+        "modern-xs": "4px",
+        "modern-sm": "6px",
+        "modern-md": "8px",
+        "modern-lg": "12px",
+        "modern-xl": "16px",
+        "modern-2xl": "24px",
+        "modern-full": "9999px",
       },
     },
   },

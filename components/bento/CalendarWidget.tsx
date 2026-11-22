@@ -1,73 +1,88 @@
+"use client";
+
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 export function CalendarWidget() {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  // Dates matching the reference image layout:
-  // Row 1: 1, 2, 2, 7, 8, 8, 9 (faint/previous)
-  // Row 2: 8, 9, 10, 11 (active highlighted), 12, 13, 14
   const activeDate = 11;
 
   return (
-    <div className="bg-white border-2 border-black rounded-3xl p-5 shadow-brutal flex flex-col justify-between h-full min-h-[160px] group hover:-translate-y-1 transition-transform">
-      <div className="flex items-center justify-between border-b border-black/10 pb-2">
-        <h4 className="font-sans font-black text-sm text-black">November 2026</h4>
-        <div className="flex items-center space-x-1">
-          <button
-            type="button"
-            className="p-1 hover:bg-paper-200 rounded border border-transparent hover:border-black transition"
-            aria-label="Previous month"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-          <button
-            type="button"
-            className="p-1 hover:bg-paper-200 rounded border border-transparent hover:border-black transition"
-            aria-label="Next month"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+    <Card variant="elevated" padding="md" className="h-full min-h-[160px] flex flex-col">
+      <CardHeader
+        title="November 2026"
+        subtitle="Academic Calendar"
+        className="border-b border-modern-border/50 pb-3"
+        action={
+          <div className="flex items-center space-x-1">
+            <button
+              type="button"
+              className="p-1.5 hover:bg-modern-surface-hover rounded-lg border border-modern-border transition-colors"
+              aria-label="Previous month"
+            >
+              <ChevronLeft className="w-4 h-4 text-modern-text-secondary" />
+            </button>
+            <button
+              type="button"
+              className="p-1.5 hover:bg-modern-surface-hover rounded-lg border border-modern-border transition-colors"
+              aria-label="Next month"
+            >
+              <ChevronRight className="w-4 h-4 text-modern-text-secondary" />
+            </button>
+          </div>
+        }
+      />
+
+      <CardContent className="flex-1 flex flex-col justify-between pt-0">
+        <div className="grid grid-cols-7 gap-1 text-center my-2">
+          {days.map((d) => (
+            <span key={d} className="text-[10px] font-mono font-semibold text-modern-text-tertiary">
+              {d}
+            </span>
+          ))}
+
+          {/* Row 1 - previous month dates (faded) */}
+          {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+            <span key={`prev-${num}`} className="text-xs font-mono font-medium text-modern-text-tertiary/40 py-1">
+              {num}
+            </span>
+          ))}
+
+          {/* Row 2 - current month dates with active highlight */}
+          {[8, 9, 10, 11, 12, 13, 14].map((num) => {
+            const isActive = num === activeDate;
+            return (
+              <div key={num} className="flex items-center justify-center py-1.5">
+                {isActive ? (
+                  <button
+                    type="button"
+                    className="w-8 h-8 rounded-full bg-modern-primary text-white font-mono font-semibold text-sm flex items-center justify-center shadow-modern-sm hover:shadow-modern transition-shadow"
+                    aria-label={`November ${num}, 2026 - Term Exam Week`}
+                    aria-current="date"
+                  >
+                    {num}
+                  </button>
+                ) : (
+                  <span className="text-xs font-mono font-semibold text-modern-text-primary w-8 h-8 flex items-center justify-center">
+                    {num}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
-      </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center my-1.5">
-        {days.map((d) => (
-          <span key={d} className="text-[10px] font-mono font-bold text-ink-600">
-            {d}
-          </span>
-        ))}
-
-        {/* Row 1 dates */}
-        {[1, 2, 3, 4, 5, 6, 7].map((num) => (
-          <span key={`prev-${num}`} className="text-xs font-mono font-semibold text-ink-300 py-0.5">
-            {num}
-          </span>
-        ))}
-
-        {/* Row 2 active university dates */}
-        {[8, 9, 10, 11, 12, 13, 14].map((num) => {
-          const isActive = num === activeDate;
-          return (
-            <div key={num} className="flex items-center justify-center py-0.5">
-              {isActive ? (
-                <span className="w-6 h-6 rounded-full bg-brutal-yellow border-2 border-black font-mono font-black text-xs text-black flex items-center justify-center shadow-[1px_1px_0px_#000]">
-                  {num}
-                </span>
-              ) : (
-                <span className="text-xs font-mono font-bold text-ink-950">
-                  {num}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="text-[10px] font-mono font-bold text-ink-600 pt-1 border-t border-black/10 flex justify-between items-center">
-        <span>Term Exam Week</span>
-        <span className="text-brutal-purple-dark font-black">RUAS Term 1</span>
-      </div>
-    </div>
+        <div className="flex justify-between items-center text-xs font-mono text-modern-text-tertiary border-t border-modern-border/50 pt-3">
+          <Badge variant="warm" size="xs">
+            Term Exam Week
+          </Badge>
+          <Badge variant="primary" size="xs">
+            RUAS Term 1
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
-

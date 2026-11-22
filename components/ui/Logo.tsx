@@ -28,9 +28,9 @@ export function Logo({
 
   const content = (
     <div className={`inline-flex items-center space-x-2.5 group cursor-pointer select-none ${className}`}>
-      {/* Neo-brutalist Yellow Badge with Interlocking Loop */}
+      {/* Modern Logo Badge - Navy background with clean styling */}
       <div
-        className={`${current.box} rounded-xl bg-brutal-yellow border-2 border-black shadow-[2px_2px_0px_#000] group-hover:shadow-[3px_3px_0px_#000] group-hover:-translate-y-0.5 group-active:translate-x-[1px] group-active:translate-y-[1px] group-active:shadow-none transition-all flex items-center justify-center shrink-0`}
+        className={`${current.box} rounded-xl bg-modern-primary border border-modern-border shadow-modern-sm group-hover:shadow-modern-md group-hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center shrink-0`}
       >
         <svg
           viewBox="0 0 24 24"
@@ -39,7 +39,7 @@ export function Logo({
           strokeWidth="3.2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`${current.icon} text-black transform rotate-[-45deg]`}
+          className={`${current.icon} text-white transform rotate-[-45deg]`}
         >
           {/* Interlocking infinity double-loop */}
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -50,14 +50,14 @@ export function Logo({
       {withText && !badgeOnly && (
         <div className="flex flex-col leading-none">
           <div className="flex items-center space-x-1.5">
-            <span className={`font-sans font-black tracking-tight text-black ${current.text}`}>
+            <span className={`font-sans font-black tracking-tight text-modern-text-primary ${current.text}`}>
               Campus Market
             </span>
-            <span className="px-1.5 py-0.5 bg-brutal-yellow text-black border border-black rounded-md text-[9px] font-mono font-bold tracking-wider uppercase">
+            <span className="px-1.5 py-0.5 bg-modern-warm-light text-modern-warm-text border border-modern-warm/30 rounded-md text-[9px] font-mono font-bold tracking-wider uppercase">
               RUAS
             </span>
           </div>
-          <span className={`font-mono text-ink-600 font-semibold tracking-wide ${current.sub} mt-0.5`}>
+          <span className={`font-mono text-modern-text-tertiary font-medium tracking-wide ${current.sub} mt-0.5`}>
             MSRUAS Verified Exchange
           </span>
         </div>

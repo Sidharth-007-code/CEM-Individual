@@ -28,7 +28,13 @@ import {
   GraduationCap,
   MapPin,
   Sparkles,
+  Loader2,
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardGrid } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
+import { LinkButton } from "@/components/ui/Button";
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -197,34 +203,44 @@ export default function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="py-20 text-center space-y-3">
-        <div className="w-10 h-10 border-4 border-black border-t-brutal-yellow rounded-full animate-spin mx-auto" />
-        <p className="text-xs font-mono font-bold text-ink-600">Loading item specifications...</p>
+      <div className="py-20 text-center space-y-4">
+        <Card variant="outlined" padding="lg" className="w-fit mx-auto space-y-4">
+          <div className="flex items-center justify-center space-x-3">
+            <Loader2 className="w-8 h-8 text-modern-primary animate-spin" aria-hidden="true" />
+            <span className="text-sm font-mono font-medium text-modern-text-tertiary">Loading item specifications...</span>
+          </div>
+          <div className="h-2 bg-modern-surface-hover rounded-full overflow-hidden w-64 mx-auto">
+            <div className="h-full w-1/4 bg-modern-primary animate-pulse rounded-full" />
+          </div>
+        </Card>
       </div>
     );
   }
 
   if (!listing) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white border-2 border-black rounded-2xl p-8 text-center space-y-4 shadow-brutal">
-        <AlertCircle className="w-10 h-10 text-admin-600 mx-auto" />
-        <h2 className="font-sans text-2xl font-black text-black">Listing Unavailable</h2>
-        <p className="text-xs font-mono text-ink-600 leading-relaxed">
-          This listing does not exist, has been removed, or was taken down by campus moderation.
-        </p>
-        <Link
-          href="/browse"
-          className="inline-block px-5 py-2.5 bg-brutal-yellow text-black border-2 border-black rounded-xl text-xs font-sans font-black shadow-[2px_2px_0px_#000] hover:bg-brutal-yellow-light"
-        >
-          Return to Notice Board
-        </Link>
+      <div className="max-w-md mx-auto my-12">
+        <Card variant="outlined" padding="lg" className="text-center space-y-4 border-modern-danger/50">
+          <div className="w-14 h-14 bg-modern-danger-light border border-modern-danger/30 rounded-2xl flex items-center justify-center mx-auto">
+            <AlertCircle className="w-7 h-7 text-modern-danger" aria-hidden="true" />
+          </div>
+          <h2 className="font-sans text-xl font-bold text-modern-text-primary">
+            Listing Unavailable
+          </h2>
+          <p className="text-sm font-mono text-modern-text-tertiary leading-relaxed">
+            This listing does not exist, has been removed, or was taken down by campus moderation.
+          </p>
+          <LinkButton href="/browse" variant="primary" size="lg" leftIcon={<ChevronLeft className="w-4 h-4" />}>
+            Return to Notice Board
+          </LinkButton>
+        </Card>
       </div>
     );
   }
 
   const isSold = listing.status === "sold";
   const isSeller = user?.uid === listing.sellerId;
-  
+
   // Resolve multiple gallery images: subcollection -> listing.images array -> fallback demo image set
   const fallbackImages: string[] = getProductImageSet(listing.id + " " + listing.title).images.map((i) => i.dataUrl);
   const displayImages: string[] =
@@ -234,102 +250,127 @@ export default function ListingDetailPage() {
       ? ((listing as any).images as string[])
       : fallbackImages;
 
+  // AI Evaluation
+  const aiEval =
+    listing.aiValidation ||
+    validateListingAI({
+      title: listing.title,
+      description: listing.description,
+      category: listing.category,
+      condition: listing.condition,
+      price: listing.price,
+      imageCount: displayImages.length || 3,
+      images: displayImages.map((src) => ({ dataUrl: src })),
+    });
+
+  // Similar gear
+  const similarGear = getSimilarListingsAI(listing, otherListings, 3);
+
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      
-      {/* Back breadcrumb */}
+    <div className="max-w-5xl mx-auto space-y-6 pb-8">
+
+      {/* Back breadcrumb & Header Actions */}
       <div className="flex items-center justify-between">
-        <Link
+        <LinkButton
           href="/browse"
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] hover:bg-paper-100 transition"
+          variant="ghost"
+          size="sm"
+          leftIcon={<ChevronLeft className="w-4 h-4" />}
+          className="text-modern-text-secondary hover:text-modern-text-primary"
         >
-          <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
-          <span>Back to Notice Board</span>
-        </Link>
+          Back to Notice Board
+        </LinkButton>
 
         <div className="flex items-center space-x-2">
           {/* Wishlist */}
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={toggleWishlist}
-            className={`px-3 py-1.5 rounded-xl border-2 border-black transition flex items-center space-x-1.5 text-xs font-sans font-black shadow-[2px_2px_0px_#000] ${
-              isWishlisted
-                ? "bg-brutal-pink text-black"
-                : "bg-white text-black hover:bg-brutal-pink/30"
-            }`}
+            leftIcon={isWishlisted ? <Heart className="w-4 h-4 fill-current" /> : <Heart className="w-4 h-4" />}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
+            className="transition-colors"
           >
-            <Heart className={`w-4 h-4 stroke-[2.5] ${isWishlisted ? "fill-black" : ""}`} />
-            <span>{isWishlisted ? "Saved" : "Save"}</span>
-          </button>
+            {isWishlisted ? "Saved" : "Save"}
+          </Button>
 
           {/* Report Button */}
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setReportModalOpen(true)}
-            className="p-1.5 rounded-xl border-2 border-black bg-white text-ink-600 hover:text-admin-600 hover:bg-admin-50 shadow-[2px_2px_0px_#000] transition"
-            title="Report this listing"
-          >
-            <Flag className="w-4 h-4 stroke-[2.5]" />
-          </button>
+            leftIcon={<Flag className="w-4 h-4" />}
+            aria-label="Report this listing"
+            className="text-modern-text-tertiary hover:text-modern-danger"
+          />
         </div>
       </div>
 
       {/* Sold Banner Notice */}
       {isSold && (
-        <div className="p-4 bg-admin-50 border-2 border-black rounded-2xl text-admin-900 shadow-[3px_3px_0px_#000] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <Card variant="outlined" padding="md" className="border-modern-warning/50 bg-modern-warning-light/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-2.5">
-            <span className="font-sans font-black text-xs uppercase tracking-wider bg-admin-600 text-white px-2.5 py-1 rounded-lg border border-black shadow-[1px_1px_0px_#000]">
+            <Badge variant="warning" size="sm" className="font-sans text-xs">
               ITEM SOLD
-            </span>
-            <span className="text-xs font-mono font-bold">
+            </Badge>
+            <span className="text-sm font-mono text-modern-text-secondary">
               This item has found a student buyer and is no longer available.
             </span>
           </div>
-          <span className="text-xs font-mono font-black text-admin-700 bg-white px-2 py-0.5 rounded border border-black">
+          <Badge variant="secondary" size="xs" className="font-mono">
             Single-Sale Verified
-          </span>
-        </div>
+          </Badge>
+        </Card>
       )}
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal">
-        
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+
         {/* Gallery Column (6 Cols) */}
         <div className="md:col-span-6 space-y-4">
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-black bg-paper-100 relative shadow-[2px_2px_0px_#000]">
-            {displayImages[activeImgIndex] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={displayImages[activeImgIndex]}
-                alt={listing.title}
-                className={`w-full h-full object-cover ${isSold ? "grayscale" : ""}`}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs font-mono font-bold text-ink-400">
-                No Photo Available
-              </div>
-            )}
+          <Card variant="elevated" padding="none" className="rounded-2xl overflow-hidden">
+            <div className="aspect-[4/3] relative bg-modern-surface-hover">
+              {displayImages[activeImgIndex] ? (
+                <img
+                  src={displayImages[activeImgIndex]}
+                  alt={listing.title}
+                  className={`w-full h-full object-cover ${isSold ? "grayscale" : ""}`}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-sm font-mono text-modern-text-tertiary">
+                  No Photo Available
+                </div>
+              )}
 
-            <div className="absolute bottom-3 left-3 flex items-center space-x-1.5 px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-xl text-xs font-mono font-black text-black border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
-              <ShieldCheck className="w-4 h-4 text-verifier-600 stroke-[2.5]" />
-              <span>Campus Verified Listing</span>
+              {/* Verified Badge Overlay */}
+              <div className="absolute bottom-3 left-3">
+                <Badge variant="verifier" size="sm" dot className="shadow-modern-lg">
+                  <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                  Campus Verified Listing
+                </Badge>
+              </div>
             </div>
-          </div>
+          </Card>
 
           {/* Thumbnails row */}
           {displayImages.length > 1 && (
-            <div className="flex space-x-2.5 overflow-x-auto pb-1">
+            <div className="flex space-x-2.5 overflow-x-auto pb-1 -ml-0.5" role="group" aria-label="Product image thumbnails">
               {displayImages.map((src: string, i: number) => (
-                <button
+                <Button
                   key={i}
-                  onClick={() => setActiveImgIndex(i)}
-                  className={`w-16 h-16 rounded-xl overflow-hidden border-2 flex-shrink-0 transition ${
+                  variant="ghost"
+                  size="sm"
+                  className={`w-16 h-16 p-0 rounded-xl overflow-hidden flex-shrink-0 transition-all ${
                     activeImgIndex === i
-                      ? "border-black ring-2 ring-brutal-yellow shadow-[2px_2px_0px_#000]"
-                      : "border-black/30 opacity-70 hover:opacity-100"
+                      ? "ring-2 ring-modern-primary ring-offset-2 ring-offset-modern-surface shadow-modern-sm"
+                      : "opacity-70 hover:opacity-100"
                   }`}
+                  onClick={() => setActiveImgIndex(i)}
+                  aria-label={`View image ${i + 1} of ${displayImages.length}`}
+                  aria-current={activeImgIndex === i ? "true" : "false"}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={src} alt="" className="w-full h-full object-cover" />
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -337,190 +378,181 @@ export default function ListingDetailPage() {
 
         {/* Specifications & Actions Column (6 Cols) */}
         <div className="md:col-span-6 flex flex-col justify-between space-y-6">
-          <div className="space-y-4">
-            
-            <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-              <span className="px-2.5 py-1 bg-brutal-yellow text-black font-black rounded-xl border-2 border-black uppercase shadow-[1.5px_1.5px_0px_#000]">
+          <div className="space-y-5">
+
+            {/* Category & Condition Badges */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="primary" size="sm" className="font-sans">
                 {listing.category}
-              </span>
-              <span className="px-2.5 py-1 bg-paper-100 text-black font-bold rounded-xl border-2 border-black capitalize shadow-[1.5px_1.5px_0px_#000]">
+              </Badge>
+              <Badge variant="secondary" size="sm" className="capitalize font-sans">
                 Condition: {listing.condition.replace("_", " ")}
-              </span>
+              </Badge>
             </div>
 
-            <h1 className="font-sans text-2xl sm:text-3xl font-black text-black leading-tight tracking-tight">
+            {/* Title */}
+            <h1 className="font-sans font-bold text-2xl sm:text-3xl text-modern-text-primary leading-tight tracking-tight">
               {listing.title}
             </h1>
 
-            <div className="flex items-baseline space-x-3">
-              <div className="font-sans text-3xl sm:text-4xl font-black text-black">
+            {/* Price Row */}
+            <div className="flex items-baseline flex-wrap gap-3">
+              <div className="font-sans font-bold text-3xl sm:text-4xl text-modern-text-primary">
                 ₹{listing.price.toLocaleString("en-IN")}
               </div>
-              <span className="text-xs text-ink-600 font-mono font-bold">Fair-Trade Fixed Price</span>
+              <Badge variant="warm" size="sm" className="font-sans">
+                Fair-Trade Fixed Price
+              </Badge>
             </div>
 
             {/* Description */}
-            <div className="pt-2 border-t-2 border-black/10">
-              <h3 className="text-xs font-sans font-black text-black uppercase tracking-wider mb-2">
-                Item Description &amp; Usage Notes
+            <Card variant="outlined" padding="md" className="border-modern-border/50">
+              <h3 className="text-xs font-sans font-semibold text-modern-text-primary uppercase tracking-wider mb-3">
+                Item Description & Usage Notes
               </h3>
-              <p className="text-xs font-mono text-ink-900 leading-relaxed whitespace-pre-wrap bg-paper-50 p-4 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000]">
+              <p className="text-sm text-modern-text-secondary leading-relaxed whitespace-pre-wrap font-sans">
                 {listing.description}
               </p>
-            </div>
+            </Card>
 
             {/* Seller Profile Card */}
-            {(() => {
-              const sellerName = sellerProfile?.name || listing.sellerName || "Verified Student";
-              const sellerPhone = sellerProfile?.phone || listing.sellerPhone;
-              const sellerCourse = sellerProfile?.course;
-              const sellerYear = sellerProfile?.year;
-              const sellerCampus = sellerProfile?.campus;
-              const sellerAvatarPreset = PRESET_AVATARS.find((a) => a.id === sellerProfile?.avatarId);
-
-              return (
-                <div className="bg-brutal-yellow/20 border-2 border-black rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[2px_2px_0px_#000]">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 rounded-xl bg-brutal-yellow border-2 border-black flex items-center justify-center font-sans font-black text-black overflow-hidden shadow-[2px_2px_0px_#000] shrink-0">
-                      {sellerProfile?.photoURL ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={sellerProfile.photoURL} alt={sellerName} className="w-full h-full object-cover" />
-                      ) : sellerAvatarPreset ? (
-                        <span className="text-2xl leading-none">{sellerAvatarPreset.emoji}</span>
-                      ) : (
-                        <span>{sellerName ? sellerName.charAt(0).toUpperCase() : <User className="w-5 h-5 text-black" />}</span>
-                      )}
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-1.5">
-                        <span className="font-sans font-black text-xs text-black">
-                          {sellerName}
-                        </span>
-                        <span className="px-1.5 py-0.5 bg-brutal-green text-black text-[9px] font-mono font-bold rounded-md border border-black">
-                          Verified Peer
-                        </span>
-                      </div>
-                      <span className="text-[11px] font-mono text-ink-700 block">
-                        {sellerCourse ? `${sellerCourse} ${sellerYear ? `• ${sellerYear}` : ""}` : "MSRUAS Enrolled Student"}
-                      </span>
-                      {sellerCampus && (
-                        <span className="text-[10px] text-ink-600 font-mono block">
-                          Campus: {sellerCampus}
-                        </span>
-                      )}
-                    </div>
+            <Card variant="elevated" padding="md" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center space-x-4">
+                <Avatar
+                  src={sellerProfile?.photoURL}
+                  alt={sellerProfile?.name || listing.sellerName || "Verified Student"}
+                  fallback={sellerProfile?.name || listing.sellerName || "Verified Student"}
+                  size="lg"
+                  shape="circle"
+                  status="online"
+                  statusPosition="bottom-right"
+                />
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-sans font-semibold text-sm text-modern-text-primary">
+                      {sellerProfile?.name || listing.sellerName || "Verified Student"}
+                    </span>
+                    <Badge variant="verifier" size="xs" dot>
+                      Verified Peer
+                    </Badge>
                   </div>
-
-                  {/* Direct Call Link */}
-                  {sellerPhone && !isSeller && (
-                    <a
-                      href={`tel:${sellerPhone}`}
-                      className="px-3.5 py-2 bg-white hover:bg-paper-100 border-2 border-black rounded-xl text-xs font-sans font-black text-black flex items-center justify-center space-x-1.5 transition shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] shrink-0"
-                      title="Direct phone call (supported on mobile devices)"
-                    >
-                      <Phone className="w-3.5 h-3.5 text-black stroke-[2.5]" />
-                      <span>Call Seller</span>
-                    </a>
+                  <span className="text-xs font-mono text-modern-text-tertiary block">
+                    {sellerProfile?.course ? `${sellerProfile.course} ${sellerProfile?.year ? `• ${sellerProfile.year}` : ""}` : "MSRUAS Enrolled Student"}
+                  </span>
+                  {sellerProfile?.campus && (
+                    <span className="text-[10px] font-mono text-modern-text-tertiary block">
+                      Campus: {sellerProfile.campus}
+                    </span>
                   )}
                 </div>
-              );
-            })()}
+              </div>
+
+              {/* Direct Call Link */}
+              {sellerProfile?.phone && !isSeller && (
+                <a
+                  href={`tel:${sellerProfile.phone}`}
+                  className="shrink-0"
+                >
+                  <Button variant="outline" size="sm" leftIcon={<Phone className="w-3.5 h-3.5" />}>
+                    Call Seller
+                  </Button>
+                </a>
+              )}
+            </Card>
 
             {/* AI Product Valuation & Quality Card */}
-            {(() => {
-              const aiEval =
-                listing.aiValidation ||
-                validateListingAI({
-                  title: listing.title,
-                  description: listing.description,
-                  category: listing.category,
-                  condition: listing.condition,
-                  price: listing.price,
-                  imageCount: displayImages.length || 3,
-                  images: displayImages.map((src) => ({ dataUrl: src })),
-                });
+            <Card variant="elevated" padding="lg" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-sans font-semibold text-sm text-modern-text-primary flex items-center space-x-2">
+                  <Badge variant="warm" size="sm" className="p-1.5">
+                    <Sparkles className="w-4 h-4" aria-hidden="true" />
+                  </Badge>
+                  <span>AI Fair Price & Quality Assessment</span>
+                </span>
+                <Badge variant="success" size="sm" dot className="font-mono">
+                  Grade {aiEval.qualityCheck.grade} ({aiEval.qualityCheck.qualityScore}/100)
+                </Badge>
+              </div>
 
-              return (
-                <div className="bg-brutal-purple-light/50 border-2 border-black rounded-2xl p-4 space-y-2.5 shadow-[2px_2px_0px_#000]">
-                  <div className="flex items-center justify-between">
-                    <span className="font-sans font-black text-xs text-black flex items-center space-x-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-black" />
-                      <span>AI Fair Price &amp; Quality Assessment</span>
+              {/* AI Visual Verification Badge */}
+              {aiEval.imageAnalysis && (
+                <Card variant="outlined" padding="sm" className="border-modern-border/50">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-mono font-medium text-modern-text-secondary flex items-center space-x-1.5">
+                      <ShieldCheck className="w-4 h-4 text-modern-verifier" aria-hidden="true" />
+                      <span>AI Visual Authenticity:</span>
                     </span>
-                    <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-lg bg-brutal-green text-black border border-black shadow-[1px_1px_0px_#000]">
-                      Grade {aiEval.qualityCheck.grade} ({aiEval.qualityCheck.qualityScore}/100)
-                    </span>
-                  </div>
-
-                  {/* AI Visual Verification Badge */}
-                  {aiEval.imageAnalysis && (
-                    <div className="flex items-center justify-between text-xs px-2.5 py-1.5 bg-white rounded-xl border border-black shadow-[1px_1px_0px_#000]">
-                      <span className="font-mono text-[11px] text-ink-700 font-bold flex items-center space-x-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-verifier-700" />
-                        <span>AI Visual Authenticity:</span>
-                      </span>
-                      <span className="font-mono font-black text-black text-[11px]">
-                        {aiEval.imageAnalysis.isGenuine ? "✓ Verified Genuine Physical Item" : "Under Review"}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between text-xs pt-1 border-t-2 border-black/10">
-                    <span className="font-mono text-ink-700">Fair Peer Benchmark:</span>
-                    <span className="font-mono font-black text-black">
-                      ₹{aiEval.priceEval.estimatedMin} - ₹{aiEval.priceEval.estimatedMax}
+                    <span className="font-mono font-semibold text-modern-text-primary">
+                      {aiEval.imageAnalysis.isGenuine ? "✓ Verified Genuine Physical Item" : "Under Review"}
                     </span>
                   </div>
+                </Card>
+              )}
 
-                  <p className="text-[11px] font-mono text-ink-700 leading-normal">
-                    {aiEval.priceEval.analysisSummary}
-                  </p>
+              <div className="flex items-center justify-between text-sm pt-2 border-t border-modern-border/50">
+                <span className="font-mono text-modern-text-tertiary">Fair Peer Benchmark:</span>
+                <span className="font-mono font-semibold text-modern-text-primary">
+                  ₹{aiEval.priceEval.estimatedMin} - ₹{aiEval.priceEval.estimatedMax}
+                </span>
+              </div>
 
-                  {aiEval.suggestedTags && aiEval.suggestedTags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {aiEval.suggestedTags.map((tag) => (
-                        <span key={tag} className="px-2 py-0.5 bg-white text-black text-[10px] font-mono font-bold rounded-lg border border-black shadow-[1px_1px_0px_#000]">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+              <p className="text-sm font-mono text-modern-text-tertiary leading-normal">
+                {aiEval.priceEval.analysisSummary}
+              </p>
+
+              {aiEval.suggestedTags && aiEval.suggestedTags.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {aiEval.suggestedTags.map((tag) => (
+                    <Badge key={tag} variant="outline" size="xs" className="font-mono">
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
-              );
-            })()}
+              )}
+            </Card>
           </div>
 
           {/* CTA Buttons */}
-          <div className="pt-4 border-t-2 border-black/10">
+          <div className="pt-4 border-t border-modern-border/50 space-y-3">
             {isSeller ? (
-              <div className="p-3.5 bg-paper-100 border-2 border-black rounded-2xl text-center text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000]">
-                This is your listing. Switch to Seller Dashboard to manage your items.
-              </div>
+              <Card variant="outlined" padding="md" className="text-center border-modern-border/50 bg-modern-surface-hover/50">
+                <p className="text-sm font-mono text-modern-text-tertiary">
+                  This is your listing. Switch to Seller Dashboard to manage your items.
+                </p>
+              </Card>
             ) : isSold ? (
-              <button
+              <Button
+                variant="secondary"
+                size="lg"
+                fullWidth
                 disabled
-                className="w-full py-3.5 bg-ink-200 text-ink-600 font-sans font-black text-sm rounded-xl border-2 border-black cursor-not-allowed uppercase tracking-wider"
+                className="text-modern-text-tertiary"
               >
                 Item Sold &bull; Checkout Closed
-              </button>
+              </Button>
             ) : (
               <div className="flex flex-col sm:flex-row gap-3">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="lg"
+                  fullWidth
                   onClick={handleStartChat}
                   disabled={startingChat}
-                  className="flex-1 py-3.5 px-4 bg-white hover:bg-paper-100 text-black border-2 border-black font-sans font-black text-xs sm:text-sm rounded-xl shadow-[3px_3px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition flex items-center justify-center space-x-2"
+                  isLoading={startingChat}
+                  leftIcon={<MessageSquare className="w-4 h-4" />}
+                  className="shadow-modern-sm hover:shadow-modern"
                 >
-                  <MessageSquare className="w-4 h-4 stroke-[2.5]" />
-                  <span>Chat with Seller</span>
-                </button>
+                  Chat with Seller
+                </Button>
 
                 <Link
                   href={`/checkout/${listing.id}`}
-                  className="flex-1 py-3.5 px-4 bg-brutal-yellow hover:bg-brutal-yellow-light text-black border-2 border-black font-sans font-black text-xs sm:text-sm rounded-xl shadow-[3px_3px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition flex items-center justify-center space-x-2"
+                  className="flex-1"
                 >
-                  <ShoppingBag className="w-4 h-4 stroke-[2.5]" />
-                  <span>Buy Now (₹{listing.price.toLocaleString("en-IN")})</span>
+                  <Button variant="primary" size="lg" fullWidth leftIcon={<ShoppingBag className="w-4 h-4" />}>
+                    Buy Now (₹{listing.price.toLocaleString("en-IN")})
+                  </Button>
                 </Link>
               </div>
             )}
@@ -529,37 +561,33 @@ export default function ListingDetailPage() {
       </div>
 
       {/* AI Recommended Similar Products */}
-      {(() => {
-        const similarGear = getSimilarListingsAI(listing, otherListings, 3);
-        if (similarGear.length === 0) return null;
-
-        return (
-          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
-            <div className="flex items-center justify-between border-b-2 border-black/10 pb-3">
-              <div className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-black" />
-                <h3 className="font-sans font-black text-base text-black">
-                  Similar Campus Gear &amp; Alternatives
-                </h3>
-              </div>
-              <span className="text-xs text-ink-600 font-mono font-bold">
-                AI Relevance Matched
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {similarGear.length > 0 && (
+        <Card variant="elevated" padding="lg" className="space-y-4">
+          <CardHeader
+            title="Similar Campus Gear & Alternatives"
+            subtitle="AI Relevance Matched"
+            action={
+              <Badge variant="warm" size="xs">
+                <Sparkles className="w-3 h-3" aria-hidden="true" />
+                <span className="ml-1">AI Curated</span>
+              </Badge>
+            }
+            className="border-b border-modern-border/50 pb-3"
+          />
+          <CardContent className="pt-0">
+            <CardGrid cols={3} gap="md">
               {similarGear.map((item) => (
                 <div key={item.listing.id} className="flex flex-col">
-                  <span className="mb-1.5 inline-flex items-center self-start px-2 py-0.5 bg-black text-white text-[9px] font-mono font-bold rounded-md border border-black shadow-[1px_1px_0px_#000] truncate max-w-full">
-                    ★ {item.recommendationReason}
-                  </span>
+                  <Badge variant="primary" size="xs" className="mb-2 self-start">
+                    {item.recommendationReason}
+                  </Badge>
                   <ListingCard listing={item.listing} isWishlistedInitial={isWishlisted} />
                 </div>
               ))}
-            </div>
-          </div>
-        );
-      })()}
+            </CardGrid>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Report Modal */}
       <ReportModal
@@ -571,4 +599,3 @@ export default function ListingDetailPage() {
     </div>
   );
 }
-

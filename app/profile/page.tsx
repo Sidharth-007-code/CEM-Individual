@@ -15,6 +15,7 @@ import {
 import { compressImageClientSide } from "@/lib/images";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Avatar, Badge, Button, Card, Input, Textarea } from "@/components/ui";
 import {
   User,
   ShieldCheck,
@@ -236,12 +237,12 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white border-2 border-black shadow-[2px_2px_0px_#000] text-xs font-mono font-black text-black hover:bg-paper-100 transition active:translate-x-[1px] active:translate-y-[1px]"
+            className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white border border-modern-border shadow-modern-sm text-xs font-mono font-semibold text-modern-text-primary hover:bg-modern-surface-hover transition"
           >
             <ChevronLeft className="w-4 h-4 stroke-[3]" />
             <span>Dashboard</span>
           </Link>
-          <span className="text-xs font-mono font-bold text-ink-700 bg-paper-100 border border-black/20 px-3 py-1 rounded-xl">
+          <span className="text-xs font-mono font-bold text-modern-text-secondary bg-modern-surface-hover border border-modern-border px-3 py-1 rounded-xl">
             Student Identity &bull; MSRUAS Verified
           </span>
         </div>
@@ -249,72 +250,58 @@ export default function ProfilePage() {
         {/* Feedback Alert Toast */}
         {notification && (
           <div
-            className={`p-4 rounded-2xl border-2 border-black shadow-brutal flex items-center justify-between text-xs animate-in fade-in duration-200 ${
+            className={`p-4 rounded-2xl border border-modern-border shadow-modern-sm flex items-center justify-between text-xs ${
               notification.type === "success"
-                ? "bg-brutal-green text-black"
-                : "bg-brutal-pink text-black"
+                ? "bg-modern-success-light text-modern-text-primary"
+                : "bg-modern-error-light text-modern-text-primary"
             }`}
           >
             <div className="flex items-center space-x-2 font-bold font-sans">
               {notification.type === "success" ? (
-                <ShieldCheck className="w-5 h-5 text-black shrink-0 stroke-[2.5]" />
+                <ShieldCheck className="w-5 h-5 text-modern-success shrink-0" />
               ) : (
-                <AlertCircle className="w-5 h-5 text-black shrink-0 stroke-[2.5]" />
+                <AlertCircle className="w-5 h-5 text-modern-error shrink-0" />
               )}
               <span>{notification.message}</span>
             </div>
             <button
               onClick={() => setNotification(null)}
-              className="text-xs font-black underline ml-2 opacity-80 hover:opacity-100"
+              className="text-xs font-semibold underline ml-2 opacity-80 hover:opacity-100"
             >
               Dismiss
             </button>
           </div>
         )}
 
-        {/* Header Hero Banner - Matching Shreyas Adiga Neo-Brutalist Visual */}
-        <div className="bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal relative overflow-hidden bg-grid-pattern">
+        {/* Profile overview and activity */}
+        <Card variant="elevated" padding="none" className="p-6 sm:p-8 relative overflow-hidden">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             
             {/* Avatar Display with Yellow Ring & Online Badge */}
             <div className="relative group shrink-0">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-black shadow-[3px_3px_0px_#000] overflow-hidden bg-brutal-yellow flex items-center justify-center">
-                {photoURL ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={photoURL}
-                    alt={name || "Student Avatar"}
-                    className="w-full h-full object-cover"
-                  />
-                ) : activePreset ? (
-                  <div className="w-full h-full flex items-center justify-center text-4xl sm:text-5xl">
-                    {activePreset.emoji}
-                  </div>
-                ) : (
-                  // Illustrated student avatar
-                  <svg viewBox="0 0 80 80" className="w-20 h-20 translate-y-1">
-                    <ellipse cx="40" cy="45" rx="22" ry="24" fill="#FFD0A8" stroke="#000000" strokeWidth="2.5" />
-                    <path
-                      d="M 20 40 Q 22 20 40 18 Q 58 20 60 40 Q 55 25 40 25 Q 25 25 20 40 Z"
-                      fill="#18181B"
-                      stroke="#000000"
-                      strokeWidth="2"
-                    />
-                    <circle cx="33" cy="42" r="2.5" fill="#000000" />
-                    <circle cx="47" cy="42" r="2.5" fill="#000000" />
-                    <path d="M 36 52 Q 40 56 44 52" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M 22 68 Q 40 60 58 68 L 62 80 L 18 80 Z" fill="#18181B" stroke="#000000" strokeWidth="2.5" />
-                  </svg>
-                )}
-              </div>
+              {photoURL ? (
+                <Avatar
+                  src={photoURL}
+                  alt={name || "Student Avatar"}
+                  fallback={name || "Student"}
+                  size="2xl"
+                  className="border border-modern-border shadow-modern-md"
+                />
+              ) : activePreset ? (
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border border-modern-border shadow-modern-sm bg-modern-primary-light flex items-center justify-center text-4xl sm:text-5xl">
+                  {activePreset.emoji}
+                </div>
+              ) : (
+                <Avatar fallback={name || "Student"} alt={name || "Student Avatar"} size="2xl" />
+              )}
 
               {/* Online Green Badge */}
-              <div className="w-4 h-4 rounded-full bg-brutal-green border-2 border-black absolute top-1 right-1 shadow-[1px_1px_0px_#000]" />
+              <div className="w-4 h-4 rounded-full bg-modern-success border-2 border-white absolute top-1 right-1 shadow-modern-sm" />
 
               {/* Upload Overlay Button */}
               <label
                 htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 p-2 bg-brutal-yellow hover:bg-brutal-yellow-light text-black border-2 border-black rounded-full shadow-[2px_2px_0px_#000] cursor-pointer transition transform active:scale-95"
+                className="absolute bottom-0 right-0 p-2 bg-modern-primary hover:bg-modern-primary-hover text-white border border-modern-primary rounded-full shadow-modern-sm cursor-pointer transition"
                 title="Upload real student photo"
               >
                 <Camera className="w-4 h-4" />
@@ -332,36 +319,36 @@ export default function ProfilePage() {
             {/* Profile Overview */}
             <div className="flex-1 text-center sm:text-left space-y-2">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h1 className="font-sans text-2xl sm:text-3xl font-black text-black tracking-tight">
+                <h1 className="font-sans text-2xl sm:text-3xl font-semibold text-modern-text-primary tracking-tight">
                   {name || "Student Profile"}
                 </h1>
-                <span className="px-2.5 py-0.5 text-[10px] font-mono font-black uppercase tracking-wider bg-brutal-green text-black rounded-full border border-black shadow-[1px_1px_0px_#000]">
+                <Badge variant="success" size="sm" dot>
                   {profile?.role || "Student"} &bull; Active
-                </span>
+                </Badge>
               </div>
 
-              <p className="text-xs text-ink-700 font-mono font-bold">
+              <p className="text-xs text-modern-text-secondary font-mono font-bold">
                 {profile?.email} &bull; MSRUAS Verified
               </p>
 
               {bio && (
-                <p className="text-xs text-ink-800 font-semibold italic max-w-xl">
+                <p className="text-xs text-modern-text-secondary font-semibold italic max-w-xl">
                   &ldquo;{bio}&rdquo;
                 </p>
               )}
 
-              <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs font-semibold text-black">
-                <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-paper-100 border border-black/30 rounded-xl">
-                  <GraduationCap className="w-3.5 h-3.5 text-black" />
+              <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs font-semibold text-modern-text-primary">
+                <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-modern-surface-hover border border-modern-border rounded-xl">
+                  <GraduationCap className="w-3.5 h-3.5 text-modern-text-primary" />
                   <span>{course || "Engineering"}</span>
                 </span>
-                <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-paper-100 border border-black/30 rounded-xl">
-                  <MapPin className="w-3.5 h-3.5 text-black" />
+                <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-modern-surface-hover border border-modern-border rounded-xl">
+                  <MapPin className="w-3.5 h-3.5 text-modern-text-primary" />
                   <span>{campus || "Gnanagangothri Campus"}</span>
                 </span>
                 {phone && (
-                  <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-brutal-purple-light border border-black rounded-xl font-mono font-bold text-brutal-purple-dark shadow-[1.5px_1.5px_0px_#000]">
-                    <Phone className="w-3.5 h-3.5 text-brutal-purple-dark" />
+                  <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-modern-primary-light border border-modern-border rounded-xl font-mono font-bold text-modern-primary shadow-modern-sm">
+                    <Phone className="w-3.5 h-3.5 text-modern-primary" />
                     <span>{phone}</span>
                   </span>
                 )}
@@ -370,37 +357,37 @@ export default function ProfilePage() {
           </div>
 
           {/* Quick Stats Grid Bento */}
-          <div className="mt-6 pt-6 border-t-2 border-black/10 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white p-3.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000] text-center">
-              <span className="block font-sans text-2xl font-black text-black">{listingsCount}</span>
-              <span className="text-[11px] font-mono font-bold text-ink-600 uppercase">Items Listed</span>
+          <div className="mt-6 pt-6 border-t border-modern-border/70 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white p-3.5 rounded-2xl border border-modern-border shadow-modern-sm text-center">
+              <span className="block font-sans text-2xl font-semibold text-modern-text-primary">{listingsCount}</span>
+              <span className="text-[11px] font-mono font-bold text-modern-text-tertiary uppercase">Items Listed</span>
             </div>
-            <div className="bg-brutal-green p-3.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000] text-center">
-              <span className="block font-sans text-2xl font-black text-black">{soldCount}</span>
-              <span className="text-[11px] font-mono font-bold text-ink-900 uppercase">Items Sold</span>
+            <div className="bg-modern-success-light p-3.5 rounded-2xl border border-modern-border shadow-modern-sm text-center">
+              <span className="block font-sans text-2xl font-semibold text-modern-text-primary">{soldCount}</span>
+              <span className="text-[11px] font-mono font-bold text-modern-text-secondary uppercase">Items Sold</span>
             </div>
-            <div className="bg-brutal-purple-light p-3.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000] text-center">
-              <span className="block font-sans text-2xl font-black text-black">{ordersCount}</span>
-              <span className="text-[11px] font-mono font-bold text-brutal-purple-dark uppercase">Orders Made</span>
+            <div className="bg-modern-primary-light p-3.5 rounded-2xl border border-modern-border shadow-modern-sm text-center">
+              <span className="block font-sans text-2xl font-semibold text-modern-text-primary">{ordersCount}</span>
+              <span className="text-[11px] font-mono font-bold text-modern-primary uppercase">Orders Made</span>
             </div>
-            <div className="bg-brutal-yellow p-3.5 rounded-2xl border-2 border-black shadow-[2px_2px_0px_#000] text-center">
-              <span className="block font-sans text-2xl font-black text-black">{wishlistCount}</span>
-              <span className="text-[11px] font-mono font-bold text-ink-900 uppercase">Saved Items</span>
+            <div className="bg-modern-warning-light p-3.5 rounded-2xl border border-modern-warning/20 shadow-modern-sm text-center">
+              <span className="block font-sans text-2xl font-semibold text-modern-text-primary">{wishlistCount}</span>
+              <span className="text-[11px] font-mono font-semibold text-modern-text-secondary uppercase">Saved Items</span>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Main Edit Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Avatar Preset & Customization */}
-          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
-            <div className="flex items-center justify-between border-b-2 border-black/10 pb-3">
+          <Card variant="default" padding="md" className="space-y-4">
+            <div className="flex items-center justify-between border-b border-modern-border/70 pb-3">
               <div>
-                <h2 className="font-sans text-base font-black text-black">
+                <h2 className="font-sans text-base font-semibold text-modern-text-primary">
                   Campus Identity &amp; Avatar
                 </h2>
-                <p className="text-xs text-ink-600 font-medium">
+                <p className="text-xs text-modern-text-tertiary font-medium">
                   Select a campus emoji preset or upload your photo for peer trust.
                 </p>
               </div>
@@ -408,7 +395,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setPhotoURL("")}
-                  className="text-xs font-mono font-bold text-admin-700 hover:text-admin-800 underline"
+                  className="text-xs font-mono font-semibold text-modern-error underline underline-offset-2"
                 >
                   Remove Custom Photo
                 </button>
@@ -424,18 +411,19 @@ export default function ProfilePage() {
                     key={preset.id}
                     type="button"
                     onClick={() => handleSelectPreset(preset.id)}
-                    className={`p-3 rounded-2xl border-2 border-black flex flex-col items-center justify-center transition-all ${
+                    className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-modern-accent focus-visible:ring-offset-2 ${
                       isSelected
-                        ? "bg-brutal-yellow shadow-[3px_3px_0px_#000] -translate-y-1"
-                        : "bg-paper-50 hover:bg-paper-100 shadow-[1.5px_1.5px_0px_#000]"
+                        ? "bg-modern-primary-light border-modern-primary text-modern-primary shadow-modern-sm"
+                        : "bg-modern-surface-hover border-modern-border hover:border-modern-border-strong"
                     }`}
+                    aria-pressed={isSelected}
                   >
                     <span className="text-2xl mb-1">{preset.emoji}</span>
-                    <span className="text-[9px] font-mono font-bold text-black text-center truncate w-full">
+                    <span className="text-[9px] font-mono font-bold text-modern-text-primary text-center truncate w-full">
                       {preset.label}
                     </span>
                     {isSelected && (
-                      <span className="mt-1 w-4 h-4 bg-black text-white rounded-full flex items-center justify-center text-[9px]">
+                      <span className="mt-1 w-4 h-4 bg-modern-primary text-white rounded-full flex items-center justify-center text-[9px]">
                         <Check className="w-2.5 h-2.5 stroke-[3]" />
                       </span>
                     )}
@@ -443,79 +431,78 @@ export default function ProfilePage() {
                 );
               })}
             </div>
-          </div>
+          </Card>
 
           {/* ────────────────── 1. ACADEMIC & STUDENT INFORMATION ────────────────── */}
           {/* Once updated, these options are permanently removed from the web form */}
           {isAcademicLocked ? (
-            <div className="bg-paper-100/90 border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
-              <div className="border-b-2 border-black/10 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="bg-modern-surface-hover border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-4">
+              <div className="border-b border-modern-border/70 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <div className="flex items-center space-x-2">
-                    <ShieldCheck className="w-5 h-5 text-brutal-green-dark stroke-[2.5]" />
-                    <h2 className="font-sans text-base font-black text-black">
+                    <ShieldCheck className="w-5 h-5 text-modern-success stroke-[2.5]" />
+                    <h2 className="font-sans text-base font-semibold text-modern-text-primary">
                       Academic &amp; Student Information
                     </h2>
                   </div>
-                  <p className="text-xs text-ink-600 font-medium mt-0.5">
+                  <p className="text-xs text-modern-text-tertiary font-medium mt-0.5">
                     Verified university details displayed to peers and on official handover invoices.
                   </p>
                 </div>
 
-                <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-black text-white rounded-xl text-xs font-mono font-bold self-start sm:self-auto shadow-[1.5px_1.5px_0px_#000]">
-                  <span>🔒</span>
-                  <span>Permanently Locked</span>
-                </div>
+                <Badge variant="primary" size="sm" className="self-start sm:self-auto">
+                  Permanently Locked
+                </Badge>
               </div>
 
               {/* Read-Only Credential Display Cards (Inputs Removed from Web Form) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* Full Name */}
-                <div className="p-3.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000]">
-                  <span className="text-[10px] font-mono font-bold text-ink-500 uppercase tracking-wider block">
+                <div className="p-3.5 bg-white border border-modern-border rounded-2xl shadow-modern-sm">
+                  <span className="text-[10px] font-mono font-bold text-modern-text-tertiary uppercase tracking-wider block">
                     Full Name / Display Name
                   </span>
-                  <span className="font-sans font-black text-sm text-black block mt-0.5">
+                  <span className="font-sans font-semibold text-sm text-modern-text-primary block mt-0.5">
                     {profile?.name || name || "Verified Student"}
                   </span>
                 </div>
 
                 {/* Faculty & Department */}
-                <div className="p-3.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000]">
-                  <span className="text-[10px] font-mono font-bold text-ink-500 uppercase tracking-wider block">
+                <div className="p-3.5 bg-white border border-modern-border rounded-2xl shadow-modern-sm">
+                  <span className="text-[10px] font-mono font-bold text-modern-text-tertiary uppercase tracking-wider block">
                     Faculty &amp; Department
                   </span>
-                  <span className="font-sans font-bold text-sm text-black block mt-0.5">
+                  <span className="font-sans font-bold text-sm text-modern-text-primary block mt-0.5">
                     {profile?.course || course || "Engineering"}
                   </span>
                 </div>
 
                 {/* Academic Year */}
-                <div className="p-3.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000]">
-                  <span className="text-[10px] font-mono font-bold text-ink-500 uppercase tracking-wider block">
+                <div className="p-3.5 bg-white border border-modern-border rounded-2xl shadow-modern-sm">
+                  <span className="text-[10px] font-mono font-bold text-modern-text-tertiary uppercase tracking-wider block">
                     Academic Year
                   </span>
-                  <span className="font-mono font-bold text-sm text-black block mt-0.5">
+                  <span className="font-mono font-bold text-sm text-modern-text-primary block mt-0.5">
                     {profile?.year || year || "Undergraduate"}
                   </span>
                 </div>
 
                 {/* Campus / Hostel Residence */}
-                <div className="p-3.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_#000]">
-                  <span className="text-[10px] font-mono font-bold text-ink-500 uppercase tracking-wider block">
+                <div className="p-3.5 bg-white border border-modern-border rounded-2xl shadow-modern-sm">
+                  <span className="text-[10px] font-mono font-bold text-modern-text-tertiary uppercase tracking-wider block">
                     Campus / Hostel Residence
                   </span>
-                  <span className="font-sans font-bold text-sm text-black block mt-0.5">
+                  <span className="font-sans font-bold text-sm text-modern-text-primary block mt-0.5">
                     {profile?.campus || campus || "Campus Residence"}
                   </span>
                 </div>
               </div>
 
-              <div className="pt-2 text-[11px] font-mono font-bold text-ink-600 flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-brutal-green shrink-0" />
+              <div className="pt-2 text-[11px] font-mono font-bold text-modern-text-tertiary flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-modern-success shrink-0" />
                 <span>
                   Institutional credentials are locked to protect campus peer transactions. Contact administration at{" "}
-                  <a href="mailto:campus.marketplace.ruas@gmail.com" className="text-black underline">
+                  <a href="mailto:campus.marketplace.ruas@gmail.com" className="text-modern-text-primary underline">
                     campus.marketplace.ruas@gmail.com
                   </a>{" "}
                   for official name/transfer modifications.
@@ -523,22 +510,22 @@ export default function ProfilePage() {
               </div>
             </div>
           ) : (
-            <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
-              <div className="border-b-2 border-black/10 pb-3">
-                <h2 className="font-sans text-base font-black text-black">
+            <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-4">
+              <div className="border-b border-modern-border/70 pb-3">
+                <h2 className="font-sans text-base font-semibold text-modern-text-primary">
                   Academic &amp; Student Information
                 </h2>
-                <p className="text-xs text-ink-600 font-medium">
+                <p className="text-xs text-modern-text-tertiary font-medium">
                   Verified university details displayed to peers and on official handover invoices.
                 </p>
               </div>
 
               {/* Warning about one-time lock */}
-              <div className="p-3.5 bg-brutal-yellow/30 border-2 border-black rounded-2xl flex items-start space-x-3">
-                <AlertCircle className="w-5 h-5 text-black shrink-0 mt-0.5" />
-                <div className="text-xs font-mono font-bold text-black">
+              <div className="p-3.5 bg-modern-warning-light border border-modern-border rounded-2xl flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-modern-text-primary shrink-0 mt-0.5" />
+                <div className="text-xs font-mono font-bold text-modern-text-primary">
                   <span>⚠️ One-Time Verification Notice:</span>
-                  <p className="font-normal text-ink-800 mt-0.5">
+                  <p className="font-normal text-modern-text-secondary mt-0.5">
                     Your Full Name, Faculty &amp; Department, Academic Year, and Campus Residence can only be updated ONCE. After saving, these options are permanently removed from the web form and cannot be edited again.
                   </p>
                 </div>
@@ -547,28 +534,28 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Full Name */}
                 <div>
-                  <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                     Full Name / Display Name *
                   </label>
-                  <input
+                  <Input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-semibold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
+                    className="w-full px-3.5 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-semibold text-modern-text-primary focus:outline-none focus:bg-white shadow-modern-sm transition"
                     placeholder="e.g. Aarav Sharma"
                   />
                 </div>
 
                 {/* Department / Course */}
                 <div>
-                  <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                     Faculty &amp; Department *
                   </label>
                   <select
                     value={course}
                     onChange={(e) => setCourse(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
+                    className="w-full px-3.5 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-mono font-bold text-modern-text-primary focus:outline-none focus:bg-white shadow-modern-sm transition cursor-pointer"
                   >
                     {POPULAR_DEPARTMENTS.map((dept) => (
                       <option key={dept} value={dept}>
@@ -580,13 +567,13 @@ export default function ProfilePage() {
 
                 {/* Year of Study */}
                 <div>
-                  <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                     Academic Year *
                   </label>
                   <select
                     value={year}
                     onChange={(e) => setYear(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
+                    className="w-full px-3.5 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-mono font-bold text-modern-text-primary focus:outline-none focus:bg-white shadow-modern-sm transition cursor-pointer"
                   >
                     {STUDY_YEARS.map((y) => (
                       <option key={y} value={y}>
@@ -598,13 +585,13 @@ export default function ProfilePage() {
 
                 {/* Campus / Hostel Location */}
                 <div>
-                  <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                     Campus / Hostel Residence *
                   </label>
                   <select
                     value={campus}
                     onChange={(e) => setCampus(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition cursor-pointer"
+                    className="w-full px-3.5 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-mono font-bold text-modern-text-primary focus:outline-none focus:bg-white shadow-modern-sm transition cursor-pointer"
                   >
                     {CAMPUS_LOCATIONS.map((loc) => (
                       <option key={loc} value={loc}>
@@ -618,12 +605,12 @@ export default function ProfilePage() {
           )}
 
           {/* ────────────────── 2. CONTACT & TRADING INFORMATION (EDITABLE) ────────────────── */}
-          <div className="bg-white border-2 border-black rounded-3xl p-6 shadow-brutal space-y-4">
-            <div className="border-b-2 border-black/10 pb-3">
-              <h2 className="font-sans text-base font-black text-black">
+          <div className="bg-white border border-modern-border rounded-2xl p-6 shadow-modern-sm space-y-4">
+            <div className="border-b border-modern-border/70 pb-3">
+              <h2 className="font-sans text-base font-semibold text-modern-text-primary">
                 Contact &amp; Peer Trading Details
               </h2>
-              <p className="text-xs text-ink-600 font-medium">
+              <p className="text-xs text-modern-text-tertiary font-medium">
                 Keep your mobile phone and trading notes updated for instant buyer/seller connections.
               </p>
             </div>
@@ -631,49 +618,49 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Contact Phone (for Call links) */}
               <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                   Contact Mobile Number (for Call Links) *
                 </label>
-                <input
+                <Input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-mono font-bold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
+                  className="w-full px-3.5 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-mono font-bold text-modern-text-primary focus:outline-none focus:bg-white shadow-modern-sm transition"
                   placeholder="+91 9876543210"
                 />
-                <span className="text-[10px] text-ink-600 font-mono mt-1 block">
+                <span className="text-[10px] text-modern-text-tertiary font-mono mt-1 block">
                   Enables instant peer calls from the &quot;Call Seller&quot; button on your listings.
                 </span>
               </div>
 
               {/* Personal Email */}
               <div>
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                   Personal Alternate Email (Optional)
                 </label>
-                <input
+                <Input
                   type="email"
                   value={personalEmail}
                   onChange={(e) => setPersonalEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-semibold text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
+                  className="w-full px-3.5 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-semibold text-modern-text-primary focus:outline-none focus:bg-white shadow-modern-sm transition"
                   placeholder="personal.email@gmail.com"
                 />
               </div>
 
               {/* Bio */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-mono font-bold text-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-mono font-bold text-modern-text-primary uppercase tracking-wider mb-1">
                   Student Bio / Seller Introduction
                 </label>
-                <textarea
+                <Textarea
                   rows={2}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   maxLength={160}
-                  className="w-full px-3.5 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs font-medium text-black focus:outline-none focus:bg-white shadow-[2px_2px_0px_#000] transition"
+                  className="w-full px-3.5 py-2.5 bg-modern-surface-hover border border-modern-border rounded-xl text-xs font-medium text-modern-text-primary focus:outline-none focus:bg-white shadow-modern-sm transition"
                   placeholder="e.g. 4th year CSE student. Selling previous semester engineering textbooks, lab coats, and electronics in mint condition."
                 />
-                <span className="text-[10px] text-ink-600 font-mono text-right block mt-1">
+                <span className="text-[10px] text-modern-text-tertiary font-mono text-right block mt-1">
                   {bio.length}/160 characters
                 </span>
               </div>
@@ -684,19 +671,19 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
             <Link
               href="/dashboard"
-              className="text-xs font-mono font-bold text-ink-700 hover:text-black underline underline-offset-4"
+              className="text-xs font-mono font-bold text-modern-text-secondary hover:text-modern-text-primary underline underline-offset-4"
             >
               Cancel &amp; Return to Dashboard
             </Link>
 
-            <button
+            <Button
               type="submit"
               disabled={saving}
-              className="w-full sm:w-auto px-8 py-3 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-sm rounded-2xl border-2 border-black shadow-brutal hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+              className="w-full sm:w-auto px-8 py-3"
             >
               {saving ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin text-black" />
+                  <RefreshCw className="w-4 h-4 animate-spin text-modern-text-primary" />
                   <span>Synchronizing Across Campus...</span>
                 </>
               ) : (
@@ -709,7 +696,7 @@ export default function ProfilePage() {
                   </span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

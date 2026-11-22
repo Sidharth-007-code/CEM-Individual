@@ -18,42 +18,51 @@ export function BrutalToast({
 }: ToastProps) {
   const config = {
     success: {
-      bg: "bg-brutal-green",
-      iconBg: "bg-white",
+      bg: "bg-modern-success-light",
+      border: "border-modern-success/30",
+      iconBg: "bg-modern-success/10",
       Icon: CheckCircle2,
-      textColor: "text-black",
+      iconColor: "text-modern-success",
+      textColor: "text-modern-text-primary",
+      titleColor: "text-modern-text-primary",
     },
     warning: {
-      bg: "bg-brutal-pink",
-      iconBg: "bg-white",
+      bg: "bg-modern-warning-light",
+      border: "border-modern-warning/30",
+      iconBg: "bg-modern-warning/10",
       Icon: AlertTriangle,
-      textColor: "text-black",
+      iconColor: "text-modern-warning",
+      textColor: "text-modern-text-primary",
+      titleColor: "text-modern-text-primary",
     },
     info: {
-      bg: "bg-brutal-blue",
-      iconBg: "bg-white",
+      bg: "bg-modern-info-light",
+      border: "border-modern-info/30",
+      iconBg: "bg-modern-info/10",
       Icon: Info,
-      textColor: "text-black",
+      iconColor: "text-modern-info",
+      textColor: "text-modern-text-primary",
+      titleColor: "text-modern-text-primary",
     },
   }[type];
 
-  const { bg, iconBg, Icon, textColor } = config;
+  const { bg, border, iconBg, Icon, iconColor, textColor, titleColor } = config;
 
   return (
     <div
-      className={`${bg} border-2 border-black rounded-2xl p-3 shadow-brutal flex items-center justify-between space-x-3 ${className}`}
+      className={`${bg} ${border} rounded-lg p-3 shadow-modern-md flex items-center justify-between space-x-3 ${className}`}
     >
       <div className="flex items-center space-x-3 truncate">
         <div
-          className={`w-7 h-7 rounded-xl ${iconBg} border-2 border-black shadow-[1px_1px_0px_#000] flex items-center justify-center shrink-0`}
+          className={`w-7 h-7 rounded-lg ${iconBg} border ${border} flex items-center justify-center shrink-0`}
         >
-          <Icon className="w-4 h-4 text-black stroke-[2.5]" />
+          <Icon className="w-4 h-4 stroke-2" />
         </div>
         <div className="truncate">
-          <div className={`font-sans font-black text-xs ${textColor}`}>
+          <div className={`font-semibold text-xs ${titleColor}`}>
             {title}
           </div>
-          <div className="text-[11px] font-medium text-black/80 truncate">
+          <div className="text-[11px] font-medium text-modern-text-tertiary truncate">
             {message}
           </div>
         </div>
@@ -63,10 +72,10 @@ export function BrutalToast({
         <button
           type="button"
           onClick={onClose}
-          className="p-1 hover:bg-black/10 rounded-lg transition"
+          className="p-1 hover:bg-modern-border rounded-lg transition text-modern-text-tertiary hover:text-modern-text-primary"
           aria-label="Dismiss"
         >
-          <X className="w-3.5 h-3.5 text-black" />
+          <X className="w-3.5 h-3.5" />
         </button>
       )}
     </div>

@@ -56,8 +56,8 @@ service cloud.firestore {
       // Available listings visible to all authenticated users.
       // Draft, pending, rejected, hidden visible only to seller, verifier, or admin.
       allow read: if isAuthenticated() && (
-        resource.data.status == 'available' ||
-        resource.data.sellerId == request.auth.uid ||
+        ('status' in resource.data && resource.data.status == 'available') ||
+        ('sellerId' in resource.data && resource.data.sellerId == request.auth.uid) ||
         isVerifier()
       );
 

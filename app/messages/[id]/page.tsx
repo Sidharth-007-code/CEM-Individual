@@ -21,7 +21,14 @@ import { db } from "@/lib/firebase";
 import { Conversation, ChatMessage } from "@/types/chat";
 import { UserProfile } from "@/types/user";
 import { PRESET_AVATARS } from "@/lib/constants";
-import { ChevronLeft, Send, User, ExternalLink, ShieldAlert, Phone } from "lucide-react";
+import { ChevronLeft, Send, ExternalLink, ShieldAlert, Phone } from "lucide-react";
+import { Avatar, Badge, Button, Card, Input } from "@/components/ui";
+
+function formatMessageTime(timestamp: any) {
+  const date = timestamp?.toDate?.();
+  if (!date) return "";
+  return new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" }).format(date);
+}
 
 export default function ConversationDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +40,7 @@ export default function ConversationDetailPage() {
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [messageLoadError, setMessageLoadError] = useState(false);
   const [otherProfile, setOtherProfile] = useState<UserProfile | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -106,6 +114,7 @@ export default function ConversationDetailPage() {
       },
       (err) => {
         console.warn("Messages subcollection error:", err.message);
+        setMessageLoadError(true);
       }
     );
 
@@ -164,27 +173,26 @@ export default function ConversationDetailPage() {
   if (loading) {
     return (
       <div className="py-20 text-center space-y-3">
-        <div className="w-10 h-10 border-4 border-black border-t-brutal-yellow rounded-full animate-spin mx-auto" />
-        <p className="text-xs font-mono font-bold text-ink-600">Connecting to secure campus chat...</p>
+        <div className="w-9 h-9 border-4 border-modern-border border-t-modern-primary rounded-full animate-spin mx-auto" />
+        <p className="text-sm text-modern-text-secondary">Connecting to secure campus chat...</p>
       </div>
     );
   }
 
   if (!conversation) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white border-2 border-black rounded-2xl p-8 text-center space-y-4 shadow-brutal">
-        <ShieldAlert className="w-10 h-10 text-admin-600 mx-auto" />
-        <h2 className="font-sans text-2xl font-black text-black">Chat Unavailable</h2>
-        <p className="text-xs font-mono text-ink-600 leading-relaxed">
+      <Card variant="default" padding="lg" className="max-w-md mx-auto my-12 text-center space-y-4">
+        <ShieldAlert className="w-10 h-10 text-modern-error mx-auto" />
+        <h2 className="font-sans text-2xl font-semibold text-modern-text-primary">Chat Unavailable</h2>
+        <p className="text-sm text-modern-text-secondary leading-relaxed">
           You do not have permission to view this conversation, or it has been closed.
         </p>
-        <Link
-          href="/messages"
-          className="inline-block px-5 py-2.5 bg-brutal-yellow text-black rounded-xl border-2 border-black text-xs font-sans font-black shadow-[2px_2px_0px_#000] hover:bg-brutal-yellow-light"
-        >
+        <Link href="/messages" className="inline-flex">
+          <Button variant="primary">
           Return to Messages
+          </Button>
         </Link>
-      </div>
+      </Card>
     );
   }
 
@@ -193,40 +201,37 @@ export default function ConversationDetailPage() {
 
   return (
     <RouteGuard requireAuth={true}>
-      <div className="max-w-3xl mx-auto h-[calc(100vh-12rem)] flex flex-col bg-white border-2 border-black rounded-3xl shadow-brutal overflow-hidden">
+      <div className="max-w-3xl mx-auto h-[calc(100dvh-8rem)] min-h-[28rem] flex flex-col bg-white border border-modern-border rounded-2xl shadow-modern-lg overflow-hidden">
         
         {/* Chat Header */}
-        <div className="p-3.5 border-b-2 border-black bg-paper-100 flex items-center justify-between">
+        <div className="p-3 sm:p-4 border-b border-modern-border bg-modern-surface-hover flex items-center justify-between gap-2">
           <div className="flex items-center space-x-3">
             <Link
               href="/messages"
-              className="p-1.5 rounded-xl border-2 border-black bg-white text-black hover:bg-paper-200 shadow-[1.5px_1.5px_0px_#000] transition"
+              className="p-2 rounded-xl border border-modern-border bg-white text-modern-text-secondary hover:bg-modern-surface-hover transition"
               title="Back"
             >
               <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             </Link>
 
-            <div className="w-10 h-10 rounded-xl bg-brutal-yellow border-2 border-black flex items-center justify-center font-sans font-black text-black text-sm overflow-hidden shadow-[1.5px_1.5px_0px_#000] shrink-0">
-              {otherProfile?.photoURL ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={otherProfile.photoURL} alt={displayName} className="w-full h-full object-cover" />
-              ) : otherAvatarPreset ? (
-                <span className="text-base leading-none">{otherAvatarPreset.emoji}</span>
-              ) : (
-                <span>{displayName.charAt(0).toUpperCase()}</span>
-              )}
-            </div>
+            {otherAvatarPreset && !otherProfile?.photoURL ? (
+              <div className="w-10 h-10 rounded-xl bg-modern-primary-light border border-modern-border flex items-center justify-center text-lg shrink-0" aria-label={displayName}>
+                {otherAvatarPreset.emoji}
+              </div>
+            ) : (
+              <Avatar src={otherProfile?.photoURL} alt={displayName} fallback={displayName} size="md" shape="rounded" className="border border-modern-border" />
+            )}
 
             <div>
               <div className="flex items-center space-x-1.5">
-                <h2 className="font-sans font-black text-sm text-black">
+                <h2 className="font-sans font-semibold text-sm text-modern-text-primary">
                   {displayName}
                 </h2>
-                <span className="px-1.5 py-0.2 bg-brutal-green text-black text-[9px] font-mono font-bold rounded-md border border-black">
+                <Badge variant="success" size="xs">
                   Verified
-                </span>
+                </Badge>
               </div>
-              <span className="text-[11px] font-mono text-ink-600 block">
+              <span className="text-xs text-modern-text-tertiary block">
                 {otherProfile?.course ? `${otherProfile.course} ${otherProfile.year ? `• ${otherProfile.year}` : ""}` : (conversation.listingTitle ? `re: ${conversation.listingTitle}` : "MSRUAS Student")}
               </span>
             </div>
@@ -236,7 +241,7 @@ export default function ConversationDetailPage() {
             {otherProfile?.phone && (
               <a
                 href={`tel:${otherProfile.phone}`}
-                className="px-3 py-1.5 text-xs font-sans font-black text-black bg-white hover:bg-brutal-green border-2 border-black rounded-xl shadow-[1.5px_1.5px_0px_#000] transition flex items-center space-x-1"
+                className="px-3 py-2 text-xs font-semibold text-modern-text-primary bg-white hover:bg-modern-success-light border border-modern-border rounded-xl transition flex items-center space-x-1"
                 title={`Call ${displayName}`}
               >
                 <Phone className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -247,7 +252,7 @@ export default function ConversationDetailPage() {
             {conversation.listingId && (
               <Link
                 href={`/listings/${conversation.listingId}`}
-                className="px-3 py-1.5 text-xs font-sans font-black text-black bg-brutal-yellow hover:bg-brutal-yellow-light border-2 border-black rounded-xl shadow-[1.5px_1.5px_0px_#000] transition flex items-center space-x-1"
+                className="px-3 py-2 text-xs font-semibold text-modern-primary bg-modern-primary-light hover:bg-modern-surface-hover border border-modern-border rounded-xl transition flex items-center space-x-1"
               >
                 <span>View Item</span>
                 <ExternalLink className="w-3 h-3 stroke-[2.5]" />
@@ -257,15 +262,19 @@ export default function ConversationDetailPage() {
         </div>
 
         {/* Message Thread */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#FAF8F5]">
+        <div className="flex-1 p-3 sm:p-5 overflow-y-auto space-y-3 bg-modern-bg overscroll-contain">
           <div className="text-center my-2">
-            <span className="px-3 py-1 bg-white text-black font-mono font-bold rounded-xl text-[10px] border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
+            <Badge variant="secondary" size="sm">
               Institutional Peer-to-Peer Verified Chat
-            </span>
+            </Badge>
           </div>
 
-          {messages.length === 0 ? (
-            <div className="py-12 text-center text-xs font-mono font-bold text-ink-500">
+          {messageLoadError ? (
+            <div className="py-12 text-center text-sm text-modern-error" role="alert">
+              Messages could not be loaded. Please refresh to reconnect.
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="py-12 text-center text-sm text-modern-text-tertiary">
               Say hello! Inquire about condition, notes, or agree on a campus meetup spot.
             </div>
           ) : (
@@ -277,16 +286,16 @@ export default function ConversationDetailPage() {
                   className={`flex flex-col ${isMine ? "items-end" : "items-start"}`}
                 >
                   <div
-                    className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-xs font-mono font-bold leading-relaxed border-2 border-black shadow-[2px_2px_0px_#000] ${
+                    className={`max-w-[88%] sm:max-w-[78%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                       isMine
-                        ? "bg-brutal-yellow text-black rounded-br-none"
-                        : "bg-white text-black rounded-bl-none"
+                        ? "bg-modern-primary text-white rounded-br-md"
+                        : "bg-white text-modern-text-primary border border-modern-border rounded-bl-md shadow-modern-sm"
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.text}</p>
                   </div>
-                  <span className="text-[9px] font-mono font-bold text-ink-500 mt-1 px-1">
-                    {msg.senderName}
+                  <span className="text-[11px] text-modern-text-tertiary mt-1 px-1">
+                    {msg.senderName}{formatMessageTime(msg.createdAt) ? ` · ${formatMessageTime(msg.createdAt)}` : ""}
                   </span>
                 </div>
               );
@@ -296,23 +305,25 @@ export default function ConversationDetailPage() {
         </div>
 
         {/* Message Input Box */}
-        <form onSubmit={handleSendMessage} className="p-3.5 border-t-2 border-black bg-paper-50 flex items-center space-x-2.5">
-          <input
+        <form onSubmit={handleSendMessage} className="p-3 sm:p-4 border-t border-modern-border bg-white flex items-center gap-2.5">
+          <Input
             type="text"
             required
             placeholder="Type your message to agree on meetup..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            className="flex-1 px-4 py-2.5 bg-white border-2 border-black rounded-xl text-xs sm:text-sm font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
+            className="flex-1"
           />
-          <button
+          <Button
             type="submit"
             disabled={sending || !newMessage.trim()}
-            className="px-4 py-2.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black rounded-xl border-2 border-black font-sans font-black text-xs shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition flex items-center space-x-1.5 disabled:opacity-50"
+            variant="primary"
+            size="md"
+            aria-label="Send message"
+            leftIcon={<Send className="w-4 h-4" />}
           >
-            <Send className="w-3.5 h-3.5 stroke-[2.5]" />
             <span className="hidden sm:inline">Send</span>
-          </button>
+          </Button>
         </form>
       </div>
     </RouteGuard>

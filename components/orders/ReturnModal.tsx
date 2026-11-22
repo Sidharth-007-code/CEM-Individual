@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { RotateCcw, X, AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
+import { RotateCcw, X, AlertTriangle, RefreshCw } from "lucide-react";
+import { Button, Card, Select, Textarea } from "@/components/ui";
 
 interface ReturnModalProps {
   orderId: string;
@@ -73,88 +74,79 @@ export function ReturnModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white border-2 border-black rounded-3xl max-w-md w-full p-6 shadow-brutal space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-modern-primary/70 backdrop-blur-sm">
+      <Card variant="elevated" padding="md" className="max-w-md w-full space-y-4" role="dialog" aria-modal="true" aria-labelledby="return-modal-title">
         
-        <div className="flex justify-between items-start border-b-2 border-black/10 pb-3">
-          <div className="flex items-center space-x-2 text-black">
+        <div className="flex justify-between items-start border-b border-modern-border pb-3">
+          <div className="flex items-center space-x-2 text-modern-text-primary">
             <RotateCcw className="w-5 h-5 stroke-[2.5]" />
-            <h3 className="font-sans font-black text-lg text-black">
+            <h3 id="return-modal-title" className="font-sans font-semibold text-lg text-modern-text-primary">
               Request Order Return
             </h3>
           </div>
-          <button onClick={onClose} className="text-black hover:bg-paper-200 p-1.5 rounded-xl border border-black">
+          <Button type="button" onClick={onClose} variant="ghost" size="sm" aria-label="Close return request" className="p-1.5">
             <X className="w-4 h-4 stroke-[2.5]" />
-          </button>
+          </Button>
         </div>
 
-        <p className="text-xs font-mono text-ink-700">
-          Order for: <strong className="text-black">{listingTitle}</strong>
+        <p className="text-xs font-mono text-modern-text-secondary">
+          Order for: <strong className="text-modern-text-primary">{listingTitle}</strong>
         </p>
 
         {error && (
-          <div className="p-3 bg-admin-50 border-2 border-black text-admin-900 text-xs font-mono font-bold rounded-xl flex items-start space-x-2 shadow-[2px_2px_0px_#000]">
-            <AlertTriangle className="w-4 h-4 text-admin-600 flex-shrink-0 mt-0.5" />
+          <div className="p-3 bg-modern-error-light border border-modern-border text-modern-error text-xs font-mono font-semibold rounded-xl flex items-start space-x-2" role="alert">
+            <AlertTriangle className="w-4 h-4 text-modern-error flex-shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-sans font-black text-black uppercase tracking-wider mb-1">
-              Return Grounds
-            </label>
-            <select
+            <Select
+              label="Return Grounds"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
-            >
-              <option>Item condition does not match description</option>
-              <option>Wrong textbook edition or missing syllabus units</option>
-              <option>Defective scientific calculator or equipment</option>
-              <option>Seller did not arrive at scheduled meetup spot</option>
-            </select>
+              options={[
+                { value: "Item condition does not match description", label: "Item condition does not match description" },
+                { value: "Wrong textbook edition or missing syllabus units", label: "Wrong textbook edition or missing syllabus units" },
+                { value: "Defective scientific calculator or equipment", label: "Defective scientific calculator or equipment" },
+                { value: "Seller did not arrive at scheduled meetup spot", label: "Seller did not arrive at scheduled meetup spot" },
+              ]}
+            />
           </div>
 
           <div>
-            <label className="block text-xs font-sans font-black text-black uppercase tracking-wider mb-1">
-              Explanation for Seller / Administration
-            </label>
-            <textarea
+            <Textarea
+              label="Explanation for Seller / Administration"
               rows={3}
               required
               placeholder="Explain why the item is being returned..."
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-2 focus:ring-brutal-yellow"
+              className="text-sm"
             />
           </div>
 
           <div className="flex justify-end space-x-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3.5 py-2 text-xs font-mono font-bold text-ink-700 hover:text-black"
-            >
+            <Button type="button" onClick={onClose} variant="ghost" size="sm">
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={loading}
-              className="px-4 py-2.5 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition flex items-center space-x-1.5 disabled:opacity-50"
+              variant="primary"
+              size="md"
+              leftIcon={loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : undefined}
             >
               {loading ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Filing...</span>
-                </>
+                "Filing..."
               ) : (
-                <span>Submit Return Request</span>
+                "Submit Return Request"
               )}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

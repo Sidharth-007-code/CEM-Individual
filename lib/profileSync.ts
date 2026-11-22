@@ -44,6 +44,7 @@ export async function syncUserProfile(
     const isAcademicLocked =
       existingData.academicLocked === true ||
       Boolean(existingData.course && existingData.year && existingData.campus);
+    const photoURL = typeof data.photoURL === "string" ? data.photoURL : "";
 
     const trimmedData = {
       uid: userId,
@@ -65,7 +66,7 @@ export async function syncUserProfile(
       phone: (data.phone || "").trim(),
       bio: (data.bio || "").trim(),
       personalEmail: (data.personalEmail || "").trim(),
-      photoURL: data.photoURL || "",
+      photoURL,
       avatarId: data.avatarId || "",
       role: existingData.role || "student",
       status: existingData.status || "active",
@@ -111,10 +112,13 @@ export async function syncUserProfile(
     // 2. Synchronize Firebase Auth Profile (displayName & photoURL)
     if (auth.currentUser && auth.currentUser.uid === userId) {
       try {
-        await updateFirebaseProfile(auth.currentUser, {
+        const authProfileUpdate: { displayName: string; photoURL?: string } = {
           displayName: trimmedData.name,
-          photoURL: trimmedData.photoURL || null,
-        });
+        };
+        if (typeof data.photoURL === "string") {
+          authProfileUpdate.photoURL = photoURL;
+        }
+        await updateFirebaseProfile(auth.currentUser, authProfileUpdate);
       } catch (authErr) {
         console.warn("[ProfileSync] Firebase Auth profile update warning:", authErr);
       }

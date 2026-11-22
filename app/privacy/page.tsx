@@ -1,37 +1,33 @@
 import React from "react";
-import Link from "next/link";
-import { Shield, Lock, Eye, Cookie, ArrowLeft } from "lucide-react";
+import { Shield, ArrowLeft } from "lucide-react";
+import { Card, LinkButton } from "@/components/ui";
 
 export default function PrivacyPolicyPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 my-6">
       
       {/* Top Breadcrumb */}
-      <Link
-        href="/"
-        className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] hover:bg-paper-100 transition"
-      >
-        <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
+      <LinkButton href="/" variant="secondary" size="sm" leftIcon={<ArrowLeft className="w-4 h-4" />}>
         <span>Return to Campus Notice Board</span>
-      </Link>
+      </LinkButton>
 
-      <div className="border-b-2 border-black/10 pb-4 space-y-2">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brutal-green text-black rounded-xl text-xs font-mono font-black border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
+      <div className="border-b-2 border-modern-border/70 pb-4 space-y-2">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-modern-success-light text-modern-text-primary rounded-xl text-xs font-mono font-semibold border border-modern-border shadow-modern-sm">
           <Shield className="w-4 h-4 stroke-[2.5]" />
           <span>MSRUAS Academic Data Protection</span>
         </div>
-        <h1 className="font-sans text-3xl sm:text-4xl font-black text-black tracking-tight">
+        <h1 className="font-sans text-3xl sm:text-4xl font-semibold text-modern-text-primary tracking-tight">
           Campus Marketplace Privacy Policy
         </h1>
-        <p className="text-xs font-mono font-bold text-ink-600">
+        <p className="text-xs font-mono font-bold text-modern-text-tertiary">
           Last revised: Academic Term &bull; Applies to all @msruas.ac.in registered students.
         </p>
       </div>
 
-      <div className="bg-white border-2 border-black rounded-3xl p-6 sm:p-8 shadow-brutal space-y-6 text-xs sm:text-sm text-ink-900 leading-relaxed font-sans">
+      <Card variant="default" padding="lg" className="space-y-7 text-sm sm:text-base text-modern-text-primary leading-relaxed font-sans">
         
         <section className="space-y-2">
-          <h2 className="font-sans text-lg font-black text-black">
+          <h2 className="font-sans text-lg font-semibold text-modern-text-primary">
             1. Institutional Scope &amp; Purpose
           </h2>
           <p>
@@ -40,10 +36,10 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-sans text-lg font-black text-black">
+          <h2 className="font-sans text-lg font-semibold text-modern-text-primary">
             2. Information We Collect
           </h2>
-          <ul className="list-disc list-inside space-y-1.5 font-mono text-xs text-ink-800">
+          <ul className="list-disc list-inside space-y-1.5 font-mono text-xs text-modern-text-secondary">
             <li>
               <strong>Verified Institutional Email:</strong> Registration is restricted strictly to email addresses terminating in <code>@msruas.ac.in</code> (and departmental subdomains).
             </li>
@@ -63,13 +59,13 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-sans text-lg font-black text-black">
+          <h2 className="font-sans text-lg font-semibold text-modern-text-primary">
             3. Cookies &amp; Local Storage Usage
           </h2>
           <p>
             Campus Marketplace adheres to minimal data retention principles. We utilize:
           </p>
-          <ul className="list-disc list-inside space-y-1.5 font-mono text-xs text-ink-800">
+          <ul className="list-disc list-inside space-y-1.5 font-mono text-xs text-modern-text-secondary">
             <li>
               <strong>Essential Authentication Tokens:</strong> Firebase Auth session tokens to keep verified students securely authenticated.
             </li>
@@ -83,7 +79,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-sans text-lg font-black text-black">
+          <h2 className="font-sans text-lg font-semibold text-modern-text-primary">
             4. Inactivity Timeout &amp; Account Protection
           </h2>
           <p>
@@ -92,7 +88,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-sans text-lg font-black text-black">
+          <h2 className="font-sans text-lg font-semibold text-modern-text-primary">
             5. Safe Campus Meetup Zones &amp; CCTV Disclosure
           </h2>
           <p>
@@ -101,18 +97,18 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-sans text-lg font-black text-black">
+          <h2 className="font-sans text-lg font-semibold text-modern-text-primary">
             6. Moderation, Inquiries &amp; Official Contact
           </h2>
           <p>
             Students can report inappropriate listings using the &quot;Report Listing&quot; button. Listings receiving 3 reports are automatically hidden from public search pending administrative review. For privacy inquiries, account deletion, or marketplace assistance, contact the campus marketplace team at{" "}
-            <a href="mailto:campus.marketplace.ruas@gmail.com" className="font-mono font-black text-black underline hover:text-brutal-purple-dark">
+            <a href="mailto:campus.marketplace.ruas@gmail.com" className="font-mono font-semibold text-modern-text-primary underline hover:text-modern-primary">
               campus.marketplace.ruas@gmail.com
             </a>{" "}
             or visit the Dean of Student Affairs office.
           </p>
         </section>
-      </div>
+      </Card>
     </div>
   );
 }

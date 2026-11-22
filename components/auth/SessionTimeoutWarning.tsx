@@ -10,40 +10,40 @@ export function SessionTimeoutWarning() {
   if (!isWarningVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-[2px] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white border-3 border-black rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-[8px_8px_0px_#000] space-y-5 relative overflow-hidden bg-grid-pattern">
-        
+    <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-modern-surface border border-modern-border rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-modern-lg space-y-5 relative">
+
         {/* Top Accent Badge */}
-        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brutal-yellow border-2 border-black rounded-full shadow-[2px_2px_0px_#000] text-xs font-mono font-black text-black">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-modern-warm-light text-modern-warm-text border border-modern-warm/30 rounded-full text-xs font-mono font-semibold">
           <Clock className="w-3.5 h-3.5 animate-pulse" />
           <span>CAMPUS SESSION SECURITY</span>
         </div>
 
         <div className="space-y-2">
-          <h3 className="font-sans font-black text-2xl text-black tracking-tight flex items-center space-x-2">
+          <h3 className="font-semibold text-xl text-modern-text-primary tracking-tight flex items-center space-x-2">
             <span>Are You Still There?</span>
           </h3>
-          <p className="text-xs font-mono text-ink-700 leading-relaxed">
+          <p className="text-xs font-mono text-modern-text-tertiary leading-relaxed">
             No activity detected for 9 minutes. To protect your student account on shared university library and lab computers, your session will automatically terminate in:
           </p>
         </div>
 
         {/* Live Countdown Display */}
-        <div className="p-4 bg-paper-100 border-2 border-black rounded-2xl flex items-center justify-between shadow-[2px_2px_0px_#000]">
+        <div className="p-4 bg-modern-surface-hover border border-modern-border rounded-xl flex items-center justify-between shadow-modern-sm">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center font-mono font-black text-xs border border-black">
+            <div className="w-10 h-10 rounded-lg bg-modern-primary text-white flex items-center justify-center font-mono font-semibold text-xs border border-modern-primary/30">
               SEC
             </div>
-            <span className="text-3xl sm:text-4xl font-mono font-black text-black tracking-wider">
+            <span className="text-3xl sm:text-4xl font-mono font-semibold text-modern-text-primary tracking-wider">
               00:{secondsRemaining < 10 ? `0${secondsRemaining}` : secondsRemaining}
             </span>
           </div>
-          <span className="px-2.5 py-1 bg-admin-600 text-white text-[10px] font-mono font-black rounded-lg uppercase tracking-wider animate-pulse">
+          <span className="px-2.5 py-1 bg-modern-admin text-white text-[10px] font-mono font-semibold rounded-lg uppercase tracking-wider animate-pulse">
             Idle Warning
           </span>
         </div>
 
-        <p className="text-[11px] font-mono font-bold text-ink-600">
+        <p className="text-[11px] font-mono font-semibold text-modern-text-tertiary">
           Moving your mouse, tapping the screen, pressing any key, or clicking below will immediately refresh your 10-minute session.
         </p>
 
@@ -52,9 +52,9 @@ export function SessionTimeoutWarning() {
           <button
             type="button"
             onClick={resetActivityTimer}
-            className="w-full py-3 bg-brutal-yellow hover:bg-brutal-yellow-light text-black font-sans font-black text-xs rounded-xl border-2 border-black shadow-[3px_3px_0px_#000] hover:-translate-y-0.5 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center space-x-2"
+            className="w-full py-3 bg-modern-warm hover:bg-modern-warm-hover text-modern-warm-text font-semibold text-xs rounded-lg shadow-modern-sm hover:shadow-modern-md active:scale-[0.98] transition flex items-center justify-center space-x-2"
           >
-            <Sparkles className="w-4 h-4 text-black" />
+            <Sparkles className="w-4 h-4" />
             <span>Stay Logged In</span>
           </button>
         </div>

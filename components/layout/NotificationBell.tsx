@@ -7,6 +7,7 @@ import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc } from "f
 import { db } from "@/lib/firebase";
 import { InAppNotification } from "@/types/report";
 import Link from "next/link";
+import { Card } from "@/components/ui";
 
 export function NotificationBell() {
   const { user } = useAuth();
@@ -58,12 +59,15 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1.5 sm:p-2 text-black bg-white hover:bg-brutal-yellow/30 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] relative transition"
+        className="p-2 text-modern-text-secondary bg-modern-surface hover:bg-modern-surface-hover border border-modern-border rounded-xl shadow-modern-sm hover:shadow-modern-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-modern-accent focus-visible:ring-offset-2 relative transition"
         title="Notifications"
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
         <Bell className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.2 min-w-[18px] h-[18px] bg-brutal-pink text-white font-mono text-[9px] font-black rounded-full border border-black shadow-[1px_1px_0px_#000] flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1.5 -right-1.5 px-1.5 min-w-[18px] h-[18px] bg-modern-primary text-white font-mono text-[9px] font-semibold rounded-full border-2 border-modern-surface shadow-modern-sm flex items-center justify-center" aria-hidden="true">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -71,31 +75,33 @@ export function NotificationBell() {
 
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-40"
+          <button
+            type="button"
+            className="fixed inset-0 z-40 cursor-default"
             onClick={() => setIsOpen(false)}
+            aria-label="Close notifications"
           />
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-brutal border-2 border-black z-50 overflow-hidden">
-            <div className="p-3 border-b-2 border-black flex items-center justify-between bg-paper-100">
-              <h4 className="text-xs font-sans font-black tracking-wider uppercase text-black">
+          <Card variant="elevated" padding="none" className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] z-50 overflow-hidden">
+            <div className="p-3 border-b border-modern-border flex items-center justify-between bg-modern-surface-hover">
+              <h4 className="text-xs font-sans font-semibold tracking-wider uppercase text-modern-text-primary">
                 Campus Alerts
               </h4>
-              <span className="text-[10px] font-mono font-bold bg-white px-2 py-0.5 rounded-md border border-black text-black">
+              <span className="text-[10px] font-mono font-semibold bg-modern-surface px-2 py-0.5 rounded-lg border border-modern-border text-modern-text-secondary">
                 {unreadCount} unread
               </span>
             </div>
 
-            <div className="max-h-72 overflow-y-auto divide-y-2 divide-black/10">
+            <div className="max-h-72 overflow-y-auto divide-y divide-modern-border/70">
               {notifications.length === 0 ? (
-                <div className="p-6 text-center text-xs font-mono font-bold text-ink-500">
+                <div className="p-6 text-center text-xs font-mono font-medium text-modern-text-tertiary">
                   No campus notices at this time.
                 </div>
               ) : (
                 notifications.map((item) => (
                   <div
                     key={item.id}
-                    className={`p-3 text-xs flex items-start justify-between space-x-2 hover:bg-paper-100 transition ${
-                      !item.read ? "bg-brutal-yellow/20 font-medium" : ""
+                    className={`p-3 text-xs flex items-start justify-between space-x-2 hover:bg-modern-surface-hover transition-colors ${
+                      !item.read ? "bg-modern-primary-light/50 font-medium" : ""
                     }`}
                   >
                     <div className="flex-1">
@@ -103,19 +109,20 @@ export function NotificationBell() {
                         <Link
                           href={item.link}
                           onClick={() => setIsOpen(false)}
-                          className="text-black hover:underline font-medium line-clamp-2"
+                          className="text-modern-text-primary hover:text-modern-primary hover:underline font-medium line-clamp-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-modern-accent rounded-sm"
                         >
                           {item.text}
                         </Link>
                       ) : (
-                        <p className="text-ink-800 line-clamp-2">{item.text}</p>
+                        <p className="text-modern-text-secondary line-clamp-2">{item.text}</p>
                       )}
                     </div>
                     {!item.read && (
                       <button
                         onClick={(e) => markAsRead(item.id, e)}
-                        className="text-black hover:text-brutal-purple-dark p-1 rounded-md border border-black bg-white hover:bg-paper-100 shadow-[1px_1px_0px_#000] shrink-0"
+                        className="text-modern-text-tertiary hover:text-modern-primary p-1.5 rounded-lg border border-modern-border bg-modern-surface hover:bg-modern-surface-hover hover:shadow-modern-sm shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-modern-accent focus-visible:ring-offset-1"
                         title="Mark read"
+                        aria-label="Mark notification as read"
                       >
                         <Check className="w-3 h-3 stroke-[2.5]" />
                       </button>
@@ -124,7 +131,7 @@ export function NotificationBell() {
                 ))
               )}
             </div>
-          </div>
+          </Card>
         </>
       )}
     </div>

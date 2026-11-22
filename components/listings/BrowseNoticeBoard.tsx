@@ -3,26 +3,31 @@
 import React, { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Listing, CATEGORIES, ListingCategory } from "@/types/listing";
+import { Listing, CATEGORIES, ListingCategory, ListingCondition } from "@/types/listing";
 import { ListingCard } from "./ListingCard";
 import { VoiceSearch } from "./VoiceSearch";
-import { Search, SlidersHorizontal, Sparkles, Filter, X, ArrowUpDown } from "lucide-react";
+import { Search, SlidersHorizontal, Sparkles, Filter, X, ArrowUpDown, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { parseSearchIntentAI, rankListingsAI, getPersonalizedRecommendationsAI } from "@/lib/ai";
+import { Card, CardContent, CardHeader, CardGrid } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge, PillBadge } from "@/components/ui/Badge";
+import { Input, Select } from "@/components/ui/Input";
 
 interface BrowseNoticeBoardProps {
   initialCategory?: string;
 }
 
 export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || "all");
-  const [selectedCondition, setSelectedCondition] = useState<string>("all");
+  const [selectedCondition, setSelectedCondition] = useState<ListingCondition | "all">("all");
   const [sortBy, setSortBy] = useState<"newest" | "price_asc" | "price_desc">("newest");
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set());
 
@@ -47,31 +52,51 @@ export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
   }, [user]);
 
   // Query only available listings (FR-04, FR-06)
-  useEffect(() => {
-    setLoading(true);
-    const listingsRef = collection(db, "listings");
-    // Firestore rules only allow normal students to read available listings
-    const q = query(listingsRef, where("status", "==", "available"));
+useEffect(() => {
+  // Wait until Firebase finishes restoring the authentication session.
+  if (authLoading) return;
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snap) => {
-        const items = snap.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        })) as Listing[];
-        setListings(items);
-        setLoading(false);
-      },
-      (err) => {
-        console.warn("[BrowseNoticeBoard] Query error:", err.message);
-        setLoading(false);
-      }
-    );
+  // Do not query Firestore without an authenticated user.
+  if (!user) {
+    setListings([]);
+    setLoading(false);
+    return;
+  }
 
-    return () => unsubscribe();
-  }, []);
+  setLoading(true);
+  setError(null);
 
+  console.log("[Notice Board Auth Check]", {
+    uid: user.uid,
+    email: user.email,
+    authenticated: true,
+  });
+
+  const listingsRef = collection(db, "listings");
+  const q = query(listingsRef, where("status", "==", "available"));
+
+  const unsubscribe = onSnapshot(
+    q,
+    (snap) => {
+      const items = snap.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      })) as Listing[];
+
+      setListings(items);
+      setLoading(false);
+    },
+    (err) => {
+      console.error("[BrowseNoticeBoard] Full Firestore error:", err);
+      console.error("Error code:", err.code);
+      console.error("Error message:", err.message);
+      setError(err.message);
+      setLoading(false);
+    }
+  );
+
+  return () => unsubscribe();
+}, [user, authLoading]);
   // AI Search & Intent Parsing
   const searchIntent = parseSearchIntentAI(searchTerm);
 
@@ -107,190 +132,249 @@ export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
     });
   }
 
+  const hasActiveFilters = selectedCategory !== "all" || selectedCondition !== "all" || searchTerm;
+
+  const conditionOptions = [
+    { value: "all", label: "All Conditions" },
+    { value: "new", label: "Brand New" },
+    { value: "like_new", label: "Like New" },
+    { value: "good", label: "Good" },
+    { value: "fair", label: "Fair" },
+  ];
+
+  const sortOptions = [
+    { value: "newest", label: "Newest First" },
+    { value: "price_asc", label: "Price: Low to High" },
+    { value: "price_desc", label: "Price: High to Low" },
+  ];
+
   return (
     <div className="space-y-6">
-      
-      {/* Search & Voice Search Bar - Neo-Brutalist Design */}
-      <div className="bg-white border-2 border-black rounded-2xl p-3.5 shadow-brutal flex flex-col sm:flex-row items-center gap-3">
+      {/* Search & Voice Search Bar */}
+      <Card variant="outlined" padding="md" className="flex flex-col sm:flex-row items-center gap-4">
         <div className="relative flex-1 w-full flex items-center">
-          <Search className="w-4 h-4 text-black absolute left-3.5" />
-          <input
+          <Search className="w-4 h-4 text-modern-text-tertiary absolute left-3.5" aria-hidden="true" />
+          <Input
             type="text"
             placeholder="Search syllabus textbooks, Casio fx-991CW, lab coats, drafters..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-12 py-2.5 bg-paper-50 border-2 border-black rounded-xl text-xs sm:text-sm font-semibold text-black placeholder:text-ink-500 shadow-[2px_2px_0px_#000] focus:outline-none focus:bg-white transition-all"
+            className="pl-10 pr-12"
+            rightElement={
+              <VoiceSearch onTranscript={(text) => setSearchTerm(text)} />
+            }
           />
-          <div className="absolute right-2.5">
-            <VoiceSearch onTranscript={(text) => setSearchTerm(text)} />
-          </div>
         </div>
 
         {/* Condition Filter & Sort Dropdowns */}
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-          <select
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+          <Select
             value={selectedCondition}
-            onChange={(e) => setSelectedCondition(e.target.value)}
-            className="px-3 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none cursor-pointer"
-          >
-            <option value="all">All Conditions</option>
-            <option value="new">Brand New</option>
-            <option value="like_new">Like New</option>
-            <option value="good">Good</option>
-            <option value="fair">Fair</option>
-          </select>
+            onChange={(e) => setSelectedCondition(e.target.value as ListingCondition | "all")}
+            options={conditionOptions}
+            placeholder="Condition"
+            className="w-40 sm:w-auto min-w-[140px]"
+          />
 
-          <select
+          <Select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] focus:outline-none cursor-pointer"
-          >
-            <option value="newest">Newest First</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-          </select>
+            onChange={(e) => setSortBy(e.target.value as "newest" | "price_asc" | "price_desc")}
+            options={sortOptions}
+            placeholder="Sort"
+            className="w-40 sm:w-auto min-w-[160px]"
+          />
 
-          {(selectedCategory !== "all" || selectedCondition !== "all" || searchTerm) && (
-            <button
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setSelectedCategory("all");
                 setSelectedCondition("all");
                 setSearchTerm("");
               }}
-              className="p-2.5 bg-brutal-pink hover:bg-brutal-pink-dark text-black border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
-              title="Reset all filters"
+              leftIcon={<X className="w-3.5 h-3.5" />}
+              className="hidden sm:inline-flex"
             >
-              <X className="w-3.5 h-3.5" />
-            </button>
+              Clear Filters
+            </Button>
+          )}
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedCategory("all");
+                setSelectedCondition("all");
+                setSearchTerm("");
+              }}
+              className="inline-flex sm:hidden"
+              aria-label="Clear all filters"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* AI Semantic Search Signal Chips */}
       {searchTerm.trim() && (
-        <div className="p-3 bg-white border-2 border-black rounded-2xl flex flex-wrap items-center gap-2 text-xs shadow-brutal animate-in fade-in">
-          <span className="font-sans font-black text-black flex items-center space-x-1.5 mr-1">
-            <Sparkles className="w-4 h-4 text-brutal-purple" />
-            <span>AI Search Assistant:</span>
-          </span>
-          {searchIntent.detectedCategory && (
-            <span className="px-2.5 py-1 bg-brutal-yellow text-black rounded-lg border-2 border-black font-mono text-[10px] font-black shadow-[1.5px_1.5px_0px_#000]">
-              Category: {searchIntent.detectedCategory}
+        <Card variant="outlined" padding="sm" className="animate-in fade-in slide-in-from-top-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-sans font-semibold text-sm text-modern-text-primary flex items-center space-x-1.5">
+              <Sparkles className="w-4 h-4 text-modern-primary" aria-hidden="true" />
+              <span>AI Search Assistant:</span>
             </span>
-          )}
-          {searchIntent.maxPrice && (
-            <span className="px-2.5 py-1 bg-brutal-green text-black rounded-lg border-2 border-black font-mono text-[10px] font-black shadow-[1.5px_1.5px_0px_#000]">
-              Budget: Under ₹{searchIntent.maxPrice.toLocaleString("en-IN")}
+            {searchIntent.detectedCategory && (
+              <Badge variant="primary" size="xs">
+                Category: {searchIntent.detectedCategory}
+              </Badge>
+            )}
+            {searchIntent.maxPrice && (
+              <Badge variant="warm" size="xs">
+                Budget: Under ₹{searchIntent.maxPrice.toLocaleString("en-IN")}
+              </Badge>
+            )}
+            {searchIntent.detectedCondition && (
+              <Badge variant="success" size="xs" className="capitalize">
+                Condition: {searchIntent.detectedCondition.replace("_", " ")}
+              </Badge>
+            )}
+            {searchIntent.isSpecificModel && (
+              <Badge variant="secondary" size="xs">
+                Specific Model Match
+              </Badge>
+            )}
+            <span className="text-xs font-mono text-modern-text-tertiary ml-auto">
+              {filteredListings.length} item(s) matched
             </span>
-          )}
-          {searchIntent.detectedCondition && (
-            <span className="px-2.5 py-1 bg-brutal-purple-light text-black rounded-lg border-2 border-black font-mono text-[10px] font-bold shadow-[1.5px_1.5px_0px_#000]">
-              Condition: {searchIntent.detectedCondition}
-            </span>
-          )}
-          {searchIntent.isSpecificModel && (
-            <span className="px-2.5 py-1 bg-brutal-pink text-black rounded-lg border-2 border-black font-mono text-[10px] font-black shadow-[1.5px_1.5px_0px_#000]">
-              Specific Model Match
-            </span>
-          )}
-          <span className="text-[11px] text-ink-600 ml-auto font-mono font-bold">
-            {filteredListings.length} item(s) matched
-          </span>
-        </div>
+          </div>
+        </Card>
       )}
 
       {/* AI Personalized Recommendations Section for Logged-In Student */}
       {personalizedRecs.length > 0 && selectedCategory === "all" && !searchTerm && (
-        <div className="bg-white border-2 border-black rounded-3xl p-5 shadow-brutal space-y-4">
-          <div className="flex items-center justify-between border-b border-black/10 pb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 rounded-lg bg-brutal-yellow border-2 border-black shadow-[1.5px_1.5px_0px_#000] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-black" />
-              </div>
-              <h2 className="font-sans font-black text-base text-black">
-                AI Recommended For You
-              </h2>
-              <span className="text-[10px] font-mono font-bold bg-brutal-purple-light text-brutal-purple-dark px-2.5 py-0.5 rounded-full border border-black">
+        <Card variant="elevated" padding="lg" className="space-y-4">
+          <CardHeader
+            title="AI Recommended For You"
+            subtitle="Personalized campus feed"
+            action={
+              <Badge variant="warm" size="xs">
                 {profile?.course ? profile.course.split("-")[0]?.trim() : "Curated Student Gear"}
-              </span>
-            </div>
-            <span className="text-[11px] text-ink-600 font-mono font-bold hidden sm:inline">
-              Personalized Campus Feed
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {personalizedRecs.map((rec) => (
-              <div key={rec.listing.id} className="flex flex-col">
-                <span className="mb-1.5 inline-flex items-center self-start px-2 py-0.5 bg-black text-white text-[9px] font-mono font-bold rounded-md border border-black shadow-[1px_1px_0px_#000] truncate max-w-full">
-                  ★ {rec.recommendationReason}
-                </span>
-                <ListingCard listing={rec.listing} isWishlistedInitial={wishlistIds.has(rec.listing.id)} />
-              </div>
-            ))}
-          </div>
-        </div>
+              </Badge>
+            }
+            className="border-b border-modern-border/50 pb-3"
+          />
+          <CardContent className="pt-0">
+            <CardGrid cols={4} gap="md">
+              {personalizedRecs.map((rec) => (
+                <div key={rec.listing.id} className="flex flex-col">
+                  <Badge variant="primary" size="xs" className="mb-2 self-start">
+                    {rec.recommendationReason}
+                  </Badge>
+                  <ListingCard listing={rec.listing} isWishlistedInitial={wishlistIds.has(rec.listing.id)} />
+                </div>
+              ))}
+            </CardGrid>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Category Pills Bar - Neo-Brutalist Pills */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none">
-        <button
+      {/* Category Pills Bar */}
+      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+        <PillBadge
+          active={selectedCategory === "all"}
+          variant="primary"
+          size="sm"
+          count={listings.length}
           onClick={() => setSelectedCategory("all")}
-          className={`px-4 py-2 rounded-xl text-xs font-mono font-black whitespace-nowrap border-2 border-black transition-all ${
-            selectedCategory === "all"
-              ? "bg-brutal-yellow text-black shadow-[2.5px_2.5px_0px_#000] -translate-y-0.5"
-              : "bg-white hover:bg-paper-100 text-black shadow-[1.5px_1.5px_0px_#000]"
-          }`}
+          className="whitespace-nowrap"
         >
-          All Items ({listings.length})
-        </button>
+          All Items
+        </PillBadge>
 
         {CATEGORIES.map((cat) => {
           const count = listings.filter((l) => l.category === cat).length;
           const isSelected = selectedCategory === cat;
           return (
-            <button
+            <PillBadge
               key={cat}
+              active={isSelected}
+              variant="secondary"
+              size="sm"
+              count={count}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-mono font-black whitespace-nowrap border-2 border-black transition-all ${
-                isSelected
-                  ? "bg-brutal-yellow text-black shadow-[2.5px_2.5px_0px_#000] -translate-y-0.5"
-                  : "bg-white hover:bg-paper-100 text-black shadow-[1.5px_1.5px_0px_#000]"
-              }`}
+              className="whitespace-nowrap"
             >
-              {cat} ({count})
-            </button>
+              {cat}
+            </PillBadge>
           );
         })}
       </div>
 
       {/* Listings Grid */}
       {loading ? (
-        <div className="py-16 text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-black border-t-brutal-yellow rounded-full animate-spin mx-auto shadow-[2px_2px_0px_#000]" />
-          <p className="text-xs font-mono font-bold text-ink-700">Gathering campus notice board items...</p>
-        </div>
-      ) : filteredListings.length === 0 ? (
-        <div className="bg-white border-2 border-black rounded-3xl p-12 text-center space-y-3 shadow-brutal">
-          <div className="w-14 h-14 bg-brutal-yellow border-2 border-black rounded-2xl flex items-center justify-center mx-auto shadow-[3px_3px_0px_#000]">
-            <Filter className="w-7 h-7 text-black" />
+        <Card variant="outlined" padding="lg" className="space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} variant="outlined" padding="none" className="animate-pulse h-72">
+                <div className="aspect-[4/3] bg-modern-surface-hover rounded-t-2xl" />
+                <CardContent className="p-4 space-y-3">
+                  <div className="h-4 bg-modern-surface-hover rounded w-3/4 animate-pulse" />
+                  <div className="h-3 bg-modern-surface-hover rounded w-1/2 animate-pulse" />
+                  <div className="h-6 bg-modern-surface-hover rounded w-1/4 animate-pulse mt-auto" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
-          <h3 className="font-sans text-xl font-black text-black">
+          <p className="text-sm font-mono text-modern-text-tertiary text-center">Gathering campus notice board items...</p>
+        </Card>
+      ) : error ? (
+        <Card variant="outlined" padding="lg" className="text-center space-y-4 border-modern-danger/50">
+          <div className="w-14 h-14 bg-modern-danger-light border border-modern-danger/30 rounded-2xl flex items-center justify-center mx-auto">
+            <Loader2 className="w-7 h-7 text-modern-danger animate-spin" aria-hidden="true" />
+          </div>
+          <h3 className="font-sans text-lg font-semibold text-modern-text-primary">
+            Unable to Load Listings
+          </h3>
+          <p className="text-sm text-modern-text-tertiary max-w-sm mx-auto">
+            {error}
+          </p>
+          <Button variant="primary" leftIcon={<Loader2 className="w-4 h-4" />} onClick={() => window.location.reload()}>
+            Retry
+          </Button>
+        </Card>
+      ) : filteredListings.length === 0 ? (
+        <Card variant="outlined" padding="lg" className="text-center space-y-4">
+          <div className="w-14 h-14 bg-modern-surface-hover border border-modern-border rounded-2xl flex items-center justify-center mx-auto">
+            <Filter className="w-7 h-7 text-modern-text-tertiary" aria-hidden="true" />
+          </div>
+          <h3 className="font-sans text-lg font-semibold text-modern-text-primary">
             No Listings Found
           </h3>
-          <p className="text-xs font-semibold text-ink-700 max-w-sm mx-auto">
+          <p className="text-sm text-modern-text-tertiary max-w-sm mx-auto">
             {searchTerm || selectedCategory !== "all"
               ? "No items match your active filters. Try a different search query or reset filters."
               : "No verified listings on the notice board yet. Check back soon or post the first item!"}
           </p>
-        </div>
+          {hasActiveFilters && (
+            <Button variant="outline" leftIcon={<X className="w-4 h-4" />} onClick={() => {
+              setSelectedCategory("all");
+              setSelectedCondition("all");
+              setSearchTerm("");
+            }}>
+              Reset Filters
+            </Button>
+          )}
+        </Card>
       ) : (
         <div>
-          <div className="flex justify-between items-center mb-4 text-xs font-mono font-bold text-ink-700">
-            <span>Showing <strong className="text-black">{filteredListings.length}</strong> verified campus item(s)</span>
+          <div className="flex justify-between items-center mb-4 text-sm font-mono text-modern-text-tertiary">
+            <span>Showing <strong className="text-modern-text-primary">{filteredListings.length}</strong> verified campus item(s)</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <CardGrid cols={4} gap="md">
             {filteredListings.map((listing) => (
               <ListingCard
                 key={listing.id}
@@ -298,10 +382,9 @@ export function BrowseNoticeBoard({ initialCategory }: BrowseNoticeBoardProps) {
                 isWishlistedInitial={wishlistIds.has(listing.id)}
               />
             ))}
-          </div>
+          </CardGrid>
         </div>
       )}
     </div>
   );
 }
-

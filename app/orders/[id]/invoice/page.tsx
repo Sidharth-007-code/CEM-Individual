@@ -8,7 +8,8 @@ import { db } from "@/lib/firebase";
 import { Order } from "@/types/order";
 import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
-import { Printer, ChevronLeft, ShieldCheck, Download, AlertCircle } from "lucide-react";
+import { Printer, ChevronLeft, AlertCircle } from "lucide-react";
+import { Badge, Button, Card } from "@/components/ui";
 
 export default function OrderInvoicePage() {
   const { id } = useParams<{ id: string }>();
@@ -45,22 +46,22 @@ export default function OrderInvoicePage() {
   if (loading) {
     return (
       <div className="py-20 text-center space-y-3">
-        <div className="w-10 h-10 border-4 border-black border-t-brutal-yellow rounded-full animate-spin mx-auto" />
-        <p className="text-xs font-mono font-bold text-ink-600">Generating student handover invoice...</p>
+        <div className="w-9 h-9 border-4 border-modern-border border-t-modern-primary rounded-full animate-spin mx-auto" />
+        <p className="text-xs font-mono font-bold text-modern-text-tertiary">Generating student handover invoice...</p>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white border-2 border-black rounded-2xl p-8 text-center space-y-4 shadow-brutal">
-        <AlertCircle className="w-10 h-10 text-admin-600 mx-auto" />
-        <h2 className="font-sans text-2xl font-black text-black">Invoice Unavailable</h2>
-        <p className="text-xs font-mono text-ink-600">You do not have authorization to view this invoice.</p>
-        <Link href="/orders" className="inline-block px-5 py-2.5 bg-brutal-yellow text-black border-2 border-black rounded-xl text-xs font-sans font-black shadow-[2px_2px_0px_#000] hover:bg-brutal-yellow-light">
+      <Card variant="default" padding="lg" className="max-w-md mx-auto my-12 text-center space-y-4">
+        <AlertCircle className="w-10 h-10 text-modern-error mx-auto" />
+        <h2 className="font-sans text-2xl font-semibold text-modern-text-primary">Invoice Unavailable</h2>
+        <p className="text-xs font-mono text-modern-text-tertiary">You do not have authorization to view this invoice.</p>
+        <Link href="/orders" className="inline-flex px-5 py-2.5 bg-modern-primary hover:bg-modern-primary-hover text-white rounded-xl text-sm font-semibold shadow-modern-sm transition-colors">
           Return to Orders
         </Link>
-      </div>
+      </Card>
     );
   }
 
@@ -71,51 +72,52 @@ export default function OrderInvoicePage() {
       <div className="max-w-3xl mx-auto space-y-6">
         
         {/* Screen Action Bar (Hidden in Print) */}
-        <div className="no-print flex justify-between items-center border-b-2 border-black/10 pb-4">
+        <div className="no-print flex justify-between items-center border-b border-modern-border pb-4 gap-3">
           <Link
             href={`/orders/${order.id}`}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border-2 border-black rounded-xl text-xs font-mono font-bold text-black shadow-[2px_2px_0px_#000] hover:bg-paper-100 transition"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-modern-border rounded-xl text-xs font-mono font-bold text-modern-text-primary shadow-modern-sm hover:bg-modern-surface-hover transition"
           >
             <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             <span>Back to Order Tracking</span>
           </Link>
 
-          <button
+          <Button
             onClick={handlePrint}
-            className="px-4 py-2 bg-brutal-yellow hover:bg-brutal-yellow-light text-black text-xs font-sans font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] transition flex items-center space-x-2"
+            variant="primary"
+            size="sm"
+            leftIcon={<Printer className="w-4 h-4" />}
           >
-            <Printer className="w-4 h-4 stroke-[2.5]" />
             <span>Print / Save as PDF</span>
-          </button>
+          </Button>
         </div>
 
         {/* Printable University Invoice Document */}
-        <div className="bg-white border-2 border-black rounded-3xl p-8 sm:p-12 shadow-brutal print:border-none print:shadow-none print:p-0 space-y-8">
+        <div className="bg-white border border-modern-border rounded-2xl p-6 sm:p-10 shadow-modern-sm print:border-none print:shadow-none print:p-0 print:rounded-none print:space-y-6 space-y-8">
           
           {/* Header Masthead */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-black pb-6 gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-modern-border pb-6 gap-4">
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-sans text-2xl font-black tracking-tight text-black uppercase">
+                <span className="font-sans text-2xl font-semibold tracking-tight text-modern-text-primary uppercase">
                   Campus Market
                 </span>
-                <span className="text-[10px] font-mono font-black px-2 py-0.5 bg-brutal-yellow text-black rounded-md border border-black shadow-[1px_1px_0px_#000]">
+                <Badge variant="warm" size="xs">
                   RUAS VERIFIED
-                </span>
+                </Badge>
               </div>
-              <p className="text-xs font-mono font-bold text-ink-600 mt-1">
+              <p className="text-xs font-mono font-bold text-modern-text-tertiary mt-1">
                 M.S. Ramaiah University of Applied Sciences &bull; Student Exchange Record
               </p>
             </div>
 
             <div className="text-left sm:text-right">
-              <span className="font-sans font-black text-xl text-black block tracking-tight">
+              <span className="font-sans font-semibold text-xl text-modern-text-primary block tracking-tight">
                 OFFICIAL INVOICE
               </span>
-              <span className="font-mono text-xs font-black text-ink-800 block mt-0.5">
+              <span className="font-mono text-xs font-semibold text-modern-text-secondary block mt-0.5">
                 {invoiceNumber}
               </span>
-              <span className="text-[11px] text-ink-500 font-mono block">
+              <span className="text-[11px] text-modern-text-tertiary font-mono block">
                 Issued: {new Date().toLocaleDateString("en-IN", { dateStyle: "long" })}
               </span>
             </div>
@@ -124,53 +126,57 @@ export default function OrderInvoicePage() {
           {/* Student Parties Grid */}
           <div className="grid grid-cols-2 gap-6 text-xs font-mono">
             <div className="space-y-1">
-              <span className="font-sans font-black text-ink-500 uppercase tracking-wider block">
+              <span className="font-sans font-semibold text-modern-text-tertiary uppercase tracking-wider block">
                 Buyer (Student):
               </span>
-              <span className="font-sans font-black text-base text-black block">
+              <span className="font-sans font-semibold text-base text-modern-text-primary block">
                 {order.buyerName}
               </span>
-              <span className="text-ink-600 block">
+              <span className="text-modern-text-tertiary block">
                 ID: {order.buyerId.slice(0, 10)}
               </span>
-              <span className="text-ink-600 block">
+              <span className="text-modern-text-tertiary block">
                 MSRUAS Enrolled Student
               </span>
             </div>
 
             <div className="space-y-1">
-              <span className="font-sans font-black text-ink-500 uppercase tracking-wider block">
+              <span className="font-sans font-semibold text-modern-text-tertiary uppercase tracking-wider block">
                 Seller (Student):
               </span>
-              <span className="font-sans font-black text-base text-black block">
+              <span className="font-sans font-semibold text-base text-modern-text-primary block">
                 {order.sellerName}
               </span>
-              <span className="text-ink-600 block">
+              <span className="text-modern-text-tertiary block">
                 ID: {order.sellerId.slice(0, 10)}
               </span>
-              <span className="text-ink-600 block">
+              <span className="text-modern-text-tertiary block">
                 MSRUAS Enrolled Student
               </span>
             </div>
           </div>
 
           {/* Handover & Payment Info */}
-          <div className="p-4 bg-paper-50 rounded-2xl border-2 border-black grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono shadow-[2px_2px_0px_#000]">
+          <div className="p-4 bg-modern-bg rounded-2xl border border-modern-border grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono shadow-modern-sm">
             <div>
-              <span className="font-sans font-black text-ink-600 block">Designated Meetup Spot:</span>
-              <span className="text-black font-bold">{order.meetupSpot || "Main Campus"}</span>
+              <span className="font-sans font-semibold text-modern-text-tertiary block">Designated Meetup Spot:</span>
+              <span className="text-modern-text-primary font-bold">{order.meetupSpot || "Main Campus"}</span>
             </div>
             <div>
-              <span className="font-sans font-black text-ink-600 block">Payment Method:</span>
-              <span className="text-black font-bold">
+              <span className="font-sans font-semibold text-modern-text-tertiary block">Payment Method:</span>
+              <span className="text-modern-text-primary font-bold">
                 {order.paymentMethod === "cash" ? "Cash at Meetup" : "Simulated UPI (Mocked)"}
               </span>
             </div>
             <div>
-              <span className="font-sans font-black text-ink-600 block">Payment Status:</span>
-              <span className="text-black font-black uppercase">
+              <span className="font-sans font-semibold text-modern-text-tertiary block">Payment Status:</span>
+              <Badge
+                variant={order.paymentStatus === "success" ? "success" : order.paymentStatus === "failed" ? "secondary" : "warning"}
+                size="xs"
+                className={order.paymentStatus === "failed" ? "!bg-modern-error-light !text-modern-error !border-modern-error/30" : ""}
+              >
                 {order.paymentStatus}
-              </span>
+              </Badge>
             </div>
           </div>
 
@@ -178,32 +184,32 @@ export default function OrderInvoicePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
               <thead>
-                <tr className="border-b-2 border-black font-sans font-black text-black uppercase tracking-wider">
+                <tr className="border-b border-modern-border font-sans font-semibold text-modern-text-primary uppercase tracking-wider">
                   <th className="py-2.5">Item Description</th>
                   <th className="py-2.5 text-center">Qty</th>
                   <th className="py-2.5 text-right">Price (₹)</th>
                   <th className="py-2.5 text-right">Total (₹)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-black/10">
+              <tbody className="divide-y divide-modern-border/70">
                 <tr>
                   <td className="py-3">
-                    <span className="font-sans font-black text-black text-sm block">
+                    <span className="font-sans font-semibold text-modern-text-primary text-sm block">
                       {order.listingTitle}
                     </span>
-                    <span className="text-ink-500 font-mono text-[10px]">
+                    <span className="text-modern-text-tertiary font-mono text-[10px]">
                       Listing Ref: {order.listingId}
                     </span>
                   </td>
                   <td className="py-3 text-center font-mono font-bold">1</td>
                   <td className="py-3 text-right font-mono font-bold">₹{order.price.toLocaleString("en-IN")}</td>
-                  <td className="py-3 text-right font-mono font-black">₹{order.price.toLocaleString("en-IN")}</td>
+                  <td className="py-3 text-right font-mono font-semibold">₹{order.price.toLocaleString("en-IN")}</td>
                 </tr>
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-black font-sans font-black text-sm">
+                <tr className="border-t border-modern-border font-sans font-semibold text-sm">
                   <td colSpan={3} className="py-4 text-right">Total Exchange Amount:</td>
-                  <td className="py-4 text-right font-mono font-black text-lg text-black">
+                  <td className="py-4 text-right font-mono font-semibold text-lg text-modern-text-primary">
                     ₹{order.price.toLocaleString("en-IN")}
                   </td>
                 </tr>
@@ -212,8 +218,8 @@ export default function OrderInvoicePage() {
           </div>
 
           {/* Compliance & Student Notice */}
-          <div className="border-t-2 border-black/10 pt-6 text-[11px] font-mono text-ink-600 leading-relaxed space-y-1">
-            <p className="font-sans font-black text-black">MSRUAS Academic Fair-Trade Compliance</p>
+          <div className="border-t border-modern-border pt-6 text-[11px] font-mono text-modern-text-tertiary leading-relaxed space-y-1">
+            <p className="font-sans font-semibold text-modern-text-primary">MSRUAS Academic Fair-Trade Compliance</p>
             <p>
               This document serves as an academic proof of peer-to-peer textbook and resource exchange.
               Neither the university nor the course coordinators charge platform fees or act as escrow holders.

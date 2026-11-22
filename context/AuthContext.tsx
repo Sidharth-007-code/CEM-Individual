@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
   User,
   onAuthStateChanged,
@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [studentMode, setStudentModeState] = useState<"buy" | "sell">("buy");
   const [isWarningVisible, setIsWarningVisible] = useState<boolean>(false);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(60);
+  const profileUnsubscribeRef = useRef<(() => void) | null>(null);
 
   // Restore preferred mode from localStorage if available
   useEffect(() => {
@@ -213,19 +214,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   useEffect(() => {
+    let activeProfileUid: string | null = null;
+
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      // Auth callbacks do not use returned values, so explicitly tear down the
+      // prior profile listener before handling logout or an account switch.
+      profileUnsubscribeRef.current?.();
+      profileUnsubscribeRef.current = null;
+      activeProfileUid = firebaseUser?.uid ?? null;
       setUser(firebaseUser);
+      setProfile(null);
+      setLoading(true);
+
       if (!firebaseUser) {
-        setProfile(null);
         setLoading(false);
         return;
       }
 
       // Real-time listener for user profile document
       const userDocRef = doc(db, "users", firebaseUser.uid);
-      const unsubscribeDoc = onSnapshot(
+      profileUnsubscribeRef.current = onSnapshot(
         userDocRef,
         (snap) => {
+          if (
+            activeProfileUid !== firebaseUser.uid ||
+            auth.currentUser?.uid !== firebaseUser.uid
+          ) return;
+
           if (snap.exists()) {
             setProfile(snap.data() as UserProfile);
           } else {
@@ -259,15 +274,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false);
         },
         (error) => {
+          if (
+            activeProfileUid !== firebaseUser.uid ||
+            auth.currentUser?.uid !== firebaseUser.uid
+          ) return;
+
           console.warn("[AuthContext] Profile subscription warning:", error.message);
+          setProfile(null);
           setLoading(false);
         }
       );
-
-      return () => unsubscribeDoc();
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      activeProfileUid = null;
+      profileUnsubscribeRef.current?.();
+      profileUnsubscribeRef.current = null;
+      unsubscribeAuth();
+    };
   }, []);
 
   const signIn = async (email: string, pass: string) => {
@@ -275,6 +299,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    profileUnsubscribeRef.current?.();
+    profileUnsubscribeRef.current = null;
     await firebaseSignOut(auth);
     setProfile(null);
     setUser(null);
@@ -282,8 +308,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = async () => {
     if (!user) return;
+    const requestedUid = user.uid;
     try {
-      const snap = await getDoc(doc(db, "users", user.uid));
+      const snap = await getDoc(doc(db, "users", requestedUid));
+      if (auth.currentUser?.uid !== requestedUid) return;
+
       if (snap.exists()) {
         setProfile(snap.data() as UserProfile);
       }

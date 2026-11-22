@@ -25,6 +25,9 @@ const sansFont = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Campus Marketplace | Verified MSRUAS Student Buy & Sell",
   description: "Official student buy-and-sell portal for M.S. Ramaiah University of Applied Sciences. Student-to-student safe verified exchanges.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
