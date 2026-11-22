@@ -86,7 +86,7 @@ flowchart LR
 
 ### Registration and OTP flow
 
-~~~mermaid
+```mermaid
 sequenceDiagram
     actor Student
     participant Page as Register page
@@ -98,13 +98,13 @@ sequenceDiagram
     Student->>Page: Submit university email
     Page->>API: Request one-time code
     API->>Store: Store expiring OTP digest
-    API->>Mail: SMTP delivery when configured; development echo can log the code
+    API->>Mail: Send email or log development OTP
     Student->>Page: Submit code and registration details
     Page->>API: Verify code
     API->>Admin: Create Auth account
     API->>Store: Create users/{uid} with student role
-    API-->>Page: Registration result
-~~~
+    API-->>Page: Return registration result
+```
 
 ### Listing analysis and price suggestion
 
