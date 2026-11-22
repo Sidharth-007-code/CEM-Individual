@@ -301,26 +301,86 @@ describe("Firestore Security Rules Tests (CSC203B Verification)", () => {
     });
     await assertFails(badBatch.commit());
 
-    // Correct price (500) with atomic listing sold transition and tracking subcollection succeeds
-    const goodBatch = aliceDb.batch();
-    const newOrderRef = aliceDb.collection("orders").doc("order_legit_price");
-    goodBatch.set(newOrderRef, {
-      id: "order_legit_price",
+    // Buyer attempts to create order with incorrect sellerId (not the listing owner)
+    const wrongSellerBatch = aliceDb.batch();
+    wrongSellerBatch.set(aliceDb.collection("orders").doc("order_wrong_seller"), {
+      id: "order_wrong_seller",
       listingId: "listing_calc",
       buyerId: "student_alice",
-      sellerId: "student_bob",
-      price: 500, // Matches listing price exactly
+      sellerId: "fake_seller", // Not the actual listing owner (student_bob)
+      price: 500, // Correct price
       status: "created",
     });
-    goodBatch.update(aliceDb.collection("listings").doc("listing_calc"), {
+    wrongSellerBatch.update(aliceDb.collection("listings").doc("listing_calc"), {
       status: "sold",
     });
-    goodBatch.set(newOrderRef.collection("tracking").doc("trk_init"), {
-      status: "created",
-      note: "Initial order created with tracking",
-      at: new Date(),
-    });
-    await assertSucceeds(goodBatch.commit());
+    await assertFails(wrongSellerBatch.commit());
+
+    // Correct price (500) with transaction: read listing, create order, update listing to sold, add tracking
+    const orderId = "order_txn_legit_price";
+    await assertSucceeds(
+      aliceDb.runTransaction(async (tx) => {
+        const listingRef = aliceDb.collection("listings").doc("listing_calc");
+        const listingSnap = await tx.get(listingRef);
+        if (!listingSnap.exists) {
+          throw new Error("Listing not found");
+        }
+        const listingData = listingSnap.data() as { price: number };
+        const listingPrice = listingData.price;
+
+        // Create order with the actual listing price
+        const orderRef = aliceDb.collection("orders").doc(orderId);
+        tx.set(orderRef, {
+          id: orderId,
+          listingId: "listing_calc",
+          buyerId: "student_alice",
+          sellerId: "student_bob",
+          price: listingPrice, // Must match listing price (500)
+          status: "created",
+        });
+
+        // Update listing status to sold
+        tx.update(listingRef, { status: "sold" });
+
+        // Create initial tracking document
+        tx.set(orderRef.collection("tracking").doc("trk_init"), {
+          status: "created",
+          note: "Initial order created with tracking",
+          at: new Date(),
+        });
+      })
+    );
+
+    // Second transaction attempt against the same listing should fail (already sold)
+    await assertFails(
+      aliceDb.runTransaction(async (tx) => {
+        const listingRef = aliceDb.collection("listings").doc("listing_calc");
+        const listingSnap = await tx.get(listingRef);
+        if (!listingSnap.exists) {
+          throw new Error("Listing not found");
+        }
+        const listingData = listingSnap.data() as { price: number };
+        const listingPrice = listingData.price;
+
+        const orderRef = aliceDb.collection("orders").doc("order_txn_duplicate");
+        tx.set(orderRef, {
+          id: "order_txn_duplicate",
+          listingId: "listing_calc",
+          buyerId: "student_alice",
+          sellerId: "student_bob",
+          price: listingPrice,
+          status: "created",
+        });
+
+        tx.update(listingRef, { status: "sold" });
+
+        tx.set(orderRef.collection("tracking").doc("trk_init"), {
+          status: "created",
+          note: "Duplicate order attempt",
+          at: new Date(),
+        });
+      })
+    );
   });
 
   // 7. Student cannot write to another user's wishlist
@@ -393,6 +453,57 @@ describe("Firestore Security Rules Tests (CSC203B Verification)", () => {
       aliceDb.collection("listings").doc("listing_reported_2").update({
         reportCount: 3,
         status: "hidden",
+      })
+    );
+  });
+
+  // 9.5 FR-08: student can check, create, and cannot duplicate a listing report
+  it("FR-08: student can check, create, and cannot duplicate a listing report", async () => {
+    const aliceDb = testEnv.authenticatedContext("student_alice").firestore();
+
+    const reportRef = aliceDb
+      .collection("reports")
+      .doc("listing_calc_student_alice");
+
+    // 1. Alice can read a nonexistent report document
+    const snapBefore = await assertSucceeds(reportRef.get());
+    if (snapBefore.exists) {
+      throw new Error("Expected report not to exist before creation");
+    }
+
+    // 2. Alice can create the report document with required fields
+    await assertSucceeds(
+      reportRef.set({
+        id: "listing_calc_student_alice",
+        listingId: "listing_calc",
+        listingTitle: "Casio Calculator",
+        reporterId: "student_alice",
+        reporterName: "Alice",
+        reason: "Misleading or fraudulent price",
+        status: "open",
+        createdAt: new Date(),
+      })
+    );
+
+    // 3. Alice cannot create or overwrite the same report document again
+    await assertFails(
+      reportRef.set({
+        id: "listing_calc_student_alice",
+        listingId: "listing_calc",
+        listingTitle: "Casio Calculator",
+        reporterId: "student_alice",
+        reporterName: "Alice",
+        reason: "Misleading or fraudulent price",
+        status: "open",
+        createdAt: new Date(),
+      })
+    );
+
+    // 4. Alice can increment the listing's reportCount from 0 to 1 while keeping status available
+    await assertSucceeds(
+      aliceDb.collection("listings").doc("listing_calc").update({
+        reportCount: 1,
+        status: "available",
       })
     );
   });

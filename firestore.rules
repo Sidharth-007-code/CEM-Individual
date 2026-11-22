@@ -142,6 +142,7 @@ service cloud.firestore {
       allow create: if isActiveUser() &&
         request.resource.data.buyerId == request.auth.uid &&
         request.resource.data.buyerId != request.resource.data.sellerId &&
+        request.resource.data.sellerId == get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.sellerId &&
         get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.status == 'available' &&
         getAfter(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.status == 'sold' &&
         request.resource.data.price == get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.price;
