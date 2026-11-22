@@ -60,6 +60,7 @@ export function ReturnModal({
         type: "order",
         text: `Return requested for "${listingTitle}". Reason: ${reason}.`,
         link: `/orders/${orderId}`,
+        orderId: orderId,
         read: false,
         createdAt: serverTimestamp(),
       });

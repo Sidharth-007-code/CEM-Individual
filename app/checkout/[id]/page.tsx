@@ -11,6 +11,7 @@ import { Listing } from "@/types/listing";
 import { PaymentMethod, PaymentStatus } from "@/types/order";
 import { MEETUP_SPOTS, MeetupSpot } from "@/lib/constants";
 import { createOrderTransaction } from "@/lib/orders";
+import { DEMO_LISTINGS_BY_ID, isDemoListing } from "@/lib/demoListings";
 import { UpiModal } from "@/components/checkout/UpiModal";
 import { Badge, Button, Card, Input, Select } from "@/components/ui";
 import {
@@ -46,6 +47,11 @@ export default function CheckoutPage() {
     if (!id) return;
     const fetchListing = async () => {
       try {
+        const demoListing = DEMO_LISTINGS_BY_ID[id];
+        if (demoListing) {
+          setListing(demoListing);
+          return;
+        }
         const snap = await getDoc(doc(db, "listings", id));
         if (snap.exists()) {
           setListing({ id: snap.id, ...snap.data() } as Listing);
@@ -63,6 +69,10 @@ export default function CheckoutPage() {
 
   const executeOrderCreation = async (method: PaymentMethod, payStatus: PaymentStatus) => {
     if (!user || !listing) return;
+    if (isDemoListing(listing)) {
+      setError("Demo items are read-only previews and cannot be checked out.");
+      return;
+    }
     setProcessingOrder(true);
     setError(null);
 
@@ -88,6 +98,7 @@ export default function CheckoutPage() {
         type: "order",
         text: `New order placed for "${listing.title}" by ${profile?.name || "Student"}. Meetup spot: ${meetupSpot}.`,
         link: `/orders/${orderId}`,
+        orderId: orderId,
         read: false,
         createdAt: serverTimestamp(),
       });
@@ -128,6 +139,20 @@ export default function CheckoutPage() {
           Return to Notice Board
         </Link>
       </div>
+    );
+  }
+
+  if (isDemoListing(listing)) {
+    return (
+      <Card variant="outlined" padding="lg" className="max-w-lg mx-auto my-12 text-center space-y-4">
+        <h2 className="font-sans text-2xl font-semibold text-modern-text-primary">Checkout Unavailable</h2>
+        <p className="text-sm text-modern-text-secondary">
+          This read-only preview cannot be purchased. No order or Firestore listing will be created.
+        </p>
+        <Link href="/browse" className="inline-block px-5 py-2.5 bg-modern-warm text-modern-text-primary border border-modern-border rounded-xl text-xs font-sans font-semibold shadow-modern-sm hover:bg-modern-warm-hover">
+          Return to Notice Board
+        </Link>
+      </Card>
     );
   }
 

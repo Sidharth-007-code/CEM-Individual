@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { RouteGuard } from "@/components/auth/RouteGuard";
-import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Listing } from "@/types/listing";
 import { Order } from "@/types/order";
@@ -25,7 +25,6 @@ import {
   RefreshCw,
   GraduationCap,
   Trash2,
-  CheckCircle2,
   Clock,
   ArrowRight,
 } from "lucide-react";
@@ -145,19 +144,6 @@ export default function DashboardPage() {
       setProfileMsg({ type: "error", text: "Failed to update profile: " + err.message });
     } finally {
       setSavingProfile(false);
-    }
-  };
-
-  const handleMarkSold = async (listingId: string) => {
-    setActionLoadingId(listingId);
-    try {
-      await updateDoc(doc(db, "listings", listingId), {
-        status: "sold",
-      });
-    } catch (e: any) {
-      console.error("[Dashboard] Error marking sold:", e);
-    } finally {
-      setActionLoadingId(null);
     }
   };
 
@@ -690,19 +676,6 @@ export default function DashboardPage() {
                         <span>View</span>
                         <ExternalLink className="w-3 h-3" />
                       </Link>
-
-                      {listing.status !== "sold" && (
-                        <button
-                          type="button"
-                          disabled={actionLoadingId === listing.id}
-                          onClick={() => handleMarkSold(listing.id)}
-                          className="px-3 py-1.5 bg-modern-success-light hover:bg-modern-success text-modern-text-primary font-mono font-bold text-xs rounded-xl border border-modern-border shadow-modern-sm flex items-center space-x-1"
-                          title="Mark this item as sold"
-                        >
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Mark Sold</span>
-                        </button>
-                      )}
 
                       <button
                         type="button"

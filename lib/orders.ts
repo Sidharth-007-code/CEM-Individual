@@ -46,6 +46,7 @@ export interface CreateOrderParams {
  * Atomically re-reads the listing inside a Firestore transaction.
  * Requires status === 'available', creates the order, transitions the listing
  * to 'sold', and appends the initial tracking event.
+ * Also writes soldOrderId to the listing for security rule validation.
  * If another buyer checks out concurrently, one will fail with "This item is no longer available."
  */
 export async function createOrderTransaction(
@@ -75,9 +76,10 @@ export async function createOrderTransaction(
       throw new Error("Sellers cannot purchase their own listing.");
     }
 
-    // 4. Atomically mark listing as 'sold'
+    // 4. Atomically mark listing as 'sold' AND record the order ID for security rule validation
     tx.update(listingRef, {
       status: "sold",
+      soldOrderId: orderRef.id,
       updatedAt: serverTimestamp(),
     });
 

@@ -5,6 +5,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Listing, CATEGORIES, ListingCategory, ListingCondition } from "@/types/listing";
 import { ListingCard } from "./ListingCard";
+import { DEMO_LISTINGS, isDemoListing, prioritizeRealListings } from "@/lib/demoListings";
 import { VoiceSearch } from "./VoiceSearch";
 import { Search, SlidersHorizontal, Sparkles, Filter, X, ArrowUpDown, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -101,14 +102,16 @@ useEffect(() => {
   const searchIntent = parseSearchIntentAI(searchTerm);
 
   // AI Personalized Recommendations
-  const personalizedRecs = getPersonalizedRecommendationsAI(profile, listings, 4);
+  const realListings = listings.filter((listing) => !isDemoListing(listing));
+  const personalizedRecs = getPersonalizedRecommendationsAI(profile, realListings, 4);
+  const allListings = [...listings, ...DEMO_LISTINGS];
 
   // Compute filtered & ranked listings
   let filteredListings: Listing[] = [];
 
   if (searchTerm.trim()) {
     // Run AI Semantic Matcher & Ranker
-    const ranked = rankListingsAI(searchTerm, listings);
+    const ranked = rankListingsAI(searchTerm, allListings);
     filteredListings = ranked
       .map((r) => r.listing)
       .filter((item) => {
@@ -117,7 +120,7 @@ useEffect(() => {
         return true;
       });
   } else {
-    filteredListings = listings.filter((item) => {
+    filteredListings = allListings.filter((item) => {
       if (selectedCategory !== "all" && item.category !== selectedCategory) return false;
       if (selectedCondition !== "all" && item.condition !== selectedCondition) return false;
       return true;
@@ -126,11 +129,14 @@ useEffect(() => {
     filteredListings.sort((a, b) => {
       if (sortBy === "price_asc") return a.price - b.price;
       if (sortBy === "price_desc") return b.price - a.price;
-      const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-      const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt || 0).getTime();
+      const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt || 0).getTime();
       return bTime - aTime;
     });
   }
+
+  // Keep real Firestore items ahead of local previews regardless of filter or sort.
+  filteredListings = prioritizeRealListings(filteredListings);
 
   const hasActiveFilters = selectedCategory !== "all" || selectedCondition !== "all" || searchTerm;
 
@@ -287,7 +293,7 @@ useEffect(() => {
           active={selectedCategory === "all"}
           variant="primary"
           size="sm"
-          count={listings.length}
+          count={allListings.length}
           onClick={() => setSelectedCategory("all")}
           className="whitespace-nowrap"
         >
@@ -295,7 +301,7 @@ useEffect(() => {
         </PillBadge>
 
         {CATEGORIES.map((cat) => {
-          const count = listings.filter((l) => l.category === cat).length;
+          const count = allListings.filter((l) => l.category === cat).length;
           const isSelected = selectedCategory === cat;
           return (
             <PillBadge
@@ -371,7 +377,7 @@ useEffect(() => {
       ) : (
         <div>
           <div className="flex justify-between items-center mb-4 text-sm font-mono text-modern-text-tertiary">
-            <span>Showing <strong className="text-modern-text-primary">{filteredListings.length}</strong> verified campus item(s)</span>
+            <span>Showing <strong className="text-modern-text-primary">{filteredListings.length}</strong> campus item(s), including local demo previews</span>
           </div>
 
           <CardGrid cols={4} gap="md">

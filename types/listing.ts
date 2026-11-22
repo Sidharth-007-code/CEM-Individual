@@ -54,6 +54,8 @@ export interface Listing {
   aiTags?: string[];
   images?: string[]; // Array of base64 preview strings or image ids
   thumbnail?: string; // Quick preview thumbnail
+  isDemo?: boolean; // Local-only preview listing; never persisted to Firestore
+  isPresentationDemo?: boolean; // Compatibility with previously seeded presentation previews
   createdAt: any;
   updatedAt?: any;
 }

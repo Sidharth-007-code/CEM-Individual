@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ReportModal } from "@/components/listings/ReportModal";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { getProductImageSet } from "@/lib/demoImages";
+import { DEMO_LISTINGS_BY_ID, isDemoListing } from "@/lib/demoListings";
 import {
   Phone,
   MessageSquare,
@@ -52,9 +53,22 @@ export default function ListingDetailPage() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [sellerProfile, setSellerProfile] = useState<UserProfile | null>(null);
   const [otherListings, setOtherListings] = useState<Listing[]>([]);
+  const listingSellerId = listing?.sellerId;
+  const listingIsDemo = listing?.isDemo === true || listing?.isPresentationDemo === true;
 
   useEffect(() => {
     if (!id) return;
+    const demoListing = DEMO_LISTINGS_BY_ID[id];
+    if (demoListing) {
+      setListing(demoListing);
+      setImages((demoListing.images || []).map((dataUrl, index) => ({
+        id: `demo-image-${index + 1}`,
+        dataUrl,
+      })));
+      setLoading(false);
+      return;
+    }
+
     const listingRef = doc(db, "listings", id);
 
     const unsubscribe = onSnapshot(
@@ -91,6 +105,10 @@ export default function ListingDetailPage() {
   // Check wishlist
   useEffect(() => {
     if (!user || !id) return;
+    if (DEMO_LISTINGS_BY_ID[id]) {
+      setIsWishlisted(false);
+      return;
+    }
     const checkWish = async () => {
       try {
         const snap = await getDoc(doc(db, `wishlists/${user.uid}/items`, id));
@@ -102,10 +120,14 @@ export default function ListingDetailPage() {
 
   // Fetch live seller profile for real-time contact and student verification
   useEffect(() => {
-    if (!listing?.sellerId) return;
+    if (listingIsDemo) {
+      setSellerProfile(null);
+      return;
+    }
+    if (!listingSellerId) return;
     const fetchSeller = async () => {
       try {
-        const snap = await getDoc(doc(db, "users", listing.sellerId));
+        const snap = await getDoc(doc(db, "users", listingSellerId));
         if (snap.exists()) {
           setSellerProfile({ uid: snap.id, ...snap.data() } as UserProfile);
         }
@@ -114,10 +136,14 @@ export default function ListingDetailPage() {
       }
     };
     fetchSeller();
-  }, [listing?.sellerId]);
+  }, [listingSellerId, listingIsDemo]);
 
   // Fetch candidate listings for AI Similar Gear
   useEffect(() => {
+    if (DEMO_LISTINGS_BY_ID[id]) {
+      setOtherListings([]);
+      return;
+    }
     const fetchOthers = async () => {
       try {
         const snap = await getDocs(query(collection(db, "listings"), where("status", "==", "available")));
@@ -128,9 +154,12 @@ export default function ListingDetailPage() {
       }
     };
     fetchOthers();
-  }, []);
+  }, [id]);
 
   const toggleWishlist = async () => {
+    if (listing && isDemoListing(listing)) {
+      return;
+    }
     if (!user || !listing) {
       router.push(`/login?redirect=/listings/${id}`);
       return;
@@ -153,6 +182,9 @@ export default function ListingDetailPage() {
   };
 
   const handleStartChat = async () => {
+    if (listing && isDemoListing(listing)) {
+      return;
+    }
     if (!user || !listing) {
       router.push(`/login?redirect=/listings/${id}`);
       return;
@@ -239,6 +271,7 @@ export default function ListingDetailPage() {
   }
 
   const isSold = listing.status === "sold";
+  const isDemo = isDemoListing(listing);
   const isSeller = user?.uid === listing.sellerId;
 
   // Resolve multiple gallery images: subcollection -> listing.images array -> fallback demo image set
@@ -281,7 +314,7 @@ export default function ListingDetailPage() {
           Back to Notice Board
         </LinkButton>
 
-        <div className="flex items-center space-x-2">
+        {!isDemo && <div className="flex items-center space-x-2">
           {/* Wishlist */}
           <Button
             variant="ghost"
@@ -303,7 +336,7 @@ export default function ListingDetailPage() {
             aria-label="Report this listing"
             className="text-modern-text-tertiary hover:text-modern-danger"
           />
-        </div>
+        </div>}
       </div>
 
       {/* Sold Banner Notice */}
@@ -343,12 +376,14 @@ export default function ListingDetailPage() {
               )}
 
               {/* Verified Badge Overlay */}
-              <div className="absolute bottom-3 left-3">
-                <Badge variant="verifier" size="sm" dot className="shadow-modern-lg">
-                  <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
-                  Campus Verified Listing
-                </Badge>
-              </div>
+              {!isDemo && (
+                <div className="absolute bottom-3 left-3">
+                  <Badge variant="verifier" size="sm" dot className="shadow-modern-lg">
+                    <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                    Campus Verified Listing
+                  </Badge>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -400,9 +435,9 @@ export default function ListingDetailPage() {
               <div className="font-sans font-bold text-3xl sm:text-4xl text-modern-text-primary">
                 ₹{listing.price.toLocaleString("en-IN")}
               </div>
-              <Badge variant="warm" size="sm" className="font-sans">
+              {!isDemo && <Badge variant="warm" size="sm" className="font-sans">
                 Fair-Trade Fixed Price
-              </Badge>
+              </Badge>}
             </div>
 
             {/* Description */}
@@ -416,7 +451,7 @@ export default function ListingDetailPage() {
             </Card>
 
             {/* Seller Profile Card */}
-            <Card variant="elevated" padding="md" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {!isDemo && <Card variant="elevated" padding="md" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
                 <Avatar
                   src={sellerProfile?.photoURL}
@@ -432,14 +467,12 @@ export default function ListingDetailPage() {
                     <span className="font-sans font-semibold text-sm text-modern-text-primary">
                       {sellerProfile?.name || listing.sellerName || "Verified Student"}
                     </span>
-                    <Badge variant="verifier" size="xs" dot>
-                      Verified Peer
-                    </Badge>
+                    {!isDemo && <Badge variant="verifier" size="xs" dot>Verified Peer</Badge>}
                   </div>
                   <span className="text-xs font-mono text-modern-text-tertiary block">
                     {sellerProfile?.course ? `${sellerProfile.course} ${sellerProfile?.year ? `• ${sellerProfile.year}` : ""}` : "MSRUAS Enrolled Student"}
                   </span>
-                  {sellerProfile?.campus && (
+                  {!isDemo && sellerProfile?.campus && (
                     <span className="text-[10px] font-mono text-modern-text-tertiary block">
                       Campus: {sellerProfile.campus}
                     </span>
@@ -448,7 +481,7 @@ export default function ListingDetailPage() {
               </div>
 
               {/* Direct Call Link */}
-              {sellerProfile?.phone && !isSeller && (
+              {!isDemo && sellerProfile?.phone && !isSeller && (
                 <a
                   href={`tel:${sellerProfile.phone}`}
                   className="shrink-0"
@@ -458,10 +491,10 @@ export default function ListingDetailPage() {
                   </Button>
                 </a>
               )}
-            </Card>
+            </Card>}
 
             {/* AI Product Valuation & Quality Card */}
-            <Card variant="elevated" padding="lg" className="space-y-4">
+            {!isDemo && <Card variant="elevated" padding="lg" className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="font-sans font-semibold text-sm text-modern-text-primary flex items-center space-x-2">
                   <Badge variant="warm" size="sm" className="p-1.5">
@@ -509,11 +542,11 @@ export default function ListingDetailPage() {
                   ))}
                 </div>
               )}
-            </Card>
+            </Card>}
           </div>
 
           {/* CTA Buttons */}
-          <div className="pt-4 border-t border-modern-border/50 space-y-3">
+          {!isDemo && <div className="pt-4 border-t border-modern-border/50 space-y-3">
             {isSeller ? (
               <Card variant="outlined" padding="md" className="text-center border-modern-border/50 bg-modern-surface-hover/50">
                 <p className="text-sm font-mono text-modern-text-tertiary">
@@ -556,7 +589,7 @@ export default function ListingDetailPage() {
                 </Link>
               </div>
             )}
-          </div>
+          </div>}
         </div>
       </div>
 

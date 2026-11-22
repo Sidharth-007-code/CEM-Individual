@@ -268,6 +268,7 @@ export default function VerifierQueuePage() {
           type: "verification",
           text,
           link: `/listings/${listingId}`,
+          listingId: listingId,
           read: false,
           createdAt: serverTimestamp(),
         });
@@ -339,6 +340,7 @@ export default function VerifierQueuePage() {
             type: "verification",
             text: `Your listing "${item.title}" has been verified and published to the Notice Board!`,
             link: `/listings/${item.id}`,
+            listingId: item.id,
             read: false,
             createdAt: serverTimestamp(),
           });

@@ -11,6 +11,7 @@ import { db } from "@/lib/firebase";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { isDemoListing } from "@/lib/demoListings";
 
 interface ListingCardProps {
   listing: Listing;
@@ -25,6 +26,7 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
   const toggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isDemoListing(listing)) return;
     if (!user) return;
 
     setSavingWishlist(true);
@@ -53,7 +55,7 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
   };
 
   const isSold = listing.status === "sold";
-  const isDemo = Boolean((listing as any).isPresentationDemo);
+  const isDemo = isDemoListing(listing);
 
   // AI Evaluation (precomputed or evaluated on demand)
   const aiEval =
@@ -99,17 +101,8 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
             </div>
           )}
 
-          {/* Presentation Demo Badge */}
-          {isDemo && (
-            <div className="absolute top-2 left-2 z-10">
-              <Badge variant="secondary" size="xs">
-                Demo
-              </Badge>
-            </div>
-          )}
-
           {/* Wishlist Button */}
-          {user && !isSold && (
+          {user && !isSold && !isDemo && (
             <Button
               type="button"
               variant="ghost"
@@ -124,12 +117,12 @@ export function ListingCard({ listing, isWishlistedInitial = false }: ListingCar
           )}
 
           {/* Verified Badge */}
-          <div className="absolute bottom-2 left-2">
+          {!isDemo && <div className="absolute bottom-2 left-2">
             <Badge variant="verifier" size="xs" dot>
               <ShieldCheck className="w-2.5 h-2.5" aria-hidden="true" />
               Verified
             </Badge>
-          </div>
+          </div>}
         </div>
 
         {/* Card Content */}

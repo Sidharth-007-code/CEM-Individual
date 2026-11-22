@@ -158,6 +158,7 @@ export default function ConversationDetailPage() {
           type: "chat",
           text: `New message from ${profile?.name || "Student"}: "${textToSend.slice(0, 50)}"`,
           link: `/messages/${conversation.id}`,
+          conversationId: conversation.id,
           read: false,
           createdAt: serverTimestamp(),
         });

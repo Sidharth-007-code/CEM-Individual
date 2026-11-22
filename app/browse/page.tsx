@@ -9,7 +9,7 @@ export default function BrowsePage() {
           Campus Notice Board
         </h1>
         <p className="text-sm font-mono font-medium text-modern-text-tertiary mt-1">
-          Explore all verified items currently available for peer-to-peer student handover on campus.
+          Browse verified campus listings alongside clearly marked demo previews. Demo items are read-only and cannot be purchased or messaged.
         </p>
       </div>
 

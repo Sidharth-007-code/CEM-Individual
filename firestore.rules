@@ -15,6 +15,15 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isInstitutionalEmail() {
+      // Base domain and any valid DNS subdomain, matching validateUniversityEmail().
+      return request.auth.token.email.matches('^[^@]+@([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)*[mM][sS][rR][uU][aA][sS]\\.[aA][cC]\\.[iI][nN]$');
+    }
+
     function isActiveUser() {
       return isAuthenticated() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
@@ -33,6 +42,26 @@ service cloud.firestore {
       return hasRole('verifier') || isAdmin();
     }
 
+    function isStudent() {
+      return hasRole('student');
+    }
+
+    function getListingData(listingId) {
+      return get(/databases/$(database)/documents/listings/$(listingId)).data;
+    }
+
+    function getListingDataAfter(listingId) {
+      return getAfter(/databases/$(database)/documents/listings/$(listingId)).data;
+    }
+
+    function getOrderData(orderId) {
+      return get(/databases/$(database)/documents/orders/$(orderId)).data;
+    }
+
+    function getOrderDataAfter(orderId) {
+      return getAfter(/databases/$(database)/documents/orders/$(orderId)).data;
+    }
+
     // OTP Requests: Client access completely denied! Admin SDK only.
     match /otpRequests/{hash} {
       allow read, write: if false;
@@ -40,14 +69,47 @@ service cloud.firestore {
 
     // Users
     match /users/{userId} {
+      // Authenticated users can read any profile (needed for messaging, orders, etc.)
       allow read: if isAuthenticated();
-      // Only admin or user creation via Admin SDK / client.
-      // If user updates their own profile, forbid role or status changes:
-      allow update: if (isOwner(userId) &&
-                        (!('role' in request.resource.data) || !('role' in resource.data) || request.resource.data.role == resource.data.role) &&
-                        (!('status' in request.resource.data) || !('status' in resource.data) || request.resource.data.status == resource.data.status))
-                    || isAdmin();
-      allow create: if isAdmin();
+
+      // Profile creation: Admin can create any profile; Students can only create their own
+      // verified institutional profile on first login
+      allow create: if isAdmin() || (
+        isAuthenticated() &&
+        isEmailVerified() &&
+        isInstitutionalEmail() &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.email == request.auth.token.email &&
+        request.resource.data.role == 'student' &&
+        request.resource.data.status == 'active' &&
+        // Allow optional fields but no privileged fields
+        (!('academicLocked' in request.resource.data) || request.resource.data.academicLocked == false) &&
+        (!('verifierId' in request.resource.data)) &&
+        (!('verifierNote' in request.resource.data))
+      );
+
+      // Profile update: Owner can update non-privileged fields; admin has full control
+      allow update: if (isOwner(userId) && isActiveUser() &&
+        // Cannot change UID
+        request.resource.data.uid == resource.data.uid &&
+        // Cannot change email
+        request.resource.data.email == resource.data.email &&
+        // Cannot change role
+        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
+        // Cannot change status
+        (!('status' in request.resource.data) || request.resource.data.status == resource.data.status) &&
+        // Cannot change academicLocked to false once true
+        (!('academicLocked' in request.resource.data) || request.resource.data.academicLocked == resource.data.academicLocked) &&
+        // Cannot set verifier fields
+        (!('verifierId' in request.resource.data)) &&
+        (!('verifierNote' in request.resource.data)) &&
+        // Allowed fields: name, phone, course, year, campus, bio, personalEmail, photoURL, avatarId, updatedAt, academicLocked
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name', 'phone', 'course', 'year', 'campus', 'bio', 'personalEmail',
+          'photoURL', 'avatarId', 'updatedAt', 'academicLocked'
+        ])
+      ) || isAdmin();
+
       allow delete: if isAdmin();
     }
 
@@ -56,28 +118,44 @@ service cloud.firestore {
       // Available listings visible to all authenticated users.
       // Draft, pending, rejected, hidden visible only to seller, verifier, or admin.
       allow read: if isAuthenticated() && (
-        ('status' in resource.data && resource.data.status == 'available') ||
-        ('sellerId' in resource.data && resource.data.sellerId == request.auth.uid) ||
+        (resource != null && resource.data != null && 'status' in resource.data && resource.data.status == 'available') ||
+        (resource != null && resource.data != null && 'sellerId' in resource.data && resource.data.sellerId == request.auth.uid) ||
         isVerifier()
       );
 
+      // Create listing: Active student, must be own listing, pending/draft status only
       allow create: if (isActiveUser() &&
         request.resource.data.sellerId == request.auth.uid &&
         request.resource.data.price > 0 &&
-        (request.resource.data.status == 'pending' || request.resource.data.status == 'draft'))
-        || isAdmin();
+        (request.resource.data.status == 'pending' || request.resource.data.status == 'draft') &&
+        // Cannot set verifier fields or reportCount on create
+        (!('verifierId' in request.resource.data)) &&
+        (!('verifierNote' in request.resource.data)) &&
+        (!('reportCount' in request.resource.data) || request.resource.data.reportCount == 0) &&
+        (!('soldOrderId' in request.resource.data))
+      ) || isAdmin();
 
       allow update: if isActiveUser() && (
-        // Seller updating their own listing contact info (sellerName, sellerPhone, updatedAt) or draft/pending listing
-        (resource.data.sellerId == request.auth.uid && (
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sellerName', 'sellerPhone', 'updatedAt']) ||
-          ((resource.data.status == 'draft' || resource.data.status == 'pending' || resource.data.status == 'needs_changes') &&
-           (!('status' in request.resource.data) || request.resource.data.status == 'pending' || request.resource.data.status == 'draft'))
-        ))
+        // Sellers may sync public contact details at any time. Listing content is editable
+        // only before publication, with status transitions limited to the seller workflow.
+        (resource.data.sellerId == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'sellerName', 'sellerPhone', 'title', 'description', 'category',
+            'condition', 'price', 'thumbnail', 'status', 'updatedAt'
+          ]) &&
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sellerName', 'sellerPhone', 'updatedAt']) ||
+            ((resource.data.status in ['draft', 'pending', 'needs_changes']) &&
+             (request.resource.data.status in ['draft', 'pending', 'needs_changes']) &&
+             request.resource.data.price > 0)
+          ))
         ||
         // Verifier approving, rejecting, or requesting changes
         (isVerifier() &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'verifierId', 'verifierNote', 'updatedAt']))
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'verifierId', 'verifierNote', 'updatedAt']) &&
+          resource.data.status in ['pending', 'needs_changes'] &&
+          request.resource.data.status in ['available', 'rejected', 'needs_changes'] &&
+          request.resource.data.verifierId == request.auth.uid)
         ||
         // Report count increment: allow only reportCount == old + 1, and may change status only from 'available' to 'hidden' when new reportCount >= 3; otherwise status must stay unchanged
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount', 'status', 'updatedAt']) &&
@@ -88,9 +166,24 @@ service cloud.firestore {
             request.resource.data.reportCount >= 3)))
         ||
         // Order purchase: buyer marks listing as 'sold' atomically when creating order
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+        // Must validate that the soldOrderId on the listing matches the order being created
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'soldOrderId', 'updatedAt']) &&
           resource.data.status == 'available' &&
-          request.resource.data.status == 'sold')
+          request.resource.data.status == 'sold' &&
+          // Verify soldOrderId is provided
+          ('soldOrderId' in request.resource.data) &&
+          // Verify the order document exists and matches this listing, buyer, seller, and price
+          existsAfter(/databases/$(database)/documents/orders/$(request.resource.data.soldOrderId)) &&
+          !exists(/databases/$(database)/documents/orders/$(request.resource.data.soldOrderId)) &&
+          getAfter(/databases/$(database)/documents/orders/$(request.resource.data.soldOrderId)).data.id == request.resource.data.soldOrderId &&
+          getAfter(/databases/$(database)/documents/orders/$(request.resource.data.soldOrderId)).data.listingId == listingId &&
+          getAfter(/databases/$(database)/documents/orders/$(request.resource.data.soldOrderId)).data.buyerId == request.auth.uid &&
+          getAfter(/databases/$(database)/documents/orders/$(request.resource.data.soldOrderId)).data.sellerId == resource.data.sellerId &&
+          getAfter(/databases/$(database)/documents/orders/$(request.resource.data.soldOrderId)).data.price == resource.data.price)
+        ||
+        // Admin restoration of hidden listing (status back to available, clear soldOrderId)
+        (isAdmin() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'soldOrderId', 'updatedAt', 'reportCount']))
         ||
         isAdmin()
       );
@@ -117,15 +210,48 @@ service cloud.firestore {
         resource == null ||
         request.auth.uid in resource.data.participantIds
       );
-      allow create: if isActiveUser() && request.auth.uid in request.resource.data.participantIds;
-      allow update: if isActiveUser() && request.auth.uid in resource.data.participantIds;
+      allow create: if isActiveUser() &&
+        request.resource.data.keys().hasOnly([
+          'id', 'listingId', 'listingTitle', 'participantIds', 'participantNames',
+          'lastMessage', 'updatedAt'
+        ]) &&
+        request.resource.data.id == convId &&
+        convId == request.resource.data.listingId + '_' + request.auth.uid &&
+        exists(/databases/$(database)/documents/listings/$(request.resource.data.listingId)) &&
+        getListingData(request.resource.data.listingId).status == 'available' &&
+        getListingData(request.resource.data.listingId).sellerId != request.auth.uid &&
+        request.resource.data.listingTitle == getListingData(request.resource.data.listingId).title &&
+        request.resource.data.participantIds is list &&
+        request.resource.data.participantIds.size() == 2 &&
+        request.resource.data.participantIds[0] == request.auth.uid &&
+        request.resource.data.participantIds[1] == getListingData(request.resource.data.listingId).sellerId &&
+        (!('participantNames' in request.resource.data) ||
+          (request.resource.data.participantNames is map &&
+           request.resource.data.participantNames.keys().hasOnly(request.resource.data.participantIds) &&
+           request.resource.data.participantNames[request.auth.uid] == getUserData().name));
+      allow update: if isActiveUser() &&
+        request.auth.uid in resource.data.participantIds &&
+        // Conversation identity and participant names are immutable after creation.
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'updatedAt']);
 
       match /messages/{messageId} {
         allow read: if isAuthenticated() &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participantIds;
         allow create: if isActiveUser() &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participantIds &&
-          request.resource.data.senderId == request.auth.uid;
+          get(/databases/$(database)/documents/conversations/$(convId)).data.participantIds is list &&
+          get(/databases/$(database)/documents/conversations/$(convId)).data.participantIds.size() == 2 &&
+          exists(/databases/$(database)/documents/listings/$(get(/databases/$(database)/documents/conversations/$(convId)).data.listingId)) &&
+          getListingData(get(/databases/$(database)/documents/conversations/$(convId)).data.listingId).sellerId in
+            get(/databases/$(database)/documents/conversations/$(convId)).data.participantIds &&
+          convId == get(/databases/$(database)/documents/conversations/$(convId)).data.listingId + '_' +
+            get(/databases/$(database)/documents/conversations/$(convId)).data.participantIds[0] &&
+          request.resource.data.keys().hasOnly(['senderId', 'senderName', 'text', 'createdAt']) &&
+          request.resource.data.keys().hasAll(['senderId', 'senderName', 'text', 'createdAt']) &&
+          request.resource.data.senderId == request.auth.uid &&
+          request.resource.data.senderName == getUserData().name &&
+          request.resource.data.text is string &&
+          request.resource.data.createdAt is timestamp;
       }
     }
 
@@ -137,20 +263,63 @@ service cloud.firestore {
         isAdmin()
       );
 
-      // Rule enforcing transactional listing sale:
-      // Buyer cannot be seller; listing must be 'available' prior to tx and marked 'sold' after tx; price must match listing price!
+      // Rule enforcing transactional listing sale with soldOrderId validation:
+      // Buyer cannot be seller; listing must be 'available' prior to tx;
+      // Price must match listing price; validate both order create and listing update atomically
       allow create: if isActiveUser() &&
+        request.resource.data.keys().hasOnly([
+          'id', 'listingId', 'listingTitle', 'buyerId', 'buyerName', 'sellerId',
+          'sellerName', 'price', 'paymentMethod', 'paymentStatus', 'status',
+          'meetupSpot', 'invoice', 'createdAt', 'updatedAt'
+        ]) &&
         request.resource.data.buyerId == request.auth.uid &&
         request.resource.data.buyerId != request.resource.data.sellerId &&
-        request.resource.data.sellerId == get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.sellerId &&
-        get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.status == 'available' &&
+        // Listing must exist
+        exists(/databases/$(database)/documents/listings/$(request.resource.data.listingId)) &&
+        // Seller must match listing owner
+        request.resource.data.sellerId == getListingData(request.resource.data.listingId).sellerId &&
+        // Listing must be available before transaction
+        getListingData(request.resource.data.listingId).status == 'available' &&
+        // Price must match listing price exactly
+        request.resource.data.price == getListingData(request.resource.data.listingId).price &&
+        // Payment status: 'pending' for cash, 'success' for upi_sim with confirmed status
+        (
+          (request.resource.data.paymentMethod == 'cash' && request.resource.data.paymentStatus == 'pending' && request.resource.data.status == 'created') ||
+          (request.resource.data.paymentMethod == 'upi_sim' && request.resource.data.paymentStatus == 'success' && request.resource.data.status == 'confirmed')
+        ) &&
+        // Invoice is part of the checkout payload; constrain it to the order amount.
+        (!('invoice' in request.resource.data) ||
+          (request.resource.data.invoice is map &&
+           request.resource.data.invoice.keys().hasOnly(['number', 'issuedAt', 'total']) &&
+           request.resource.data.invoice.number is string &&
+           request.resource.data.invoice.issuedAt is string &&
+           request.resource.data.invoice.total == request.resource.data.price)) &&
+        // Atomic validation: after transaction, listing must be 'sold' with this orderId as soldOrderId
         getAfter(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.status == 'sold' &&
-        request.resource.data.price == get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.price;
+        getAfter(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.soldOrderId == orderId &&
+        getAfter(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.sellerId == request.resource.data.sellerId &&
+        getAfter(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.price == request.resource.data.price &&
+        request.resource.data.id == orderId;
 
-      // Buyer/seller can change ONLY status, meetupSpot, meetupTime, updatedAt (never price or paymentStatus)
+      // Order updates: Enforce valid status transitions
+      // created -> confirmed/cancelled
+      // confirmed -> meetup_scheduled/cancelled
+      // meetup_scheduled -> completed/cancelled
+      // Only buyer, seller, or admin can update
       allow update: if isActiveUser() && (
         ((request.auth.uid == resource.data.buyerId || request.auth.uid == resource.data.sellerId) &&
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'meetupSpot', 'meetupTime', 'updatedAt'])) ||
+          // Validate status transitions
+          (
+            (resource.data.status == 'created' &&
+              (request.resource.data.status == 'confirmed' || request.resource.data.status == 'cancelled')) ||
+            (resource.data.status == 'confirmed' &&
+              (request.resource.data.status == 'meetup_scheduled' || request.resource.data.status == 'cancelled')) ||
+            (resource.data.status == 'meetup_scheduled' &&
+              (request.resource.data.status == 'completed' || request.resource.data.status == 'cancelled'))
+          ) &&
+          // Allowed fields: status, meetupSpot, meetupTime, updatedAt
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'meetupSpot', 'meetupTime', 'updatedAt'])
+        ) ||
         isAdmin()
       );
 
@@ -180,9 +349,18 @@ service cloud.firestore {
         (resource != null && resource.data.buyerId == request.auth.uid) ||
         isAdmin()
       );
-      allow create: if isActiveUser() && request.resource.data.buyerId == request.auth.uid;
+      allow create: if isActiveUser() &&
+        request.resource.data.buyerId == request.auth.uid &&
+        // Must reference a valid order owned by the buyer
+        exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
+        get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.buyerId == request.auth.uid &&
+        // Cannot forge return status or admin fields
+        (!('status' in request.resource.data) || request.resource.data.status == 'requested') &&
+        (!('adminNote' in request.resource.data)) &&
+        (!('processedAt' in request.resource.data));
       allow update: if isActiveUser() && (
-        request.auth.uid == resource.data.buyerId ||
+        (request.auth.uid == resource.data.buyerId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
         isAdmin()
       );
     }
@@ -196,19 +374,75 @@ service cloud.firestore {
       );
       allow create: if isActiveUser() &&
         request.resource.data.reporterId == request.auth.uid &&
-        reportId == request.resource.data.listingId + '_' + request.auth.uid;
+        reportId == request.resource.data.listingId + '_' + request.auth.uid &&
+        // Validate required fields
+        request.resource.data.listingId == getListingData(request.resource.data.listingId).id &&
+        request.resource.data.listingTitle == getListingData(request.resource.data.listingId).title &&
+        request.resource.data.status == 'open';
       allow update, delete: if isAdmin();
     }
 
-    // Notifications: create must be admin-only or restricted to sender's own uid
+    // Notifications: create must be admin-only or restricted to legitimate relationships
     match /notifications/{userId}/items/{notifId} {
-      allow read, update, delete: if isOwner(userId);
-      allow create: if isAdmin() || (
-        isActiveUser() && (
-          isOwner(userId) ||
-          request.resource.data.senderId == request.auth.uid
-        )
-      );
+      allow read: if isOwner(userId);
+      // The UI only marks unread notifications as read. Notification content and
+      // relationship fields remain immutable, and there is no delete UI.
+      allow update: if isOwner(userId) &&
+        resource.data.read == false &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']) &&
+        request.resource.data.read is bool &&
+        request.resource.data.read == true;
+      allow delete: if isOwner(userId);
+      allow create: if isActiveUser() &&
+        request.resource.data.id == notifId &&
+        request.resource.data.senderId == request.auth.uid &&
+        request.resource.data.text is string &&
+        request.resource.data.read == false &&
+        (
+          (request.resource.data.type == 'order' &&
+           request.resource.data.keys().hasOnly(['id', 'senderId', 'type', 'text', 'link', 'orderId', 'read', 'createdAt']) &&
+           request.resource.data.keys().hasAll(['id', 'senderId', 'type', 'text', 'link', 'orderId', 'read', 'createdAt']) &&
+           request.resource.data.link == '/orders/' + request.resource.data.orderId &&
+           request.resource.data.createdAt is timestamp &&
+           exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
+           ((getOrderData(request.resource.data.orderId).buyerId == request.auth.uid &&
+             getOrderData(request.resource.data.orderId).sellerId == userId) ||
+            (getOrderData(request.resource.data.orderId).sellerId == request.auth.uid &&
+             getOrderData(request.resource.data.orderId).buyerId == userId))) ||
+          (request.resource.data.type == 'chat' &&
+           request.resource.data.keys().hasOnly(['id', 'senderId', 'type', 'text', 'link', 'conversationId', 'read', 'createdAt']) &&
+           request.resource.data.keys().hasAll(['id', 'senderId', 'type', 'text', 'link', 'conversationId', 'read', 'createdAt']) &&
+           request.resource.data.link == '/messages/' + request.resource.data.conversationId &&
+           request.resource.data.createdAt is timestamp &&
+           userId != request.auth.uid &&
+           exists(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)) &&
+           get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.participantIds is list &&
+           get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.participantIds.size() == 2 &&
+           request.auth.uid in get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.participantIds &&
+           userId in get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.participantIds &&
+           exists(/databases/$(database)/documents/listings/$(get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.listingId)) &&
+           getListingData(get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.listingId).sellerId in
+             get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.participantIds &&
+           get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.id == request.resource.data.conversationId &&
+           request.resource.data.conversationId == get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.listingId + '_' +
+             (request.auth.uid == getListingData(get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.listingId).sellerId ? userId : request.auth.uid)) ||
+          (request.resource.data.type == 'verification' &&
+           request.resource.data.keys().hasOnly(['id', 'senderId', 'type', 'text', 'link', 'listingId', 'read', 'createdAt']) &&
+           request.resource.data.keys().hasAll(['id', 'senderId', 'type', 'text', 'link', 'listingId', 'read', 'createdAt']) &&
+           request.resource.data.link == '/listings/' + request.resource.data.listingId &&
+           request.resource.data.createdAt is timestamp &&
+           isVerifier() &&
+           userId != request.auth.uid &&
+           exists(/databases/$(database)/documents/listings/$(request.resource.data.listingId)) &&
+           getListingData(request.resource.data.listingId).sellerId == userId &&
+           getListingData(request.resource.data.listingId).verifierId == request.auth.uid &&
+           getListingData(request.resource.data.listingId).status in ['available', 'rejected', 'needs_changes']) ||
+          (request.resource.data.type == 'system' &&
+           request.resource.data.keys().hasOnly(['id', 'senderId', 'type', 'text', 'read', 'createdAt']) &&
+           request.resource.data.keys().hasAll(['id', 'senderId', 'type', 'text', 'read', 'createdAt']) &&
+           request.resource.data.createdAt is timestamp &&
+           isAdmin())
+        );
     }
 
     // Audit Log: only read and created by admin
@@ -224,4 +458,3 @@ service cloud.firestore {
     }
   }
 }
-
